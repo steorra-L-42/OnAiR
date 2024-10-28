@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-kapt")
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -50,6 +52,16 @@ android {
 }
 
 dependencies {
+    implementation(libs.hilt.android)
+    implementation(project(":core:common"))
+    implementation(project(":features:broadcast"))
+    implementation(project(":core:network"))
+    implementation(project(":domain"))
+    implementation(project(":data"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":features:auth"))
+    implementation(libs.compose.bom)
+    kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
