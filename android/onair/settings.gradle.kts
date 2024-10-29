@@ -21,4 +21,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "OnAiR"
 include(":app")
- 
+include(":core:network")
+include(":core:common")
+include(":core:designsystem")
+include(":domain")
+include(":data")
+include(":features:auth")
+include(":features:broadcast")

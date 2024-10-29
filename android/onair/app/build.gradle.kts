@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -52,6 +52,16 @@ android {
 }
 
 dependencies {
+    implementation(libs.hilt.android)
+    implementation(project(":core:common"))
+    implementation(project(":features:broadcast"))
+    implementation(project(":core:network"))
+    implementation(project(":domain"))
+    implementation(project(":data"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":features:auth"))
+    implementation(libs.compose.bom)
+    kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -68,12 +78,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation("com.google.dagger:hilt-android:2.44")
-    kapt("com.google.dagger:hilt-android-compiler:2.44")
-}
-
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
 }
