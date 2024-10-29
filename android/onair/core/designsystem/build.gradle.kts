@@ -48,6 +48,8 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material.icons.extended)
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.ui.tooling)
     testImplementation(libs.junit)
