@@ -1,4 +1,4 @@
-package com.fm404.onair
+package com.fm404.onair.core.designsystem.component.audiovisualizer
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

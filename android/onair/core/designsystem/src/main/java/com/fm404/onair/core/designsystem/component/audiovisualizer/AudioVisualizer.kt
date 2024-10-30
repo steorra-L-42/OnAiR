@@ -1,4 +1,4 @@
-package com.fm404.onair
+package com.fm404.onair.core.designsystem.component.audiovisualizer
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background

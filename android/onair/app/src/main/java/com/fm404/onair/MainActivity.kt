@@ -15,14 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.absoluteValue
-import kotlin.math.ln
-import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.pow
-import kotlin.math.sqrt
 
 const val AV_LINES = 10
 
@@ -81,7 +79,7 @@ class MainActivity : ComponentActivity() {
                         fft: ByteArray,
                         samplingRate: Int
                     ) {
-                        updateAmplitudes(fft)  // Process FFT data instead
+                        updateAmplitudes(fft)
                     }
                 }, Visualizer.getMaxCaptureRate(), false, true)
                 enabled = true
@@ -96,19 +94,17 @@ class MainActivity : ComponentActivity() {
         val size = minOf(newAmplitudes.size, amplitudesState.value.size)
         val amplitudes = FloatArray(amplitudesState.value.size)
 
-        val targetMaxAmplitude = 100f  // Maximum height for the loudest sound
-        val compressionFactor = 0.5f   // Adjust between 0 (no compression) and 1 (full compression)
+        val targetMaxAmplitude = 100f  // 제일 높은 소리에 대한 최대 크기
+        val compressionFactor = 0.5f // 압축률 0 ~ 1 사이 조정
 
         for (i in 0 until size) {
             val rawAmplitude = newAmplitudes[i].toFloat().absoluteValue
 
-            // Apply dynamic range compression
             val compressedAmplitude = rawAmplitude.pow(compressionFactor)
 
-            // Normalize the compressed amplitude
             val normalizedAmplitude = (compressedAmplitude / 127f.pow(compressionFactor)) * targetMaxAmplitude
 
-            // Ensure a minimum height
+            // 최소 높이
             amplitudes[i] = max(5f, normalizedAmplitude)
         }
 
