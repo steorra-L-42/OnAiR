@@ -39,7 +39,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
         }
 
@@ -107,7 +111,8 @@ class MainActivity : ComponentActivity() {
 
             val compressedAmplitude = rawAmplitude.pow(compressionFactor)
 
-            val normalizedAmplitude = (compressedAmplitude / 127f.pow(compressionFactor)) * targetMaxAmplitude
+            val normalizedAmplitude =
+                (compressedAmplitude / 127f.pow(compressionFactor)) * targetMaxAmplitude
 
             // 최소 높이
             amplitudes[i] = max(5f, normalizedAmplitude)
@@ -119,13 +124,15 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer.release()
         if (::visualizer.isInitialized) {
             visualizer.release()
         }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainScreen(
