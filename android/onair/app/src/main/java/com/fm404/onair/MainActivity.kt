@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
+import com.fm404.onair.core.navigation.component.BottomNavBar
+import com.fm404.onair.core.navigation.graph.MainNavGraph
+import com.fm404.onair.core.navigation.model.NavRoute
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -19,29 +22,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OnAirTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen()
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+private fun MainScreen(
+    modifier: Modifier = Modifier
+) {
+    val navController = rememberNavController()
+    val startDestination = remember { NavRoute.Home.route }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    OnAirTheme {
-        Greeting("Android")
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        bottomBar = {
+            BottomNavBar(
+                navController = navController
+            )
+        }
+    ) { paddingValues ->
+        MainNavGraph(
+            navController = navController,
+            startDestination = startDestination
+        )
     }
 }
