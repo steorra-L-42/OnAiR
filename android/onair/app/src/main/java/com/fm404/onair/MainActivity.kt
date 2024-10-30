@@ -17,6 +17,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.absoluteValue
+import kotlin.math.ln
+import kotlin.math.log10
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 const val AV_LINES = 10
 
@@ -67,7 +73,7 @@ class MainActivity : ComponentActivity() {
                         waveform: ByteArray,
                         samplingRate: Int
                     ) {
-                        updateAmplitudes(waveform)
+                        // Handle waveform data if needed
                     }
 
                     override fun onFftDataCapture(
@@ -75,9 +81,9 @@ class MainActivity : ComponentActivity() {
                         fft: ByteArray,
                         samplingRate: Int
                     ) {
-                        // FFT 데이터 처리 필요시 여기서
+                        updateAmplitudes(fft)  // Process FFT data instead
                     }
-                }, Visualizer.getMaxCaptureRate(), true, false)
+                }, Visualizer.getMaxCaptureRate(), false, true)
                 enabled = true
             }
         } catch (e: RuntimeException) {
@@ -85,16 +91,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
     private fun updateAmplitudes(newAmplitudes: ByteArray) {
         val size = minOf(newAmplitudes.size, amplitudesState.value.size)
         val amplitudes = FloatArray(amplitudesState.value.size)
+
+        val targetMaxAmplitude = 100f  // Maximum height for the loudest sound
+        val compressionFactor = 0.5f   // Adjust between 0 (no compression) and 1 (full compression)
+
         for (i in 0 until size) {
-            amplitudes[i] = (newAmplitudes[i].toFloat() / 128f * 50f)
+            val rawAmplitude = newAmplitudes[i].toFloat().absoluteValue
+
+            // Apply dynamic range compression
+            val compressedAmplitude = rawAmplitude.pow(compressionFactor)
+
+            // Normalize the compressed amplitude
+            val normalizedAmplitude = (compressedAmplitude / 127f.pow(compressionFactor)) * targetMaxAmplitude
+
+            // Ensure a minimum height
+            amplitudes[i] = max(5f, normalizedAmplitude)
         }
+
         runOnUiThread {
             amplitudesState.value = amplitudes
         }
     }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
