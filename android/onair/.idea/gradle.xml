@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/core/common" />
             <option value="$PROJECT_DIR$/core/designsystem" />
+            <option value="$PROJECT_DIR$/core/navigation" />
             <option value="$PROJECT_DIR$/core/network" />
             <option value="$PROJECT_DIR$/core/notification" />
             <option value="$PROJECT_DIR$/data" />
@@ -21,6 +22,7 @@
             <option value="$PROJECT_DIR$/features/auth" />
             <option value="$PROJECT_DIR$/features/broadcast" />
             <option value="$PROJECT_DIR$/features/media" />
+            <option value="$PROJECT_DIR$/features/statistics" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

@@ -16,7 +16,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
+import androidx.navigation.compose.rememberNavController
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
+import com.fm404.onair.core.navigation.component.BottomNavBar
+import com.fm404.onair.core.navigation.graph.MainNavGraph
+import com.fm404.onair.core.navigation.model.NavRoute
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.absoluteValue
 import kotlin.math.max
@@ -54,6 +58,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
+                MainScreen()
             }
         }
 
@@ -121,5 +126,25 @@ class MainActivity : ComponentActivity() {
         if (::visualizer.isInitialized) {
             visualizer.release()
         }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainScreen(
+    modifier: Modifier = Modifier
+) {
+    val navController = rememberNavController()
+    val startDestination = remember { NavRoute.Home.route }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        bottomBar = {
+            BottomNavBar(
+                navController = navController
+            )
+        }
+    ) { paddingValues ->
+        MainNavGraph(
+            navController = navController,
+            startDestination = startDestination
+        )
     }
 }
