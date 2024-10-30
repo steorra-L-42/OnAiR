@@ -9,8 +9,8 @@ val Secondary = Color(0xFF03DAC6)
 val SecondaryVariant = Color(0xFF018786)
 
 // 백그라운드 컬러
-val Background = Color(0xFFFFFBFE)
-val Surface = Color(0xFFFFFBFE)
+val Background = Color(0xFFFFFFFF)
+val Surface = Color(0xFFFFFFFF)
 
 // 텍스트 컬러
 val OnPrimary = Color.White
