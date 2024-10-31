@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.ui.graphics)
     implementation(libs.ui.test.manifest)
     implementation(libs.androidx.runtime)
+    implementation(project(":core:designsystem"))
     debugImplementation(libs.ui.tooling)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,14 +1,11 @@
 package com.fm404.onair.core.navigation.component
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.fm404.onair.core.navigation.model.NavRoute
 
 @Composable
 fun BottomNavBar(
@@ -18,7 +15,7 @@ fun BottomNavBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar() {
+    NavigationBar(modifier = modifier) {
         mainBottomNavItems.forEach { item ->
             NavigationBarItem(
                 icon = {
@@ -32,11 +29,16 @@ fun BottomNavBar(
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            launchSingleTop = true
-                            restoreState = true
-                            popUpTo(mainBottomNavItems[0].route) {
-                                saveState = true
+                            popUpTo(navController.graph.startDestinationId) {
+                                if (item.route == NavRoute.MainSection.Home.route) {
+                                    inclusive = false
+                                    saveState = false
+                                } else {
+                                    saveState = true
+                                }
                             }
+                            launchSingleTop = true
+                            restoreState = item.route != NavRoute.MainSection.Home.route
                         }
                     }
                 }
