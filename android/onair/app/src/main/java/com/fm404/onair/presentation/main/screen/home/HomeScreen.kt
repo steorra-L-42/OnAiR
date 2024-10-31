@@ -22,7 +22,7 @@ fun HomeScreen(
         state = state,
         onEvent = viewModel::onEvent,
         onNavigateToAudioVisualizer = {
-            navController.navigate(NavRoute.AudioVisualizer.route)
+            navController.navigate(NavRoute.HomeSection.AudioVisualizer.route)
         }
     )
 }

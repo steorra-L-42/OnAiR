@@ -41,7 +41,6 @@ private fun MainScreen(
     homeScreen: @Composable (NavHostController) -> Unit
 ) {
     val navController = rememberNavController()
-    val startDestination = remember { NavRoute.Home.route }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -54,7 +53,6 @@ private fun MainScreen(
         Box(modifier = Modifier.padding(paddingValues)) {
             MainNavGraph(
                 navController = navController,
-                startDestination = startDestination,
                 homeScreen = homeScreen
             )
         }
