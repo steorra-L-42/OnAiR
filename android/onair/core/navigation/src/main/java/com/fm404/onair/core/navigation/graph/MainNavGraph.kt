@@ -17,6 +17,8 @@ fun MainNavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
+        authNavGraph(navController)
+
         // 메인 섹션 화면들
         composable(NavRoute.MainSection.Home.route) {
             homeScreen(navController)

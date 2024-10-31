@@ -13,4 +13,9 @@ sealed class NavRoute(val route: String) {
     sealed class HomeSection(val route: String) {
         object AudioVisualizer : HomeSection("audio_visualizer")
     }
+
+    sealed class AuthSection(route: String) : NavRoute(route) {
+        object Login : AuthSection("login")
+        object Register : AuthSection("register")
+    }
 }

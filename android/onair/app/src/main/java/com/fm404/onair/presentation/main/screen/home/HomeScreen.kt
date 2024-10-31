@@ -23,6 +23,9 @@ fun HomeScreen(
         onEvent = viewModel::onEvent,
         onNavigateToAudioVisualizer = {
             navController.navigate(NavRoute.HomeSection.AudioVisualizer.route)
+        },
+        onNavigateToLogin = {
+            navController.navigate(NavRoute.AuthSection.Login.route)
         }
     )
 }
@@ -31,7 +34,8 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeState,
     onEvent: (HomeEvent) -> Unit,
-    onNavigateToAudioVisualizer: () -> Unit
+    onNavigateToAudioVisualizer: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -49,6 +53,14 @@ private fun HomeContent(
             onClick = onNavigateToAudioVisualizer
         ) {
             Text("Go to Audio Visualizer")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onNavigateToLogin
+        ) {
+            Text("Login")
         }
     }
 }
