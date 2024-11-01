@@ -2,22 +2,21 @@ package com.fm404.onair.core.navigation.graph
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.fm404.onair.core.navigation.model.NavRoute
-import com.fm404.onair.features.auth.presentation.login.screen.LoginScreen
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
+import com.fm404.onair.core.contract.auth.AuthScreen
 
-fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
+fun NavGraphBuilder.authNavGraph(
+    navController: NavHostController,
+    authScreen: AuthScreen
+) {
     navigation(
-        startDestination = NavRoute.AuthSection.Login.route,
-        route = "auth"
+        startDestination = AuthNavigationContract.ROUTE_LOGIN,
+        route = AuthNavigationContract.GRAPH_AUTH
     ) {
-        composable(route = NavRoute.AuthSection.Login.route) {
-            LoginScreen(navController = navController)
+        with(authScreen) {
+            addLoginScreen(navController)
+            addRegisterScreen(navController)
         }
-
-//        composable(route = NavRoute.AuthSection.Register.route) {
-//             RegisterScreen(navController = navController)
-//        }
     }
 }

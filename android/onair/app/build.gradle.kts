@@ -47,7 +47,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/gradle/incremental.annotation.processors"  // 이 줄 추가
+            excludes += "/META-INF/gradle/incremental.annotation.processors"
         }
     }
 }
@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.runtime)
+    implementation(project(":core:contract"))
     kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.core.ktx)
