@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-kapt")
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -53,7 +55,10 @@ dependencies {
     implementation(libs.ui.test.manifest)
     implementation(libs.androidx.runtime)
     implementation(project(":core:designsystem"))
-    implementation(project(":features:auth"))
+    implementation(project(":core:contract"))
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
     debugImplementation(libs.ui.tooling)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
