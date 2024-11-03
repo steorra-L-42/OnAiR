@@ -327,5 +327,4 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/windows,python,intellij,venv
 
 # 기타 사용 파일들
-streaming_channels/channel1/media_segments
-streaming_channels/channel1/media_sources
+streaming_channels/
