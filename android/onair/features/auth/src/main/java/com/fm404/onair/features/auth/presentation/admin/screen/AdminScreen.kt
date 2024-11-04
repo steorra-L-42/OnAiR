@@ -41,11 +41,11 @@ private fun AdminContent(
     ) {
         TopAppBar(
             title = { Text("관리자 페이지") },
-            navigationIcon = {
-                IconButton(onClick = { onEvent(AdminEvent.OnBackClick) }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-            },
+//            navigationIcon = {
+//                IconButton(onClick = { onEvent(AdminEvent.OnBackClick) }) {
+//                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+//                }
+//            },
             modifier = Modifier.fillMaxWidth()
         )
 
