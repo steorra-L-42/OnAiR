@@ -13,17 +13,15 @@ from logger import logger
 # concat 파일 생성
 def create_concat_file(hls_output_path, playlist_path):
   concat_file_path = os.path.join(hls_output_path, 'concat.txt')
-
-  playlist = sorted([f for f in os.listdir(playlist_path) if f.endswith(('.mp3', '.m4a', '.aac'))])
-  if not playlist:
+  audio_files = sorted([f for f in os.listdir(playlist_path) if f.endswith(('.mp3', '.m4a', '.aac'))])
+  if not audio_files:
     logger.error(f"오디오 파일이 없습니다: {playlist_path}")
     return None
 
   with open(concat_file_path, 'w', encoding='utf-8') as f:
-    for track in playlist:
+    for track in audio_files:
       track_path = os.path.abspath(os.path.join(playlist_path, track))
       f.write(f"file '{track_path}'\n")
-
   return concat_file_path
 
 
