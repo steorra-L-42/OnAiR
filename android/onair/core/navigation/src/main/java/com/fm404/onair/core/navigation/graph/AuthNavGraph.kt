@@ -17,6 +17,7 @@ fun NavGraphBuilder.authNavGraph(
         with(authScreen) {
             addLoginScreen(navController)
             addRegisterScreen(navController)
+            addAdminScreen(navController)
         }
     }
 }

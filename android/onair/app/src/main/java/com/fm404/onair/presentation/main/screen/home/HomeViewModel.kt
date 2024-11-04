@@ -1,6 +1,7 @@
 package com.fm404.onair.presentation.main.screen.home
 
 import androidx.lifecycle.ViewModel
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +10,9 @@ import com.fm404.onair.presentation.main.screen.home.state.HomeState
 import com.fm404.onair.presentation.main.screen.home.state.HomeEvent
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val authNavigationContract: AuthNavigationContract
+) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
