@@ -52,16 +52,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             OnAirTheme {
-                Scaffold(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(vertical = 60.dp, horizontal = 100.dp)
-                ) { innerPadding ->
-                    AudioVisualizerScreen(
-                        amplitudes = amplitudesState.value,
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+//                Scaffold(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(vertical = 60.dp, horizontal = 100.dp)
+//                ) { innerPadding ->
+//                    AudioVisualizerScreen(
+//                        amplitudes = amplitudesState.value,
+//                        modifier = Modifier.padding(innerPadding)
+//                    )
+//                }
                 MainScreen()
             }
         }
