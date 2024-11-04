@@ -6,25 +6,36 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.fm404.onair.core.navigation.model.NavRoute
 import com.fm404.onair.presentation.main.screen.home.state.HomeState
 import com.fm404.onair.presentation.main.screen.home.state.HomeEvent
 
 @Composable
 fun HomeScreen(
+    navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
     HomeContent(
         state = state,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
+        onNavigateToAudioVisualizer = {
+            navController.navigate(NavRoute.HomeSection.AudioVisualizer.route)
+        },
+        onNavigateToLogin = {
+            navController.navigate(NavRoute.AuthSection.Login.route)
+        }
     )
 }
 
 @Composable
 private fun HomeContent(
     state: HomeState,
-    onEvent: (HomeEvent) -> Unit
+    onEvent: (HomeEvent) -> Unit,
+    onNavigateToAudioVisualizer: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -36,6 +47,20 @@ private fun HomeContent(
             style = MaterialTheme.typography.headlineMedium
         )
 
-        // 최근 방송 목록, 통계 요약 등 홈 화면에 필요한 컨텐츠들...
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onNavigateToAudioVisualizer
+        ) {
+            Text("Go to Audio Visualizer")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onNavigateToLogin
+        ) {
+            Text("Login")
+        }
     }
 }
