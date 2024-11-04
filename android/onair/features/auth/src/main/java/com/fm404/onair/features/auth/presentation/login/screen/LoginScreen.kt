@@ -7,17 +7,27 @@ import androidx.compose.ui.*
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.fm404.onair.features.auth.presentation.login.LoginViewModel
 import com.fm404.onair.features.auth.presentation.login.state.LoginState
 import com.fm404.onair.features.auth.presentation.login.state.LoginEvent
 
 @Composable
 fun LoginScreen(
-    navController: NavController,
+    navController: NavHostController,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(navController) {
+        viewModel.setNavController(navController)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearNavController()
+        }
+    }
 
     LoginContent(
         state = state,
@@ -75,6 +85,16 @@ private fun LoginContent(
             } else {
                 Text("Login")
             }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 회원가입 버튼 추가
+        TextButton(
+            onClick = { onEvent(LoginEvent.RegisterClicked) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("아직 계정이 없으신가요? 회원가입")
         }
 
         if (state.error != null) {

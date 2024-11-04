@@ -1,4 +1,4 @@
-package com.fm404.onair.core.navigation.contract
+package com.fm404.onair.core.contract.home
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

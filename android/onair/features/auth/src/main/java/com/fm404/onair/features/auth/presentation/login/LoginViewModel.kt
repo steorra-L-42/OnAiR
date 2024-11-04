@@ -1,6 +1,9 @@
 package com.fm404.onair.features.auth.presentation.login
 
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavHostController
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
+import com.fm404.onair.core.contract.auth.NavControllerHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,9 +12,20 @@ import com.fm404.onair.features.auth.presentation.login.state.LoginState
 import com.fm404.onair.features.auth.presentation.login.state.LoginEvent
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val navigationContract: AuthNavigationContract
+) : ViewModel() {
     private val _state = MutableStateFlow(LoginState())
     val state = _state.asStateFlow()
+
+    fun setNavController(navController: NavHostController) {
+        // contract를 통해 간접적으로 navController 설정
+        (navigationContract as? NavControllerHolder)?.setNavController(navController)
+    }
+
+    fun clearNavController() {
+        (navigationContract as? NavControllerHolder)?.setNavController(null)
+    }
 
     fun onEvent(event: LoginEvent) {
         when (event) {
@@ -29,6 +43,9 @@ class LoginViewModel @Inject constructor() : ViewModel() {
             }
             is LoginEvent.LoginClicked -> {
                 login()
+            }
+            is LoginEvent.RegisterClicked -> {
+                navigationContract.navigateToRegister()
             }
         }
     }
