@@ -64,6 +64,6 @@ private fun MainScreen(
                 homeScreen = homeScreen,
                 authScreen = authScreen
             )
-`        }
-`    }
+        }
+    }
 }
