@@ -8,5 +8,6 @@ sealed class RegisterEvent {
     data class VerificationCodeChanged(val code: String) : RegisterEvent()
     object RequestVerificationCode : RegisterEvent()
     object VerifyPhoneNumber : RegisterEvent()
+    object NextClicked : RegisterEvent()
     object RegisterClicked : RegisterEvent()
 }
