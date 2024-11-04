@@ -39,9 +39,9 @@ async def getMasterPlaylist(ch_id: int):
 #
 @app.get("/ch{ch_id}/index{index_id}.m3u8")
 async def getIndexPlaylist(ch_id: int, index_id: int):
-  index_m3u8_index = os.path.join(cf.ch_dirs[ch_id], cf.MEDIA_SEGMENTS, str(ch_id), f"index{index_id}.m3u8")
+  index_m3u8_index = os.path.join(cf.ch_dirs[ch_id], cf.MEDIA_SEGMENTS, str(index_id), f"index{index_id}.m3u8")
   if not os.path.exists(index_m3u8_index):
-    print(f"not found index.m3u8: ({ch_id}, {index_id})")
+    print(f"not found index.m3u8: ({index_m3u8_index})")
     raise HTTPException(status_code=404, detail="TS file not found")
 
   return FileResponse(
