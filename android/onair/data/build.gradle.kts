@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.data"
     compileSdk = 34
 
     defaultConfig {
@@ -38,16 +38,21 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
     }
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.compose.bom)
-    implementation(libs.androidx.runtime)
     implementation(libs.hilt.android)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.gson)
+    implementation(project(":domain"))
+    implementation(libs.androidx.runtime)
     kapt(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

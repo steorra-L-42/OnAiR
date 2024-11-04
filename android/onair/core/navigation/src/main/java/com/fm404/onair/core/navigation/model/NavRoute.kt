@@ -17,5 +17,6 @@ sealed class NavRoute(val route: String) {
     sealed class AuthSection(route: String) : NavRoute(route) {
         object Login : AuthSection("login")
         object Register : AuthSection("register")
+        object Admin : AuthSection("admin")
     }
 }
