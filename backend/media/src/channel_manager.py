@@ -1,15 +1,16 @@
 # 외부 패키지
 import os.path
 import threading
-from logger import logger
+from logger import get_logger
 
 # 내부 패키지: 설정 변수/ 전역 변수
 import gloval_vars as vars
-from config import base_url, STREAMING_CH_DIR, hls_output_dir, sources_dir
-from directory_manager import reset_stream_path
+from config import base_url
 
 # 내부 패키지: 기타
 from stream_manager import generate_hls_stream
+
+logger = get_logger()
 
 #
 # 채널 추가
@@ -35,7 +36,6 @@ def add_channel(stream_name, playlist_path):
   vars.streams[stream_name]['thread'] = thread
   thread.start()
 
-  logger.info(f'방송이 추가되었습니다: {stream_name} ')
   return {
     'status': 'success',
     'message': f'방송이 추가되었습니다: {stream_name} ',

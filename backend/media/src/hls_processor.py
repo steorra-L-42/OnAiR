@@ -6,17 +6,19 @@ import gloval_vars as vars
 from config import HLS_DELETE_THRESHOLD
 
 # 내부 패키지: 기타
-from logger import logger
+from logger import get_logger, log_function_call
 
+logger = get_logger()
 
 #
 # concat 파일 생성
+@log_function_call
 def create_concat_file(hls_output_path, playlist_path):
   concat_file_path = os.path.join(hls_output_path, 'concat.txt')
   audio_files = sorted([f for f in os.listdir(playlist_path) if f.endswith(('.mp3', '.m4a', '.aac'))])
   if not audio_files:
-    logger.error(f"오디오 파일이 없습니다: {playlist_path}")
-    return None
+    logger.error(f"오디오 파일이 없습니다 - {playlist_path}")
+    raise FileNotFoundError(playlist_path)
 
   with open(concat_file_path, 'w', encoding='utf-8') as f:
     for track in audio_files:

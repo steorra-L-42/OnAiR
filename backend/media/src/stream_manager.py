@@ -8,12 +8,15 @@ import gloval_vars as vars
 from config import hls_output_dir, STREAMING_CH_DIR, HLS_TIME, HLS_LIST_SIZE, HLS_DELETE_THRESHOLD
 
 # 내부 패키지: 기타
-from logger import logger
+from logger import get_logger, log_function_call
 from directory_manager import clean_hls_output
 from hls_processor import create_concat_file, manage_segments
 
+logger = get_logger()
+
 #
 # HLS 스트림 생성
+@log_function_call
 def generate_hls_stream(stream_name, playlist_path):
   hls_output_path = os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir)
   os.makedirs(hls_output_path, exist_ok=True)
@@ -33,16 +36,17 @@ def generate_hls_stream(stream_name, playlist_path):
       monitor_stream_process(stream_name, process)
 
     except Exception as e:
-      logger.error(f"스트림 생성 오류: {stream_name} - {e}")
+      logger.error(f"스트림 생성 오류 [{stream_name}] : {e}")
 
     finally:
-      terminate_stream_process(process, stream_name)
+      terminate_stream_process(stream_name)
 
     time.sleep(2)  # 재시작 전 대기 시간
+
+
 #
 # FFmpeg 스트림 프로세스 생성
 def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
-  print(concat_file_path)
   ffmpeg_command = [
     'ffmpeg',
     '-re',
@@ -62,7 +66,7 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
     os.path.join(hls_output_path, 'index.m3u8')
   ]
 
-  logger.info(f"{stream_name} 방송 FFmpeg 프로세스 시작")
+  logger.info(f"FFmpeg 프로세스 시작 [{stream_name}]")
   process = subprocess.Popen(
     ffmpeg_command,
     stdout = subprocess.PIPE,
@@ -77,17 +81,22 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
 
 #
 # FFmpeg 프로세스 모니터링 & 세그먼트 관리
+@log_function_call
 def monitor_stream_process(stream_name, process):
-  while stream_name in vars.streams and process.poll() is not None:
+  while stream_name in vars.streams and process.poll() is None:
     handle_ffmpeg_output(process, stream_name)
     manage_segments(os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir))
-    time.sleep(0.1)
-  logger.info("프로세스 모니터링 종료합니다.")
+    time.sleep(0.2)
+  else:
+    error = process.stderr.read()
+    logger.error(f'FFmpeg 프로세스 종료 [{stream_name}] - {error}')
 
 
 #
 # 스트림 프로세스 종료
-def terminate_stream_process(process, stream_name=None):
+@log_function_call
+def terminate_stream_process(stream_name=None):
+  process = vars.streams[stream_name]['process']
   try:
     if process and process.poll() is None:  # 프로세스가 실행 중인 경우
       process.terminate()
