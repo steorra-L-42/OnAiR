@@ -6,4 +6,5 @@ import androidx.navigation.NavHostController
 interface AuthScreen {
     fun NavGraphBuilder.addLoginScreen(navController: NavHostController)
     fun NavGraphBuilder.addRegisterScreen(navController: NavHostController)
+    fun NavGraphBuilder.addAdminScreen(navController: NavHostController)
 }

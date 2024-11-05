@@ -10,7 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.auth.AuthScreen
+import com.fm404.onair.core.contract.statistics.StatisticsNavigationContract
+import com.fm404.onair.core.contract.statistics.StatisticsScreen
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
 import com.fm404.onair.core.navigation.component.BottomNavBar
 import com.fm404.onair.core.navigation.graph.MainNavGraph
@@ -27,6 +30,15 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var authScreen: AuthScreen
 
+    @Inject
+    lateinit var authNavigationContract: AuthNavigationContract
+
+    @Inject
+    lateinit var statisticsScreen: StatisticsScreen
+
+    @Inject
+    lateinit var statisticsNavigationContract: StatisticsNavigationContract
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -35,7 +47,10 @@ class MainActivity : ComponentActivity() {
             OnAirTheme {
                 MainScreen(
                     homeScreen = homeScreenHolder.homeScreen,
-                    authScreen = authScreen
+                    authScreen = authScreen,
+                    authNavigationContract = authNavigationContract,
+                    statisticsScreen = statisticsScreen,
+                    statisticsNavigationContract = statisticsNavigationContract
                 )
             }
         }
@@ -46,9 +61,17 @@ class MainActivity : ComponentActivity() {
 private fun MainScreen(
     modifier: Modifier = Modifier,
     homeScreen: @Composable (NavHostController) -> Unit,
-    authScreen: AuthScreen
+    authScreen: AuthScreen,
+    authNavigationContract: AuthNavigationContract,
+    statisticsScreen: StatisticsScreen,
+    statisticsNavigationContract: StatisticsNavigationContract
 ) {
     val navController = rememberNavController()
+
+    LaunchedEffect(navController) {
+        authNavigationContract.setNavController(navController)
+        statisticsNavigationContract.setNavController(navController)
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -62,7 +85,8 @@ private fun MainScreen(
             MainNavGraph(
                 navController = navController,
                 homeScreen = homeScreen,
-                authScreen = authScreen
+                authScreen = authScreen,
+                statisticsScreen = statisticsScreen
             )
         }
     }

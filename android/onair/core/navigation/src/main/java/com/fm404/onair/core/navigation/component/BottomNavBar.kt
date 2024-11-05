@@ -15,6 +15,8 @@ fun BottomNavBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val isInStatisticsSection = currentRoute?.startsWith(NavRoute.MainSection.Statistics.route) ?: false
+
     NavigationBar(modifier = modifier) {
         mainBottomNavItems.forEach { item ->
             NavigationBarItem(
@@ -25,10 +27,20 @@ fun BottomNavBar(
                     )
                 },
                 label = { Text(text = item.label) },
-                selected = currentRoute == item.route,
+                selected = when {
+                    // 통계 섹션에 있을 때는 통계 탭이 선택된 상태로 표시
+                    isInStatisticsSection && item.route == NavRoute.MainSection.Statistics.route -> true
+                    else -> currentRoute == item.route
+                },
                 onClick = {
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
+                    if (currentRoute != item.route || (isInStatisticsSection && item.route == NavRoute.MainSection.Statistics.route)) {
+                        val targetRoute = if (item.route == NavRoute.MainSection.Statistics.route) {
+                            NavRoute.StatisticsSection.Main.route
+                        } else {
+                            item.route
+                        }
+
+                        navController.navigate(targetRoute) {
                             popUpTo(navController.graph.startDestinationId) {
                                 if (item.route == NavRoute.MainSection.Home.route) {
                                     inclusive = false

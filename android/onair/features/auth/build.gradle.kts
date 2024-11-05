@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.features.auth"
     compileSdk = 34
 
     defaultConfig {
@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.androidx.runtime)
     implementation(libs.hilt.android)
+    implementation(project(":domain"))
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(project(":core:contract"))

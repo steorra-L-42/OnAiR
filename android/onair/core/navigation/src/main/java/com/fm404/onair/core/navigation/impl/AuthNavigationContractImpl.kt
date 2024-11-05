@@ -21,6 +21,10 @@ class AuthNavigationContractImpl @Inject constructor() : AuthNavigationContract 
         navController?.navigate(AuthNavigationContract.ROUTE_LOGIN)
     }
 
+    override fun navigateToAdmin() {
+        navController?.navigate(AuthNavigationContract.ROUTE_ADMIN)
+    }
+
     override fun navigateBack() {
         navController?.popBackStack()
     }

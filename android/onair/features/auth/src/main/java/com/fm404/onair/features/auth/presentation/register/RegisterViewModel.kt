@@ -37,10 +37,12 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
                 )
             }
             is RegisterEvent.PhoneNumberChanged -> {
-                _state.value = _state.value.copy(
-                    phoneNumber = event.phoneNumber,
-                    error = null
-                )
+                if (!_state.value.isPhoneVerified) {
+                    _state.value = _state.value.copy(
+                        phoneNumber = event.phoneNumber,
+                        error = null
+                    )
+                }
             }
             is RegisterEvent.VerificationCodeChanged -> {
                 _state.value = _state.value.copy(
@@ -54,9 +56,28 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
             is RegisterEvent.VerifyPhoneNumber -> {
                 verifyPhoneNumber()
             }
+            is RegisterEvent.NextClicked -> {
+                validatePhoneNumberAndProceed()
+            }
             is RegisterEvent.RegisterClicked -> {
                 register()
             }
+        }
+    }
+
+    private fun validatePhoneNumberAndProceed() {
+        if (!validatePhoneNumber()) {
+            return
+        }
+
+        if (!_state.value.isVerificationCodeSent) {
+            _state.value = _state.value.copy(error = "휴대전화 인증이 필요합니다.")
+            return
+        }
+
+        if (!_state.value.isPhoneVerified) {
+            _state.value = _state.value.copy(error = "휴대전화 인증을 완료해주세요.")
+            return
         }
     }
 
@@ -68,10 +89,15 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
+            // 실제 구현에서는 여기에 API 호출 로직이 들어갈 것입니다
+            delay(1000) // 임시 딜레이
+
             _state.value = _state.value.copy(
                 isLoading = false,
                 isVerificationCodeSent = true,
                 remainingTimeSeconds = 180,
+                verificationAttempts = 0,
+                verificationCode = "",
                 error = null
             )
 
@@ -96,8 +122,9 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            // 임시로 실패 케이스를 구현
-            val isVerificationSuccessful = false // 실제 구현 시 API 응답으로 대체
+            // 임시로 성공 케이스로 변경
+            delay(1000) // 임시 딜레이
+            val isVerificationSuccessful = true // 실제 구현 시 API 응답으로 대체
 
             if (isVerificationSuccessful) {
                 _state.value = _state.value.copy(
@@ -132,6 +159,7 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
             if (!_state.value.isPhoneVerified) {
                 _state.value = _state.value.copy(
                     isVerificationCodeSent = false,
+                    verificationCode = "",
                     error = "인증 시간이 만료되었습니다."
                 )
             }
@@ -161,6 +189,9 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
 
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
+
+            // 실제 구현에서는 여기에 회원가입 API 호출 로직이 들어갈 것입니다
+            delay(1000) // 임시 딜레이
 
             _state.value = _state.value.copy(isLoading = false)
         }
