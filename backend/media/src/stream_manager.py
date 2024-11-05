@@ -18,7 +18,7 @@ def generate_hls_stream(stream_name, playlist_path):
   hls_output_path = os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir)
   os.makedirs(hls_output_path, exist_ok=True)
 
-  while not vars.stop_event.is_set() and stream_name in vars.streams:
+  while stream_name in vars.streams:
     try:
       # 예전 파일 삭제
       clean_hls_output(hls_output_path)
@@ -78,19 +78,10 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
 #
 # FFmpeg 프로세스 모니터링 & 세그먼트 관리
 def monitor_stream_process(stream_name, process):
-  logger.info("프로세스 모니터링 시작합니다.")
-
-  while not vars.stop_event.is_set() and stream_name in vars.streams:
-    if process.poll() is not None:
-      logger.error(f"{stream_name} 방송 FFmpeg 프로세스 종료")
-      break
-
+  while stream_name in vars.streams and process.poll() is not None:
     handle_ffmpeg_output(process, stream_name)
     manage_segments(os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir))
     time.sleep(0.1)
-  else :
-    terminate_stream_process(process, stream_name)
-
   logger.info("프로세스 모니터링 종료합니다.")
 
 
