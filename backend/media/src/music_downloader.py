@@ -2,7 +2,8 @@ import yt_dlp
 from youtubesearchpython import VideosSearch
 import os
 
-def download_top_audio(keyword):
+def download_from_keyword(keyword):
+
   # 유튜브에서 키워드로 검색하여 가장 상단의 결과를 가져옴
   videos_search = VideosSearch(keyword, limit=1)
   result = videos_search.result()
@@ -29,31 +30,36 @@ def download_top_audio(keyword):
     print(f"File '{output_filepath}' already exists, skipping download.")
     return
 
-  print(f"Downloading audio for: {video_title}")
-  print(f"URL: {video_url}")
 
-  # yt-dlp를 사용하여 오디오 다운로드
+
+def get_video_info(url):
+  ydl_opts = {
+    'simulate': True,  # 다운로드를 수행하지 않고 정보만 가져옵니다.
+    'quiet': True      # 출력 최소화
+  }
+
+  with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    info = ydl.extract_info(url, download=False)  # download=False는 정보만 가져옵니다.
+    return info
+
+def process_and_download_video(url, path):
+  video_info = get_video_info(url)               # 유튜브 영상 정보 읽기
+  safe_filename = "".join(c if c.isalnum() else "_" for c in video_info['title'])  # 이름 처리
+  filepath = os.path.join(path, safe_filename)   # 파일 위치 지정
+
+  if not os.path.exists(filepath):
+    download_youtube_video(url, filepath)
+
+
+def download_youtube_video(url, filepath):
   ydl_opts = {
     'format': 'bestaudio/best',
-    'outtmpl': output_filepath,
+    'outtmpl': filepath,
     'postprocessors': [{
       'key': 'FFmpegExtractAudio',
       'preferredcodec': 'mp3',
       'preferredquality': '192',
     }],
   }
-
-  # 파일이 이미 mp3 형식인 경우, postprocessor를 제거
-  if output_filepath.endswith(".mp3"):
-    ydl_opts.pop('postprocessors', None)
-
   with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-    ydl.download([video_url])
-
-  print("Audio download complete.")
-
-# 예시 실행
-download_top_audio("카더가든 우리의 밤을 외워요")
-download_top_audio("성시경 차마")
-download_top_audio("카더가든 아무렇지 않은 사람")
-download_top_audio("양다일 고백")
+    ydl.download([url])
