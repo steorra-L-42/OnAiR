@@ -50,7 +50,7 @@ def setup_channels():
   )]
 
   for channel, playlist_dir in channels:
-    setup_music(playlist_dir)
+    # setup_music(playlist_dir)
     add_channel(channel, playlist_dir)
 
 

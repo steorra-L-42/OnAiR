@@ -59,9 +59,9 @@ def remove_channel(stream_name):
       pass
   del vars.streams[stream_name]
 
-  base = os.path.join(STREAMING_CH_DIR, stream_name)
-  reset_stream_path(os.path.join(base, hls_output_dir))
-  reset_stream_path(os.path.join(base, sources_dir))
+  # base = os.path.join(STREAMING_CH_DIR, stream_name)
+  # reset_stream_path(os.path.join(base, hls_output_dir))
+  # reset_stream_path(os.path.join(base, sources_dir))
 
 
 #
