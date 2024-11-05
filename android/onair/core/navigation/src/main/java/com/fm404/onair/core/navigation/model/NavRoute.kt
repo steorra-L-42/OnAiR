@@ -4,19 +4,23 @@ sealed class NavRoute(val route: String) {
 
     // 메인 하위 라우트
     sealed class MainSection(val route: String) {
-        object Home : MainSection("home")
-        object Statistics : MainSection("statistics")
-        object Settings : MainSection("settings")
+        data object Home : MainSection("home")
+        data object Statistics : MainSection("statistics")
+        data object Settings : MainSection("settings")
     }
 
     // 홈 하위 라우트
     sealed class HomeSection(val route: String) {
-        object AudioVisualizer : HomeSection("audio_visualizer")
+        data object AudioVisualizer : HomeSection("audio_visualizer")
     }
 
     sealed class AuthSection(route: String) : NavRoute(route) {
-        object Login : AuthSection("login")
-        object Register : AuthSection("register")
-        object Admin : AuthSection("admin")
+        data object Login : AuthSection("login")
+        data object Register : AuthSection("register")
+        data object Admin : AuthSection("admin")
+    }
+
+    sealed class BroadcastSection(route: String) : NavRoute(route) {
+        data object BroadcastPlayer : BroadcastSection("broadcast_player")
     }
 }

@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.auth.AuthScreen
+import com.fm404.onair.core.contract.broadcast.BroadcastScreen
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
 import com.fm404.onair.core.navigation.component.BottomNavBar
 import com.fm404.onair.core.navigation.graph.MainNavGraph
@@ -29,6 +30,9 @@ class MainActivity : ComponentActivity() {
     lateinit var authScreen: AuthScreen
 
     @Inject
+    lateinit var broadcastScreen: BroadcastScreen
+
+    @Inject
     lateinit var authNavigationContract: AuthNavigationContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +44,7 @@ class MainActivity : ComponentActivity() {
                 MainScreen(
                     homeScreen = homeScreenHolder.homeScreen,
                     authScreen = authScreen,
+                    broadcastScreen = broadcastScreen,
                     authNavigationContract = authNavigationContract
                 )
             }
@@ -52,6 +57,7 @@ private fun MainScreen(
     modifier: Modifier = Modifier,
     homeScreen: @Composable (NavHostController) -> Unit,
     authScreen: AuthScreen,
+    broadcastScreen: BroadcastScreen,
     authNavigationContract: AuthNavigationContract
 ) {
     val navController = rememberNavController()
@@ -72,7 +78,8 @@ private fun MainScreen(
             MainNavGraph(
                 navController = navController,
                 homeScreen = homeScreen,
-                authScreen = authScreen
+                authScreen = authScreen,
+                broadcastScreen = broadcastScreen
             )
         }
     }

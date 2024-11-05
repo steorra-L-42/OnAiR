@@ -28,6 +28,9 @@ fun HomeScreen(
         },
         onNavigateToAdmin = {
             navController.navigate(NavRoute.AuthSection.Admin.route)
+        },
+        onNavigateToPlayScreen = {
+            navController.navigate(NavRoute.BroadcastSection.BroadcastPlayer.route)
         }
     )
 }
@@ -37,7 +40,8 @@ private fun HomeContent(
     state: HomeState,
     onNavigateToAudioVisualizer: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    onNavigateToAdmin: () -> Unit
+    onNavigateToAdmin: () -> Unit,
+    onNavigateToPlayScreen: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -71,6 +75,14 @@ private fun HomeContent(
             onClick = onNavigateToAdmin
         ) {
             Text("Admin")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onNavigateToPlayScreen
+        ) {
+            Text("재생화면")
         }
     }
 }
