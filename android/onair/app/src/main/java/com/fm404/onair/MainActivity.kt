@@ -13,6 +13,8 @@ import androidx.navigation.compose.rememberNavController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.auth.AuthScreen
 import com.fm404.onair.core.contract.broadcast.BroadcastScreen
+import com.fm404.onair.core.contract.statistics.StatisticsNavigationContract
+import com.fm404.onair.core.contract.statistics.StatisticsScreen
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
 import com.fm404.onair.core.navigation.component.BottomNavBar
 import com.fm404.onair.core.navigation.graph.MainNavGraph
@@ -35,6 +37,12 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var authNavigationContract: AuthNavigationContract
 
+    @Inject
+    lateinit var statisticsScreen: StatisticsScreen
+
+    @Inject
+    lateinit var statisticsNavigationContract: StatisticsNavigationContract
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -45,7 +53,9 @@ class MainActivity : ComponentActivity() {
                     homeScreen = homeScreenHolder.homeScreen,
                     authScreen = authScreen,
                     broadcastScreen = broadcastScreen,
-                    authNavigationContract = authNavigationContract
+                    authNavigationContract = authNavigationContract,
+                    statisticsScreen = statisticsScreen,
+                    statisticsNavigationContract = statisticsNavigationContract
                 )
             }
         }
@@ -58,12 +68,15 @@ private fun MainScreen(
     homeScreen: @Composable (NavHostController) -> Unit,
     authScreen: AuthScreen,
     broadcastScreen: BroadcastScreen,
-    authNavigationContract: AuthNavigationContract
+    authNavigationContract: AuthNavigationContract,
+    statisticsScreen: StatisticsScreen,
+    statisticsNavigationContract: StatisticsNavigationContract
 ) {
     val navController = rememberNavController()
 
     LaunchedEffect(navController) {
         authNavigationContract.setNavController(navController)
+        statisticsNavigationContract.setNavController(navController)
     }
 
     Scaffold(
@@ -79,7 +92,8 @@ private fun MainScreen(
                 navController = navController,
                 homeScreen = homeScreen,
                 authScreen = authScreen,
-                broadcastScreen = broadcastScreen
+                broadcastScreen = broadcastScreen,
+                statisticsScreen = statisticsScreen
             )
         }
     }

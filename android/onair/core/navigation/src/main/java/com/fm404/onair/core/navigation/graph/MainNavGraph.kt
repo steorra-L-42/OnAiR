@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.fm404.onair.core.contract.auth.AuthScreen
 import com.fm404.onair.core.contract.broadcast.BroadcastScreen
+import com.fm404.onair.core.contract.statistics.StatisticsScreen
 import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
 import com.fm404.onair.core.navigation.model.NavRoute
 
@@ -17,7 +18,8 @@ fun MainNavGraph(
     startDestination: String = NavRoute.MainSection.Home.route,
     homeScreen: @Composable (NavHostController) -> Unit,
     authScreen: AuthScreen,
-    broadcastScreen: BroadcastScreen
+    broadcastScreen: BroadcastScreen,
+    statisticsScreen: StatisticsScreen
 ) {
     NavHost(
         navController = navController,
@@ -31,6 +33,11 @@ fun MainNavGraph(
         broadcastNavGraph(
             navController = navController,
             broadcastScreen = broadcastScreen
+        )
+
+        statisticsNavGraph(
+            navController = navController,
+            statisticsScreen = statisticsScreen
         )
 
         // 메인 섹션 화면들

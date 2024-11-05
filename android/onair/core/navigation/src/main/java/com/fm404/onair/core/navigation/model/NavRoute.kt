@@ -23,4 +23,10 @@ sealed class NavRoute(val route: String) {
     sealed class BroadcastSection(route: String) : NavRoute(route) {
         data object BroadcastPlayer : BroadcastSection("broadcast_player")
     }
+
+    sealed class StatisticsSection(val route: String) {
+        object Main : StatisticsSection("statistics_main")
+        object Broadcast : StatisticsSection("statistics_broadcast")
+        object Story : StatisticsSection("statistics_story")
+    }
 }

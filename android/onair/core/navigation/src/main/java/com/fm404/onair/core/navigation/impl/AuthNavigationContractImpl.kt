@@ -21,7 +21,7 @@ class AuthNavigationContractImpl @Inject constructor() : AuthNavigationContract 
         navController?.navigate(AuthNavigationContract.ROUTE_LOGIN)
     }
 
-    override fun navigateToAdmin() {  // 추가
+    override fun navigateToAdmin() {
         navController?.navigate(AuthNavigationContract.ROUTE_ADMIN)
     }
 
