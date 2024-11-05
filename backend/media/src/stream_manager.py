@@ -36,7 +36,7 @@ def generate_hls_stream(stream_name, playlist_path):
       logger.error(f"스트림 생성 오류: {stream_name} - {e}")
 
     finally:
-      terminate_stream_process(stream_name)
+      terminate_stream_process(process, stream_name)
 
     time.sleep(2)  # 재시작 전 대기 시간
 #
@@ -78,40 +78,35 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
 #
 # FFmpeg 프로세스 모니터링 & 세그먼트 관리
 def monitor_stream_process(stream_name, process):
+  logger.info("프로세스 모니터링 시작합니다.")
+
   while not vars.stop_event.is_set() and stream_name in vars.streams:
     if process.poll() is not None:
-      error = process.stderr.read()
       logger.error(f"{stream_name} 방송 FFmpeg 프로세스 종료")
       break
 
     handle_ffmpeg_output(process, stream_name)
     manage_segments(os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir))
-    time.sleep(0.1)  # 모니터링 반응성 향상을 위한 대기 시간 감소
-
+    time.sleep(0.1)
   else :
-    terminate_stream_process_without_if(process)
+    terminate_stream_process(process, stream_name)
+
+  logger.info("프로세스 모니터링 종료합니다.")
 
 
 #
 # 스트림 프로세스 종료
-def terminate_stream_process(stream_name:str):
-  if stream_name in vars.streams and 'process' in vars.streams[stream_name]:
-    process = vars.streams[stream_name]['process']
-    if process.poll() is None:
-      try:
-        process.terminate()
-        process.wait(timeout=5)
-      except subprocess.TimeoutExpired:
-        process.kill()
-      except Exception as e:
-        logger.error(f"오류: '{stream_name}' 프로세스 종료 실패 - {e}")
-
-def terminate_stream_process_without_if(process):
-  process.terminate()
+def terminate_stream_process(process, stream_name=None):
   try:
-    process.wait(timeout=5)
+    if process and process.poll() is None:  # 프로세스가 실행 중인 경우
+      process.terminate()
+      process.wait(timeout=5)
   except subprocess.TimeoutExpired:
     process.kill()
+    logger.error(f"프로세스 강제 종료: {stream_name if stream_name else 'unknown stream'}")
+  except Exception as e:
+    logger.error(f"오류: '{stream_name if stream_name else 'unknown stream'}' 프로세스 종료 실패 - {e}")
+
 
 #
 # 프로세스 모니터링 관리
