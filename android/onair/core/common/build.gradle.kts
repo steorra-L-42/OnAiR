@@ -45,6 +45,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.compose.bom)
     implementation(libs.androidx.runtime)
+    api(libs.androidx.navigation.compose)
+    api(libs.androidx.hilt.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
