@@ -1,6 +1,7 @@
 package com.fm404.onair.data.di
 
 import com.fm404.onair.data.remote.api.auth.UserApi
+import com.fm404.onair.data.remote.api.broadcast.BroadcastApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,5 +24,11 @@ object NetworkModule {
         return Retrofit.Builder()
             .baseUrl("http://your-api-base-url/")  // 실제 API URL로 변경 필요
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBroadcastApi(retrofit: Retrofit): BroadcastApi {
+        return retrofit.create(BroadcastApi::class.java)
     }
 }

@@ -25,4 +25,10 @@ sealed class NavRoute(val route: String) {
         object Broadcast : StatisticsSection("statistics_broadcast")
         object Story : StatisticsSection("statistics_story")
     }
+
+    sealed class BroadcastSection(route: String) : NavRoute(route) {
+        object List : BroadcastSection("broadcast_list")
+        object Detail : BroadcastSection("broadcast_detail/{broadcastId}")
+        object Story : BroadcastSection("broadcast_story/{broadcastId}")
+    }
 }

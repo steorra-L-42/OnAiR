@@ -1,4 +1,4 @@
-package com.fm404.onair.features.broadcast.presentation.story.screen
+package com.fm404.onair.features.broadcast.presentation.detail.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -7,9 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun StoryScreen(
+fun BroadcastDetailScreen(
     broadcastId: String,
-    onBackClick: () -> Unit
+    onStoryClick: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -17,16 +17,16 @@ fun StoryScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "사연 화면: $broadcastId",
+            text = "방송 상세 화면: $broadcastId",
             style = MaterialTheme.typography.headlineMedium
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = onBackClick
+            onClick = { onStoryClick(broadcastId) }
         ) {
-            Text("뒤로 가기")
+            Text("사연 보기")
         }
     }
 }
