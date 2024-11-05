@@ -19,4 +19,10 @@ sealed class NavRoute(val route: String) {
         object Register : AuthSection("register")
         object Admin : AuthSection("admin")
     }
+
+    sealed class StatisticsSection(val route: String) {
+        object Main : StatisticsSection("statistics_main")
+        object Broadcast : StatisticsSection("statistics_broadcast")
+        object Story : StatisticsSection("statistics_story")
+    }
 }
