@@ -38,11 +38,7 @@ def generate_hls_stream(stream_name, playlist_path):
     finally:
       terminate_stream_process(stream_name)
 
-    # 오류 발생(재시작)
-    if not vars.stop_event.is_set() and stream_name in vars.streams:
-      logger.info(f"{stream_name} 스트림 오류 발생. 재시작 하는중")
-      time.sleep(2)  # 재시작 전 대기 시간
-
+    time.sleep(2)  # 재시작 전 대기 시간
 #
 # FFmpeg 스트림 프로세스 생성
 def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
@@ -50,6 +46,7 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
   ffmpeg_command = [
     'ffmpeg',
     '-re',
+    '-stream_loop', '-1',   # 입력 파일 무한 반복
     '-f', 'concat',
     '-safe', '0',
     '-i', concat_file_path,
@@ -84,7 +81,7 @@ def monitor_stream_process(stream_name, process):
   while not vars.stop_event.is_set() and stream_name in vars.streams:
     if process.poll() is not None:
       error = process.stderr.read()
-      logger.error(f"{stream_name} 방송 FFmpeg 프로세스 갑자기 종료됨!!: {error}")
+      logger.error(f"{stream_name} 방송 FFmpeg 프로세스 종료")
       break
 
     handle_ffmpeg_output(process, stream_name)
