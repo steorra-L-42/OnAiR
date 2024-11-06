@@ -89,13 +89,13 @@ def monitor_stream_process(stream_name, process):
     time.sleep(1)
   else:
     error = process.stderr.read()
-    logger.error(f'FFmpeg 프로세스 종료 [{stream_name}] : {error}')
+    logger.error(f'스트림 종료 [{stream_name}] : {error}')
 
 
 #
 # 스트림 프로세스 종료
 def terminate_stream_process(stream_name=None):
-  logger.info(f'스트림 프로세스를 종료합니다 [{stream_name}]')
+  logger.info(f'스트림 ffmpeg 프로세스를 종료합니다 [{stream_name}]')
   if not 'process' in vars.streams[stream_name]:
     return
 
