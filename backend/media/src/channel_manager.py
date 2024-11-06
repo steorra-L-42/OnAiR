@@ -67,8 +67,5 @@ def remove_channel(stream_name):
 
 ### 채널 전체 삭제 ###
 def cleanup_channels():
-  for stream_name in list(vars.streams.keys()):
+  for stream_name in vars.streams:
     remove_channel(stream_name)
-
-
-
