@@ -11,6 +11,8 @@ CHANNEL_PATHS = [os.path.join(STREAMING_CHANNEL_PATH, f"channel_{i}") for i in r
 HLS_OUTPUT_DIR = "hls_output"
 SOURCES_DIR = "sources"
 
+LOG_FILES_PATH = os.environ.get('LOG_FILES_PATH')
+
 ### HLS 프로토콜 설정 변수 정의 ###
 HLS_TIME = 2
 HLS_LIST_SIZE = 5

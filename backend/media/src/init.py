@@ -41,6 +41,7 @@ def setup_vars():
 def setup_directory():
   if not os.path.exists(config.STREAMING_CHANNEL_PATH):
     os.makedirs(config.STREAMING_CHANNEL_PATH)
+    os.makedirs(config.LOG_FILES_PATH, exist_ok=True)
 
   for i in range(1, 4):
     ch_path = config.CHANNEL_PATHS[i]

@@ -5,7 +5,7 @@ import time
 
 # 내부 패키지: 설정 변수/ 전역 변수
 from gloval_vars import streams
-from config import STREAMING_CHANNEL_PATH, HLS_OUTPUT_DIR, HLS_TIME, HLS_LIST_SIZE
+from config import STREAMING_CHANNEL_PATH, HLS_OUTPUT_DIR, HLS_TIME, HLS_LIST_SIZE, LOG_FILES_PATH
 
 # 내부 패키지: 기타
 from logger import get_logger, log_function_call
@@ -51,8 +51,11 @@ def generate_hls_stream(stream_name, playlist_path):
 
 ### FFmpeg 스트림 프로세스 생성 ###
 def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
+
+  ## 커맨드 설정 ##
   ffmpeg_command = [
     'ffmpeg',
+    '-loglevel', 'error',
     '-re',
     '-stream_loop', '-1',   # 입력 파일 무한 반복
     '-f', 'concat',
@@ -70,29 +73,32 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
     os.path.join(hls_output_path, 'index.m3u8')
   ]
 
+  ## 프로세스 로그 파일 생성 ##
+  log_file_path = os.path.join(LOG_FILES_PATH, f'{stream_name}_log.txt')
+  os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+
+  ## 프로세스 시작 ##
   logger.info(f"FFmpeg 스트림 프로세스 시작 [{stream_name}]")
-  process = subprocess.Popen(
-    ffmpeg_command,
-    stdout = subprocess.PIPE,
-    stderr = subprocess.PIPE,
-    universal_newlines=True,
-    encoding='utf-8'
-  )
+  with open(log_file_path, 'w', encoding='utf-8') as log_file:
+    process = subprocess.Popen(
+      ffmpeg_command,
+      stdout=subprocess.DEVNULL,
+      stderr=log_file,      # stderr를 log_file에 직접 기록
+      universal_newlines=True,
+      encoding='utf-8'
+    )
   streams[stream_name]['process'] = process
   return process
 
 
 
 ### FFmpeg 프로세스 모니터링 & 세그먼트 관리 ###
-@log_function_call
 def monitor_ffmpeg_stream_process(stream_name, process):
   while stream_name in streams and process.poll() is None:
-    handle_ffmpeg_output(process, stream_name)
     manage_segments(os.path.join(STREAMING_CHANNEL_PATH, stream_name, HLS_OUTPUT_DIR))
     time.sleep(1)
   else:
-    error = process.stderr.read()
-    logger.error(f'스트림 종료 [{stream_name}] : {error}')
+    logger.error(f'스트림 종료 [{stream_name}]')
 
 
 
@@ -112,12 +118,3 @@ def terminate_ffmpeg_stream_process(stream_name=None):
     logger.error(f"프로세스 강제 종료 [{stream_name if stream_name else 'unknown stream'}]")
   except Exception as e:
     logger.error(f"프로세스 종료 실패 [{stream_name if stream_name else 'unknown stream'}] : {e}")
-
-
-
-### 프로세스 모니터링 관리 ###
-def handle_ffmpeg_output(process, stream_name):
-  stdout, stderr = process.communicate()
-  if stderr:
-    logger.error(f"FFmpeg Error: {stderr}")
-  return
