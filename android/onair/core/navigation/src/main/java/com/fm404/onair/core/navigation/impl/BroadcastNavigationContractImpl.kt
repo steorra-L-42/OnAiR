@@ -23,4 +23,8 @@ class BroadcastNavigationContractImpl @Inject constructor() : BroadcastNavigatio
     override fun navigateToStory(broadcastId: String) {
         navController?.navigate(NavRoute.BroadcastSection.Story.route.replace("{broadcastId}", broadcastId))
     }
+
+    override fun navigateToNotification() {
+        navController?.navigate(NavRoute.BroadcastSection.Notification.route)
+    }
 }

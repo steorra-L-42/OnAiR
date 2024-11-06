@@ -4,5 +4,5 @@ package com.fm404.onair.features.broadcast.presentation.list.state
 sealed interface BroadcastListEvent {
     data object LoadBroadcasts : BroadcastListEvent
     data class OnBroadcastClick(val broadcastId: String) : BroadcastListEvent
-    // 추후 이벤트 추가
+    data object OnNotificationClick : BroadcastListEvent
 }

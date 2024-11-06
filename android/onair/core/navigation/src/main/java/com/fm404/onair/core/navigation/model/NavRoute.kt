@@ -30,5 +30,6 @@ sealed class NavRoute(val route: String) {
         object List : BroadcastSection("broadcast_list")
         object Detail : BroadcastSection("broadcast_detail/{broadcastId}")
         object Story : BroadcastSection("broadcast_story/{broadcastId}")
+        object Notification : BroadcastSection("broadcast_notification")
     }
 }

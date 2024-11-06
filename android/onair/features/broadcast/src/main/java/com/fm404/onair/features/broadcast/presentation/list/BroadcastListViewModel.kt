@@ -2,6 +2,7 @@ package com.fm404.onair.features.broadcast.presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fm404.onair.core.contract.broadcast.BroadcastNavigationContract
 import com.fm404.onair.domain.usecase.broadcast.broadcast.GetBroadcastListUseCase
 import com.fm404.onair.features.broadcast.presentation.list.state.BroadcastListEvent
 import com.fm404.onair.features.broadcast.presentation.list.state.BroadcastListState
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BroadcastListViewModel @Inject constructor(
-    private val getBroadcastListUseCase: GetBroadcastListUseCase
+    private val getBroadcastListUseCase: GetBroadcastListUseCase,
+    private val broadcastNavigationContract: BroadcastNavigationContract
 ) : ViewModel() {
     private val _state = MutableStateFlow(BroadcastListState())
     val state = _state.asStateFlow()
@@ -27,7 +29,14 @@ class BroadcastListViewModel @Inject constructor(
             is BroadcastListEvent.OnBroadcastClick -> {
                 // 필요한 경우 방송 클릭 처리
             }
+            is BroadcastListEvent.OnNotificationClick -> {
+                broadcastNavigationContract.navigateToNotification()
+            }
         }
+    }
+
+    fun onNotificationClick() {
+        onEvent(BroadcastListEvent.OnNotificationClick)
     }
 
     private fun loadBroadcasts() {
