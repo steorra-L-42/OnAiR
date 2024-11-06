@@ -15,8 +15,8 @@ import javax.inject.Inject
 class AuthScreenImpl @Inject constructor() : AuthScreen {
     override fun NavGraphBuilder.addLoginScreen(navController: NavHostController) {
         composable(AuthNavigationContract.ROUTE_LOGIN,
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None }
+//            enterTransition = { EnterTransition.None },
+//            exitTransition = { ExitTransition.None }
         ) {
             LoginScreen(navController)
         }
@@ -24,8 +24,8 @@ class AuthScreenImpl @Inject constructor() : AuthScreen {
 
     override fun NavGraphBuilder.addRegisterScreen(navController: NavHostController) {
         composable(AuthNavigationContract.ROUTE_REGISTER,
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None }
+//            enterTransition = { EnterTransition.None },
+//            exitTransition = { ExitTransition.None }
         ) {
             RegisterScreen(navController)
         }
@@ -33,8 +33,8 @@ class AuthScreenImpl @Inject constructor() : AuthScreen {
 
     override fun NavGraphBuilder.addAdminScreen(navController: NavHostController) {
         composable(route = AuthNavigationContract.ROUTE_ADMIN,
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None }
+//            enterTransition = { EnterTransition.None },
+//            exitTransition = { ExitTransition.None }
         ) {
             AdminScreen()
         }
