@@ -32,6 +32,9 @@ class BroadcastScreenImpl @Inject constructor() : BroadcastScreen {
                 navController.navigate(
                     "broadcast_story/$storyId"
                 )
+            },
+            onBack = {
+                navController.popBackStack()
             }
         )
     }
