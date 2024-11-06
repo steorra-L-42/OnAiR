@@ -8,9 +8,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,6 +58,8 @@ public class Channel {
     @JoinColumn(name = "dj_id")
     private Dj dj;
 
+    @OneToMany(mappedBy = "channel")
+    private List<Track> tracks = new ArrayList<>();
 
     public void changeDj(Dj dj) {
         this.dj = dj;
@@ -65,14 +70,14 @@ public class Channel {
     }
 
     public void changeUser(User user) {
-        if(this.user != null) {
+        if (this.user != null) {
             this.user.getChannels().remove(this);
         }
         this.user = user;
         user.getChannels().add(this);
     }
 
-   public  void changeThumbnail(String thumbnail) {
+    public void changeThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
-   }
+    }
 }
