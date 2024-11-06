@@ -18,6 +18,7 @@ fun NavGraphBuilder.authNavGraph(
             addLoginScreen(navController)
             addRegisterScreen(navController)
             addAdminScreen(navController)
+            addSettingsScreen(navController)
         }
     }
 }
