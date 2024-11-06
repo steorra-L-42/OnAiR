@@ -4,24 +4,25 @@ import subprocess
 import time
 
 # 내부 패키지: 설정 변수/ 전역 변수
-import gloval_vars as vars
-from config import hls_output_dir, STREAMING_CH_DIR, HLS_TIME, HLS_LIST_SIZE, HLS_DELETE_THRESHOLD
+from gloval_vars import streams
+from config import STREAMING_CHANNEL_PATH, HLS_OUTPUT_DIR, HLS_TIME, HLS_LIST_SIZE
 
 # 내부 패키지: 기타
 from logger import get_logger, log_function_call
 from directory_manager import clean_hls_output
 from hls_processor import create_concat_file, manage_segments
 
+# 로거 설정
 logger = get_logger()
 
-#
-# HLS 스트림 생성
-@log_function_call
+
+
+### HLS 스트림 생성 ###
 def generate_hls_stream(stream_name, playlist_path):
-  hls_output_path = os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir)
+  hls_output_path = os.path.join(STREAMING_CHANNEL_PATH, stream_name, HLS_OUTPUT_DIR)
   os.makedirs(hls_output_path, exist_ok=True)
 
-  while stream_name in vars.streams:
+  while stream_name in streams:
     try:
       # 예전 파일 삭제
       clean_hls_output(hls_output_path)
@@ -33,19 +34,22 @@ def generate_hls_stream(stream_name, playlist_path):
       process = start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path)
 
       # 프로세스 관리
-      monitor_stream_process(stream_name, process)
+      monitor_ffmpeg_stream_process(stream_name, process)
 
     except Exception as e:
       logger.error(f"스트림 생성 오류 [{stream_name}] : {e}")
 
     finally:
-      terminate_stream_process(stream_name)
+      terminate_ffmpeg_stream_process(stream_name)
 
-    time.sleep(5)  # 재시작 전 대기 시간
+    # 스트림 재시작
+    for i in range(3, 0, -1):
+      logger.info(f"{i}초 후 스트림을 재시작합니다. [{stream_name}]")
+      time.sleep(1)
 
 
-#
-# FFmpeg 스트림 프로세스 생성
+
+### FFmpeg 스트림 프로세스 생성 ###
 def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
   ffmpeg_command = [
     'ffmpeg',
@@ -66,7 +70,7 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
     os.path.join(hls_output_path, 'index.m3u8')
   ]
 
-  logger.info(f"FFmpeg 프로세스 시작 [{stream_name}]")
+  logger.info(f"FFmpeg 스트림 프로세스 시작 [{stream_name}]")
   process = subprocess.Popen(
     ffmpeg_command,
     stdout = subprocess.PIPE,
@@ -74,32 +78,31 @@ def start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path):
     universal_newlines=True,
     encoding='utf-8'
   )
-
-  vars.streams[stream_name]['process'] = process
+  streams[stream_name]['process'] = process
   return process
 
 
-#
-# FFmpeg 프로세스 모니터링 & 세그먼트 관리
+
+### FFmpeg 프로세스 모니터링 & 세그먼트 관리 ###
 @log_function_call
-def monitor_stream_process(stream_name, process):
-  while stream_name in vars.streams and process.poll() is None:
+def monitor_ffmpeg_stream_process(stream_name, process):
+  while stream_name in streams and process.poll() is None:
     handle_ffmpeg_output(process, stream_name)
-    manage_segments(os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir))
+    manage_segments(os.path.join(STREAMING_CHANNEL_PATH, stream_name, HLS_OUTPUT_DIR))
     time.sleep(1)
   else:
     error = process.stderr.read()
     logger.error(f'스트림 종료 [{stream_name}] : {error}')
 
 
-#
-# 스트림 프로세스 종료
-def terminate_stream_process(stream_name=None):
-  logger.info(f'스트림 ffmpeg 프로세스를 종료합니다 [{stream_name}]')
-  if not 'process' in vars.streams[stream_name]:
+
+### 스트림 프로세스 종료 ###
+def terminate_ffmpeg_stream_process(stream_name=None):
+  logger.info(f'ffmpeg 스트림 프로세스 종료 [{stream_name}]')
+  if not 'process' in streams[stream_name]:
     return
 
-  process = vars.streams[stream_name]['process']
+  process = streams[stream_name]['process']
   try:
     if process.poll() is None:  # 프로세스가 실행 중인 경우
       process.terminate()
@@ -111,8 +114,8 @@ def terminate_stream_process(stream_name=None):
     logger.error(f"프로세스 종료 실패 [{stream_name if stream_name else 'unknown stream'}] : {e}")
 
 
-#
-# 프로세스 모니터링 관리
+
+### 프로세스 모니터링 관리 ###
 def handle_ffmpeg_output(process, stream_name):
   output = process.stderr.readline()
   if output == '':

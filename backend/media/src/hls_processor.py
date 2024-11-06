@@ -6,14 +6,15 @@ import gloval_vars as vars
 from config import HLS_DELETE_THRESHOLD
 
 # 내부 패키지: 기타
-from logger import get_logger, log_function_call
+from logger import get_logger
 from directory_manager import extract_stream_name
 
+# 로거 설정
 logger = get_logger()
 
-#
-# concat 파일 생성
-@log_function_call
+
+
+### concat 파일 생성 ###
 def create_concat_file(hls_output_path, playlist_path):
   concat_file_path = os.path.join(hls_output_path, 'concat.txt')
   audio_files = sorted([f for f in os.listdir(playlist_path) if f.endswith(('.mp3', '.m4a', '.aac'))])
@@ -27,8 +28,8 @@ def create_concat_file(hls_output_path, playlist_path):
   return concat_file_path
 
 
-# 
-# 세그먼트 관리
+
+### 세그먼트 관리 ###
 def manage_segments(hls_output_path):
   try:
     # HLS 세그먼트 파일 목록 정렬
@@ -44,8 +45,8 @@ def manage_segments(hls_output_path):
     logger.error(f"세그먼트 관리 오류: {e}")
 
 
-#
-# 세그먼트 정리
+
+### 세그먼트 정리 ###
 def cleanup_segments(segments, hls_path):
   if len(segments) > HLS_DELETE_THRESHOLD:
     to_delete = segments[:-HLS_DELETE_THRESHOLD]
@@ -53,8 +54,8 @@ def cleanup_segments(segments, hls_path):
       os.remove(os.path.join(hls_path, segment))
 
 
-# 
-# 재생 목록 업데이트
+
+### 재생 목록 업데이트 ###
 def update_playlist(hls_output_path: str):
   index_m3u8_path = os.path.join(hls_output_path, 'index.m3u8')
   if not os.path.exists(index_m3u8_path):
