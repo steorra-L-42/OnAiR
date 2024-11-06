@@ -117,8 +117,7 @@ def terminate_ffmpeg_stream_process(stream_name=None):
 
 ### 프로세스 모니터링 관리 ###
 def handle_ffmpeg_output(process, stream_name):
-  output = process.stderr.readline()
-  if output == '':
-    return
-  # if output:
-  #   logger.info(f'ffmepg [{stream_name}] : {output.strip()}')
+  stdout, stderr = process.communicate()
+  if stderr:
+    logger.error(f"FFmpeg Error: {stderr}")
+  return
