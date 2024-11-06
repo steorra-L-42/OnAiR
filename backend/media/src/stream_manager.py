@@ -22,30 +22,24 @@ def generate_hls_stream(stream_name, playlist_path):
   hls_output_path = os.path.join(STREAMING_CHANNEL_PATH, stream_name, HLS_OUTPUT_DIR)
   os.makedirs(hls_output_path, exist_ok=True)
 
-  while stream_name in streams:
-    try:
-      # 예전 파일 삭제
-      clean_hls_output(hls_output_path)
+  try:
+    # 예전 파일 삭제
+    clean_hls_output(hls_output_path)
 
-      # concat 파일 생성
-      concat_file_path = create_concat_file(hls_output_path, playlist_path)
+    # concat 파일 생성
+    concat_file_path = create_concat_file(hls_output_path, playlist_path)
 
-      # FFmpeg 프로세스 시작
-      process = start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path)
+    # FFmpeg 프로세스 시작
+    process = start_ffmpeg_stream_process(stream_name, hls_output_path, concat_file_path)
 
-      # 프로세스 관리
-      monitor_ffmpeg_stream_process(stream_name, process)
+    # 프로세스 관리
+    monitor_ffmpeg_stream_process(stream_name, process)
 
-    except Exception as e:
-      logger.error(f"스트림 생성 오류 [{stream_name}] : {e}")
+  except Exception as e:
+    logger.error(f"스트림 생성 오류 [{stream_name}] : {e}")
 
-    finally:
-      terminate_ffmpeg_stream_process(stream_name)
-
-    # 스트림 재시작
-    for i in range(3, 0, -1):
-      logger.info(f"{i}초 후 스트림을 재시작합니다. [{stream_name}]")
-      time.sleep(1)
+  finally:
+    terminate_ffmpeg_stream_process(stream_name)
 
 
 
