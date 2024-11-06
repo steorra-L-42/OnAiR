@@ -2,7 +2,7 @@ import os
 import shutil
 
 from logger import get_logger
-from config import STREAMING_CHANNEL_PATH, HLS_OUTPUT_DIR, SOURCES_DIR
+from config import STREAMING_CHANNEL_PATH, HLS_OUTPUT_DIR, SOURCES_DIR, LOG_FILES_PATH
 
 logger = get_logger()
 
@@ -22,6 +22,11 @@ def clean_stream(stream_name):
   base = os.path.join(STREAMING_CHANNEL_PATH, stream_name)
   remove_stream_path(os.path.join(base, HLS_OUTPUT_DIR))
   remove_stream_path(os.path.join(base, SOURCES_DIR))
+
+  log_file_path = os.path.join(LOG_FILES_PATH, f'{stream_name}_log.txt')
+  if os.path.isfile(log_file_path) and os.path.getsize(log_file_path) == 0:
+    logger.info(f"로그 출력 X -> 삭제 [{log_file_path}]")
+    os.remove(log_file_path)
 
 
 
