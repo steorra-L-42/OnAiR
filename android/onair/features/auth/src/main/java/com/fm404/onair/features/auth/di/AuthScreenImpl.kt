@@ -10,6 +10,7 @@ import com.fm404.onair.core.contract.auth.AuthScreen
 import com.fm404.onair.features.auth.presentation.admin.screen.AdminScreen
 import com.fm404.onair.features.auth.presentation.login.screen.LoginScreen
 import com.fm404.onair.features.auth.presentation.register.screen.RegisterScreen
+import com.fm404.onair.features.auth.presentation.settings.screen.SettingsScreen
 import javax.inject.Inject
 
 class AuthScreenImpl @Inject constructor() : AuthScreen {
@@ -37,6 +38,12 @@ class AuthScreenImpl @Inject constructor() : AuthScreen {
 //            exitTransition = { ExitTransition.None }
         ) {
             AdminScreen()
+        }
+    }
+
+    override fun NavGraphBuilder.addSettingsScreen(navController: NavHostController) {
+        composable(route = AuthNavigationContract.ROUTE_SETTINGS) {
+            SettingsScreen(navController = navController)
         }
     }
 }

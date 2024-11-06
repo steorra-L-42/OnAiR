@@ -43,10 +43,6 @@ fun MainNavGraph(
             homeScreen(navController)
         }
 
-        composable(NavRoute.MainSection.Settings.route) {
-            // SettingsScreen()
-        }
-
         // 홈 섹션의 하위 화면들
         composable(NavRoute.HomeSection.AudioVisualizer.route) {
             AudioVisualizerScreen(

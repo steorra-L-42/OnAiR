@@ -53,6 +53,8 @@ dependencies {
     implementation(libs.androidx.runtime)
     implementation(libs.hilt.android)
     implementation(project(":domain"))
+    implementation(project(":core:common"))
+    implementation(libs.androidx.material.icons.extended)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(project(":core:contract"))
