@@ -15,4 +15,7 @@ interface BroadcastScreen {
 
     @Composable
     fun NotificationRoute(navController: NavHostController)
+
+    @Composable
+    fun BroadcastCreateRoute(navController: NavHostController)
 }

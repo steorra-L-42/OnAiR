@@ -8,4 +8,5 @@ interface BroadcastNavigationContract {
     fun navigateToBroadcastDetail(broadcastId: String)
     fun navigateToStory(broadcastId: String)
     fun navigateToNotification()
+    fun navigateToBroadcastCreate()
 }

@@ -2,6 +2,7 @@ package com.fm404.onair.features.broadcast.presentation.list.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,15 +16,30 @@ import com.fm404.onair.features.broadcast.presentation.list.state.BroadcastListS
 @Composable
 fun BroadcastListScreen(
     onBroadcastClick: (String) -> Unit,
+    onCreateClick: () -> Unit,
     viewModel: BroadcastListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
-    BroadcastListContent(
-        state = state,
-        onBroadcastClick = onBroadcastClick,
-        onNotificationClick = viewModel::onNotificationClick
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        BroadcastListContent(
+            state = state,
+            onBroadcastClick = onBroadcastClick,
+            onNotificationClick = viewModel::onNotificationClick
+        )
+
+        FloatingActionButton(
+            onClick = onCreateClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "방송 만들기"
+            )
+        }
+    }
 }
 
 @Composable

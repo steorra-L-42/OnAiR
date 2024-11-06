@@ -27,4 +27,8 @@ class BroadcastNavigationContractImpl @Inject constructor() : BroadcastNavigatio
     override fun navigateToNotification() {
         navController?.navigate(NavRoute.BroadcastSection.Notification.route)
     }
+
+    override fun navigateToBroadcastCreate() {
+        navController?.navigate(NavRoute.BroadcastSection.Create.route)
+    }
 }

@@ -36,5 +36,8 @@ fun NavGraphBuilder.broadcastNavGraph(
         composable(NavRoute.BroadcastSection.Notification.route) {
             broadcastScreen.NotificationRoute(navController)
         }
+        composable(NavRoute.BroadcastSection.Create.route) {
+            broadcastScreen.BroadcastCreateRoute(navController)
+        }
     }
 }

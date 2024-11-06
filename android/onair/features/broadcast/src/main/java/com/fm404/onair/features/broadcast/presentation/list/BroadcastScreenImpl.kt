@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.fm404.onair.core.contract.broadcast.BroadcastNavigationContract
 import com.fm404.onair.core.contract.broadcast.BroadcastScreen
+import com.fm404.onair.features.broadcast.presentation.create.screen.BroadcastCreateScreen
 import com.fm404.onair.features.broadcast.presentation.detail.screen.BroadcastDetailScreen
 import com.fm404.onair.features.broadcast.presentation.list.screen.BroadcastListScreen
 import com.fm404.onair.features.broadcast.presentation.list.screen.component.NotificationScreen
@@ -19,6 +20,9 @@ class BroadcastScreenImpl @Inject constructor() : BroadcastScreen {
                 navController.navigate(
                     "broadcast_detail/$broadcastId"
                 )
+            },
+            onCreateClick = {
+                navController.navigate("broadcast_create")
             }
         )
     }
@@ -55,6 +59,15 @@ class BroadcastScreenImpl @Inject constructor() : BroadcastScreen {
         NotificationScreen(
             navController = navController,
             modifier = Modifier
+        )
+    }
+
+    @Composable
+    override fun BroadcastCreateRoute(navController: NavHostController) {
+        BroadcastCreateScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
         )
     }
 }
