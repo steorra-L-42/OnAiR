@@ -1,6 +1,9 @@
 import os
 import shutil
 
+from logger import get_logger
+from config import STREAMING_CH_DIR, hls_output_dir, sources_dir
+
 
 def clean_hls_output(hls_output_path):
   for file in os.listdir(hls_output_path):
@@ -8,7 +11,14 @@ def clean_hls_output(hls_output_path):
       os.remove(os.path.join(hls_output_path, file))
 
 
-def reset_stream_path(stream_path):
+def clean_stream(stream_name):
+  base = os.path.join(STREAMING_CH_DIR, stream_name)
+  remove_stream_path(os.path.join(base, hls_output_dir))
+  remove_stream_path(os.path.join(base, sources_dir))
+
+
+def remove_stream_path(stream_path):
+
   if os.path.exists(stream_path):
     shutil.rmtree(stream_path)
   os.makedirs(stream_path)
