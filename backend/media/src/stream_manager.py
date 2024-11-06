@@ -41,7 +41,7 @@ def generate_hls_stream(stream_name, playlist_path):
     finally:
       terminate_stream_process(stream_name)
 
-    time.sleep(2)  # 재시작 전 대기 시간
+    time.sleep(5)  # 재시작 전 대기 시간
 
 
 #
@@ -86,31 +86,36 @@ def monitor_stream_process(stream_name, process):
   while stream_name in vars.streams and process.poll() is None:
     handle_ffmpeg_output(process, stream_name)
     manage_segments(os.path.join(STREAMING_CH_DIR, stream_name, hls_output_dir))
-    time.sleep(0.2)
+    time.sleep(1)
   else:
     error = process.stderr.read()
-    logger.error(f'FFmpeg 프로세스 종료 [{stream_name}] - {error}')
+    logger.error(f'FFmpeg 프로세스 종료 [{stream_name}] : {error}')
 
 
 #
 # 스트림 프로세스 종료
-@log_function_call
 def terminate_stream_process(stream_name=None):
+  logger.info(f'스트림 프로세스를 종료합니다 [{stream_name}]')
+  if not 'process' in vars.streams[stream_name]:
+    return
+
   process = vars.streams[stream_name]['process']
   try:
-    if process and process.poll() is None:  # 프로세스가 실행 중인 경우
+    if process.poll() is None:  # 프로세스가 실행 중인 경우
       process.terminate()
       process.wait(timeout=5)
   except subprocess.TimeoutExpired:
     process.kill()
-    logger.error(f"프로세스 강제 종료: {stream_name if stream_name else 'unknown stream'}")
+    logger.error(f"프로세스 강제 종료 [{stream_name if stream_name else 'unknown stream'}]")
   except Exception as e:
-    logger.error(f"오류: '{stream_name if stream_name else 'unknown stream'}' 프로세스 종료 실패 - {e}")
+    logger.error(f"프로세스 종료 실패 [{stream_name if stream_name else 'unknown stream'}] : {e}")
 
 
 #
 # 프로세스 모니터링 관리
 def handle_ffmpeg_output(process, stream_name):
   output = process.stderr.readline()
-  if output:
-    logger.debug(f"{stream_name} FFmpeg output: {output.strip()}")
+  if output == '':
+    return
+  # if output:
+  #   logger.info(f'ffmepg [{stream_name}] : {output.strip()}')

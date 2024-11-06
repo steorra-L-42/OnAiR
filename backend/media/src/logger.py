@@ -53,10 +53,10 @@ def log_function_call(func):
 
   # 함수 호출 로그
   def wrapper(*args, **kwargs):
-    logger.info(f"Entering function [{func.__name__}]")
+    logger.info(f"함수 실행 : [{func.__name__}]")
     result = func(*args, **kwargs)
     if result is not None:
-      logger.info(f"Result [{func.__name__}] : {result}")
+      logger.info(f"함수 결과 [{func.__name__}] : {result}")
     return result
 
   return wrapper
