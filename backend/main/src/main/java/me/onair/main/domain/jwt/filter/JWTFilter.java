@@ -6,9 +6,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import me.onair.main.domain.jwt.enums.TokenType;
 import me.onair.main.domain.jwt.util.JWTUtil;
 import me.onair.main.domain.user.dto.CustomUserDetails;
-import me.onair.main.domain.user.entity.UserEntity;
+import me.onair.main.domain.user.entity.User;
+import me.onair.main.domain.user.enums.Role;
 import me.onair.main.global.error.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,17 +63,18 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-
-        UserEntity userEntity = UserEntity.builder()
-                .username(username)
-                .password("temppassword") // 토큰에는 password가 없으므로 임시로 넣어줌
-                .role(Role.valueOf(role)) // Enum 타입으로 변환
-                .build();
-
         // 사용자 정보를 담은 CustomUserDetails 생성
-        CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
+        User user = User.builder()
+                .username(jwtUtil.getUsername(token))
+                .password("temppassword") // 비밀번호는 필요없으므로 임시로 설정
+                .role(Role.valueOf(jwtUtil.getRole(token)))
+                .nickname(jwtUtil.getNickname(token))
+                .build();
+        Long userId = jwtUtil.getUserId(token);
+        String profilePath = jwtUtil.getProfilePath(token);
+
+        CustomUserDetails customUserDetails = new CustomUserDetails(user, userId, profilePath);
+
         // 스프링 시큐리티 인증 토큰 생성
         Authentication authentication = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         // SecurityContextHolder 세션에 인증 정보를 저장

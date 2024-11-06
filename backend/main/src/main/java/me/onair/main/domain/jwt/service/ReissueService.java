@@ -4,6 +4,12 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import me.onair.main.domain.jwt.enums.TokenType;
+import me.onair.main.domain.jwt.error.ExpiredRefreshTokenException;
+import me.onair.main.domain.jwt.error.NoRefreshTokenCookieException;
+import me.onair.main.domain.jwt.error.NotExistRefreshTokenException;
+import me.onair.main.domain.jwt.error.WrongCategoryJwtException;
+import me.onair.main.domain.jwt.repository.RefreshRepository;
 import me.onair.main.domain.jwt.util.CookieUtil;
 import me.onair.main.domain.jwt.util.JWTUtil;
 import org.slf4j.Logger;
@@ -63,9 +69,12 @@ public class ReissueService {
 
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
+        Long userId = jwtUtil.getUserId(refresh);
+        String nickname = jwtUtil.getNickname(refresh);
+        String profilePath = jwtUtil.getProfilePath(refresh);
 
         // make new access token
-        return jwtUtil.createJwt(TokenType.ACCESS, username, role);
+        return jwtUtil.createJwt(TokenType.ACCESS, username, role, userId, nickname, profilePath);
     }
 
     @Transactional
@@ -73,9 +82,12 @@ public class ReissueService {
 
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
+        Long userId = jwtUtil.getUserId(refresh);
+        String nickname = jwtUtil.getNickname(refresh);
+        String profilePath = jwtUtil.getProfilePath(refresh);
 
         // make new refresh token
-        String newRefresh = jwtUtil.createJwt(TokenType.REFRESH, username, role);
+        String newRefresh = jwtUtil.createJwt(TokenType.REFRESH, username, role, userId, nickname, profilePath);
 
         // delete old refresh token
         jwtUtil.deleteAllRefreshToken(username);

@@ -3,11 +3,15 @@ package me.onair.main.domain.jwt.util;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Jwts.SIG;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import me.onair.main.domain.user.entity.RefreshToken;
-import me.onair.main.domain.user.entity.UserEntity;
+import me.onair.main.domain.jwt.entity.RefreshToken;
+import me.onair.main.domain.jwt.enums.TokenType;
+import me.onair.main.domain.jwt.repository.RefreshRepository;
+import me.onair.main.domain.user.entity.User;
 import me.onair.main.domain.user.error.NotExistUserException;
 import me.onair.main.domain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +47,22 @@ public class JWTUtil {
                 .parseSignedClaims(token).getPayload().get("role", String.class); // 토큰을 파싱하여 role을 반환
     }
 
+    public Long getUserId(String token) {
+        return Jwts.parser().verifyWith(SECRET_KEY).build() // SECRET_KEY로 토큰을 검증하는 파서 생성
+                .parseSignedClaims(token).getPayload().get("userId", Long.class); // 토큰을 파싱하여 userId를 반환
+    }
+
+    public String getNickname(String token) {
+        return Jwts.parser().verifyWith(SECRET_KEY).build() // SECRET_KEY로 토큰을 검증하는 파서 생성
+                .parseSignedClaims(token).getPayload().get("nickname", String.class); // 토큰을 파싱하여 nickname을 반환
+    }
+
+    public String getProfilePath(String token) {
+        return Jwts.parser().verifyWith(SECRET_KEY).build() // SECRET_KEY로 토큰을 검증하는 파서 생성
+                .parseSignedClaims(token).getPayload().get("profilePath", String.class); // 토큰을 파싱하여 profilePath를 반환
+    }
+
+    // 만료 유무
     public void isExpired(String token) {
         Jwts.parser().verifyWith(SECRET_KEY).build() // SECRET_KEY로 토큰을 검증하는 파서 생성
                 .parseSignedClaims(token).getPayload().getExpiration();
@@ -53,11 +73,15 @@ public class JWTUtil {
                 .parseSignedClaims(token).getPayload().get("category", String.class); // 토큰을 파싱하여 category를 반환
     }
 
-    public String createJwt(TokenType tokenType, String username, String role) {
+    public String createJwt(TokenType tokenType, String username, String role, Long userId,
+                            String nickname, String profilePath) {
         return Jwts.builder()
                 .claim("category", tokenType.getCategory()) // access or refresh
+                .claim("userId", userId)
                 .claim("username", username)
                 .claim("role", role)
+                .claim("nickname", nickname)
+                .claim("profilePath", profilePath)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tokenType.getExpireTime()))
                 .signWith(SECRET_KEY)
@@ -67,7 +91,7 @@ public class JWTUtil {
     @Transactional
     public void saveRefreshToken(String username, String refresh) {
 
-        UserEntity user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(NotExistUserException::new);
 
         Date expiredDate = new Date(System.currentTimeMillis() + TokenType.REFRESH.getExpireTime());
@@ -83,7 +107,7 @@ public class JWTUtil {
     @Transactional
     public void deleteAllRefreshToken(String username) {
 
-        UserEntity user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(NotExistUserException::new);
 
         refreshRepository.deleteAllByUser(user);

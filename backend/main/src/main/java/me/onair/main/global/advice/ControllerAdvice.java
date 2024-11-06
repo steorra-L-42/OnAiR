@@ -1,6 +1,10 @@
 package me.onair.main.global.advice;
 
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.jwt.error.ExpiredRefreshTokenException;
+import me.onair.main.domain.jwt.error.NoRefreshTokenCookieException;
+import me.onair.main.domain.jwt.error.NotExistRefreshTokenException;
+import me.onair.main.domain.jwt.error.WrongCategoryJwtException;
 import me.onair.main.domain.user.error.DuplicateUsername;
 import me.onair.main.domain.user.error.NotExistUserException;
 import me.onair.main.global.error.ErrorCode;

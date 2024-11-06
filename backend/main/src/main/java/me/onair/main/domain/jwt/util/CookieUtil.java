@@ -1,6 +1,7 @@
 package me.onair.main.domain.jwt.util;
 
 import jakarta.servlet.http.Cookie;
+import me.onair.main.domain.jwt.enums.TokenType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

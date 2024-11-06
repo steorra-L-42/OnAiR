@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import me.onair.main.domain.jwt.enums.TokenType;
 import me.onair.main.domain.jwt.repository.RefreshRepository;
 import me.onair.main.domain.jwt.util.JWTUtil;
 import me.onair.main.global.error.ErrorCode;
@@ -24,7 +25,7 @@ import org.springframework.web.filter.GenericFilterBean;
 public class CustomLogoutFilter extends GenericFilterBean {
 
     private static final Logger log = LoggerFactory.getLogger(CustomLogoutFilter.class);
-    private static final Pattern LOGOUT_PATTERN = Pattern.compile("^/user/logout$");
+    private static final Pattern LOGOUT_PATTERN = Pattern.compile("^/api/v1/user/logout$");
     private static final String POST_METHOD = "POST";
 
     private final RefreshRepository refreshRepository;

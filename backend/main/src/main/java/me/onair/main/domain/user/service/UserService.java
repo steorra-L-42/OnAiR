@@ -3,6 +3,7 @@ package me.onair.main.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.user.dto.SignupRequestDto;
+import me.onair.main.domain.user.entity.User;
 import me.onair.main.domain.user.error.DuplicateUsername;
 import me.onair.main.domain.user.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,10 +20,11 @@ public class UserService {
     public void signup(SignupRequestDto request) {
 
         validateDuplicateUsername(request.getUsername()); // 중복되는 username이 있는지 확인하는 로직
+        // TODO : 6자리 인증번호 확인
 
         encodePassword(request); // password를 암호화하는 로직
 
-        userRepository.save(UserEntity.of(request));
+        userRepository.save(User.createNomalUser(request));
     }
 
     private void validateDuplicateUsername(String username) {

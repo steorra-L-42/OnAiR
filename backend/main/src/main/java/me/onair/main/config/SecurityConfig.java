@@ -4,6 +4,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
+import me.onair.main.domain.jwt.CustomAuthenticationEntryPoint;
+import me.onair.main.domain.jwt.enums.TokenType;
+import me.onair.main.domain.jwt.filter.CustomLogoutFilter;
+import me.onair.main.domain.jwt.filter.JWTFilter;
+import me.onair.main.domain.jwt.filter.LoginFilter;
+import me.onair.main.domain.jwt.repository.RefreshRepository;
+import me.onair.main.domain.jwt.util.CookieUtil;
+import me.onair.main.domain.jwt.util.JWTUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,7 +93,7 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/v1/user/valid-username"),
                                 new AntPathRequestMatcher("/api/v1/user/signup"),
                                 new AntPathRequestMatcher("/api/v1/user/login"),
-                                new AntPathRequestMatcher("/api/v1/user/reissue"),
+                                new AntPathRequestMatcher("/api/v1/user/reissue")
                         ).permitAll()
                         // /admin 경로로 들어오는 요청은 ADMIN 권한이 필요
                         .requestMatchers(
