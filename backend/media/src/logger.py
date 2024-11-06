@@ -32,7 +32,6 @@ class ColoredFormatter(logging.Formatter):
     record.msg = f"{record.levelname}:{pad_size}{record.msg}"
     return super().format(record)
 
-
 def get_logger(name=__name__, level=logging.INFO):
   """사용자가 간단히 호출하여 로거를 설정할 수 있는 함수"""
   logger = logging.getLogger(name)
@@ -47,16 +46,25 @@ def get_logger(name=__name__, level=logging.INFO):
 
   return logger
 
+def log_function_call(custom_message=None):
+  def decorator(func):
+    logger = get_logger(func.__module__)
 
-def log_function_call(func):
-  logger = get_logger(func.__module__)
+    def wrapper(*args, **kwargs):
+      # 사용자 지정 메시지 또는 기본 메시지 출력
+      message = custom_message if custom_message else f"함수 실행 : [{func.__name__}]"
+      logger.info(message)
 
-  # 함수 호출 로그
-  def wrapper(*args, **kwargs):
-    logger.info(f"함수 실행 : [{func.__name__}]")
-    result = func(*args, **kwargs)
-    if result is not None:
-      logger.info(f"함수 결과 [{func.__name__}] : {result}")
-    return result
+      result = func(*args, **kwargs)
 
-  return wrapper
+      # 결과가 있는 경우 결과 로그 출력
+      if result is not None:
+        logger.info(f"함수 결과 [{func.__name__}] : {result}")
+      return result
+
+    return wrapper
+
+  # 데코레이터를 인자 없이 사용할 수 있도록 함
+  if callable(custom_message):
+    return decorator(custom_message)
+  return decorator
