@@ -53,8 +53,6 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(project(":core:contract"))
     implementation(project(":core:common"))
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
     kapt(libs.hilt.compiler)
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.ui.tooling)

@@ -12,6 +12,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.auth.AuthScreen
+import com.fm404.onair.core.contract.broadcast.BroadcastNavigationContract
+import com.fm404.onair.core.contract.broadcast.BroadcastScreen
 import com.fm404.onair.core.contract.statistics.StatisticsNavigationContract
 import com.fm404.onair.core.contract.statistics.StatisticsScreen
 import com.fm404.onair.core.designsystem.theme.OnAirTheme
@@ -39,6 +41,12 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var statisticsNavigationContract: StatisticsNavigationContract
 
+    @Inject
+    lateinit var broadcastScreen: BroadcastScreen
+
+    @Inject
+    lateinit var broadcastNavigationContract: BroadcastNavigationContract
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -50,7 +58,9 @@ class MainActivity : ComponentActivity() {
                     authScreen = authScreen,
                     authNavigationContract = authNavigationContract,
                     statisticsScreen = statisticsScreen,
-                    statisticsNavigationContract = statisticsNavigationContract
+                    statisticsNavigationContract = statisticsNavigationContract,
+                    broadcastScreen = broadcastScreen,
+                    broadcastNavigationContract = broadcastNavigationContract
                 )
             }
         }
@@ -64,13 +74,16 @@ private fun MainScreen(
     authScreen: AuthScreen,
     authNavigationContract: AuthNavigationContract,
     statisticsScreen: StatisticsScreen,
-    statisticsNavigationContract: StatisticsNavigationContract
+    statisticsNavigationContract: StatisticsNavigationContract,
+    broadcastScreen: BroadcastScreen,
+    broadcastNavigationContract: BroadcastNavigationContract
 ) {
     val navController = rememberNavController()
 
     LaunchedEffect(navController) {
         authNavigationContract.setNavController(navController)
         statisticsNavigationContract.setNavController(navController)
+        broadcastNavigationContract.setNavController(navController)
     }
 
     Scaffold(
@@ -86,7 +99,8 @@ private fun MainScreen(
                 navController = navController,
                 homeScreen = homeScreen,
                 authScreen = authScreen,
-                statisticsScreen = statisticsScreen
+                statisticsScreen = statisticsScreen,
+                broadcastScreen = broadcastScreen
             )
         }
     }
