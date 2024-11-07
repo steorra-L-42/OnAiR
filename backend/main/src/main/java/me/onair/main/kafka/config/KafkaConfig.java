@@ -1,4 +1,4 @@
-package me.onair.main.config;
+package me.onair.main.kafka.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +23,17 @@ import org.springframework.kafka.core.ProducerFactory;
 @Configuration
 public class KafkaConfig {
 
-    private static final Integer PARTITIONS = 3;
-    private static final short REPLICATION = 3;
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
+
+    @Value(value = "${spring.kafka.producer.acks}")
+    private String producerAcks;
+
+    @Value(value = "${spring.kafka.consumer.group-id}")
+    private String consumerGroupId;
+
+    @Value(value = "${spring.kafka.consumer.auto-offset-reset}")
+    private String autoOffsetReset;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
@@ -35,13 +42,14 @@ public class KafkaConfig {
         return new KafkaAdmin(configs);
     }
 
-    // ------------------------ Publish 설정 -------------------------------------
+    // Producers
     @Bean
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, producerAcks);
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
@@ -50,15 +58,16 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    // ------------------------ Consumer 설정 -------------------------------------
 
+    // Consumers
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "foo");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
