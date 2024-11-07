@@ -17,7 +17,9 @@ class LoggingInterceptor @Inject constructor() : Interceptor {
                 Log.d("API", "Header: $name: $value")
             }
             request.body?.let {
-                Log.d("API", "Body: ${it.toString()}")
+                val buffer = okio.Buffer()
+                it.writeTo(buffer)
+                Log.d("API", "Body: ${buffer.readUtf8()}")
             }
         }
 

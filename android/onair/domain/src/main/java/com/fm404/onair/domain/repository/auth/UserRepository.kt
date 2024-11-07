@@ -8,6 +8,6 @@ import com.fm404.onair.domain.model.auth.UserRole
 interface UserRepository {
     suspend fun checkAdminRole(): Result<UserRole>
     suspend fun checkUsername(username: String): Result<Boolean>
-    suspend fun register(request: RegisterRequest): Result<LoginResult>
+    suspend fun register(request: RegisterRequest): Result<Unit>
     suspend fun login(request: LoginRequest): Result<LoginResult>
 }

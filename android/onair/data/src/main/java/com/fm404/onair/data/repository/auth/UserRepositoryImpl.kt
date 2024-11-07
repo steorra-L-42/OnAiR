@@ -1,6 +1,7 @@
 package com.fm404.onair.data.repository.auth
 
 import com.fm404.onair.core.network.manager.TokenManager
+import com.fm404.onair.core.network.model.ErrorResponse
 import com.fm404.onair.data.remote.api.auth.UserApi
 import com.fm404.onair.data.remote.dto.auth.LoginRequestDto
 import com.fm404.onair.data.remote.dto.auth.SignupRequestDto
@@ -9,6 +10,7 @@ import com.fm404.onair.domain.model.auth.LoginResult
 import com.fm404.onair.domain.model.auth.RegisterRequest
 import com.fm404.onair.domain.model.auth.UserRole
 import com.fm404.onair.domain.repository.auth.UserRepository
+import com.google.gson.Gson
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -24,7 +26,7 @@ class UserRepositoryImpl @Inject constructor(
         true
     }
 
-    override suspend fun register(request: RegisterRequest): Result<LoginResult> = runCatching {
+    override suspend fun register(request: RegisterRequest): Result<Unit> = runCatching {
         userApi.register(
             SignupRequestDto(
                 username = request.username,
@@ -34,12 +36,6 @@ class UserRepositoryImpl @Inject constructor(
                 verification = request.verificationCode
             )
         )
-
-        // 회원가입 성공 시 바로 로그인
-        login(LoginRequest(
-            username = request.username,
-            password = request.password
-        )).getOrThrow()
     }
 
     override suspend fun login(request: LoginRequest): Result<LoginResult> = runCatching {
@@ -59,7 +55,9 @@ class UserRepositoryImpl @Inject constructor(
             // refresh token은 쿠키로 자동 저장되므로 별도 처리 불필요
             LoginResult(isSuccess = true)
         } else {
-            throw Exception("Login failed: ${response.code()}")
+            val errorBody = response.errorBody()?.string()
+            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+            throw Exception(errorResponse.message)
         }
     }
 }

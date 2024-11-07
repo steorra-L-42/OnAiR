@@ -2,6 +2,7 @@ package com.fm404.onair.features.auth.presentation.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fm404.onair.domain.model.auth.LoginRequest
 import com.fm404.onair.domain.model.auth.RegisterRequest
 import com.fm404.onair.domain.repository.auth.UserRepository
 import com.fm404.onair.features.auth.presentation.register.state.RegisterEvent
@@ -242,16 +243,27 @@ class RegisterViewModel @Inject constructor(
 
             userRepository.register(request)
                 .onSuccess {
-                    // TODO: 회원가입 성공 처리 (네비게이션 등)
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        error = null
-                    )
+                    userRepository.login(
+                        LoginRequest(
+                            username = _state.value.username,
+                            password = _state.value.password
+                        )
+                    ).onSuccess {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = null
+                        )
+                    }.onFailure { loginException ->
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = loginException.message
+                        )
+                    }
                 }
-                .onFailure { exception ->
+                .onFailure { registerException ->
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = "회원가입 중 오류가 발생했습니다."
+                        error = registerException.message
                     )
                 }
         }
