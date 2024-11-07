@@ -4,6 +4,7 @@ data class RegisterState(
     val username: String = "",
     val password: String = "",
     val confirmPassword: String = "",
+    val nickname: String = "",
     val phoneNumber: String = "",
     val verificationCode: String = "",
     val isLoading: Boolean = false,
@@ -12,5 +13,7 @@ data class RegisterState(
     val isVerificationCodeSent: Boolean = false,
     val remainingTimeSeconds: Int = 180, // 3분
     val verificationAttempts: Int = 0,   // 인증 시도 횟수
-    val maxVerificationAttempts: Int = 5  // 최대 시도 횟수
+    val maxVerificationAttempts: Int = 5,  // 최대 시도 횟수
+    val isUserIdAvailable: Boolean = false,
+    val isCheckingUserId: Boolean = false
 )

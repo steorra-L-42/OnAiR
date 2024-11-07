@@ -1,18 +1,22 @@
 package com.fm404.onair.features.auth.presentation.login
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.auth.NavControllerHolder
+import com.fm404.onair.domain.usecase.auth.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.fm404.onair.features.auth.presentation.login.state.LoginState
 import com.fm404.onair.features.auth.presentation.login.state.LoginEvent
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
+    private val loginUseCase: LoginUseCase,
     private val navigationContract: AuthNavigationContract
 ) : ViewModel() {
     private val _state = MutableStateFlow(LoginState())
@@ -51,29 +55,26 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun login() {
-        if (!validateInput()) {
-            return
+        val currentState = _state.value
+
+        viewModelScope.launch {
+            _state.value = currentState.copy(isLoading = true)
+
+            loginUseCase(
+                username = currentState.username,
+                password = currentState.password
+            ).onSuccess {
+                _state.value = currentState.copy(
+                    isLoading = false,
+                    error = null
+                )
+                navigationContract.navigateToHome()
+            }.onFailure { exception ->
+                _state.value = currentState.copy(
+                    isLoading = false,
+                    error = exception.message ?: "로그인에 실패했습니다."
+                )
+            }
         }
-
-        _state.value = _state.value.copy(isLoading = true)
-
-        _state.value = _state.value.copy(
-            isLoading = false,
-            error = null
-        )
-    }
-
-    private fun validateInput(): Boolean {
-        if (_state.value.username.isBlank()) {
-            _state.value = _state.value.copy(error = "아이디를 입력해주세요.")
-            return false
-        }
-
-        if (_state.value.password.isBlank()) {
-            _state.value = _state.value.copy(error = "비밀번호를 입력해주세요.")
-            return false
-        }
-
-        return true
     }
 }
