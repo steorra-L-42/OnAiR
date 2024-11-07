@@ -32,4 +32,11 @@ class AuthNavigationContractImpl @Inject constructor() : AuthNavigationContract 
     override fun navigateBack() {
         navController?.popBackStack()
     }
+
+    override fun navigateToHome() {
+        navController?.navigate(AuthNavigationContract.ROUTE_HOME) {
+            // 로그인 화면을 백스택에서 제거
+            popUpTo(AuthNavigationContract.ROUTE_LOGIN) { inclusive = true }
+        }
+    }
 }

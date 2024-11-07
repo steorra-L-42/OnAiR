@@ -1,4 +1,4 @@
-package me.onair.main.domain.user.entity;
+package me.onair.main.domain.jwt.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -6,13 +6,14 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import java.time.LocalDateTime;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.Table;
+import me.onair.main.domain.user.entity.User;
 
 @Entity
 @Getter
@@ -29,22 +30,17 @@ public class RefreshToken {
     private String value;
 
     @Column(nullable = false)
-    private LocalDateTime issuedAt;
+    private String expiration;
 
-    @Column(nullable = false)
-    private LocalDateTime expiredAt;
-
-    @Column(nullable = false)
-    private Boolean revoked = false;
-
-    @OneToOne(mappedBy = "refreshToken", fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     @Builder
-    public RefreshToken(String value, LocalDateTime issuedAt, LocalDateTime expiredAt) {
+    public RefreshToken(User user, String value, String expiration) {
+        this.user = user;
+        this.user.updateRefreshToken(this); // 연관 관계 설정
         this.value = value;
-        this.issuedAt = issuedAt;
-        this.expiredAt = expiredAt;
+        this.expiration = expiration;
     }
-
 }

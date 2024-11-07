@@ -2,6 +2,9 @@ package com.fm404.onair.features.auth.presentation.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fm404.onair.domain.model.auth.LoginRequest
+import com.fm404.onair.domain.model.auth.RegisterRequest
+import com.fm404.onair.domain.repository.auth.UserRepository
 import com.fm404.onair.features.auth.presentation.register.state.RegisterEvent
 import com.fm404.onair.features.auth.presentation.register.state.RegisterState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,7 +13,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 @HiltViewModel
-class RegisterViewModel @Inject constructor() : ViewModel() {
+class RegisterViewModel @Inject constructor(
+    private val userRepository: UserRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(RegisterState())
     val state = _state.asStateFlow()
 
@@ -35,6 +40,15 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
                     confirmPassword = event.confirmPassword,
                     error = null
                 )
+            }
+            is RegisterEvent.NicknameChanged -> {
+                _state.value = _state.value.copy(
+                    nickname = event.nickname,
+                    error = null
+                )
+            }
+            is RegisterEvent.CheckUserIdAvailability -> {
+                checkUserIdAvailability()
             }
             is RegisterEvent.PhoneNumberChanged -> {
                 if (!_state.value.isPhoneVerified) {
@@ -62,6 +76,35 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
             is RegisterEvent.RegisterClicked -> {
                 register()
             }
+        }
+    }
+
+    private fun checkUserIdAvailability() {
+        if (_state.value.username.isBlank()) {
+            _state.value = _state.value.copy(error = "아이디를 입력해주세요.")
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(
+                isCheckingUserId = true,
+                error = null
+            )
+
+            userRepository.checkUsername(_state.value.username)
+                .onSuccess { isAvailable ->
+                    _state.value = _state.value.copy(
+                        isCheckingUserId = false,
+                        isUserIdAvailable = isAvailable,
+                        error = if (!isAvailable) "이미 사용 중인 아이디입니다." else null
+                    )
+                }
+                .onFailure { exception ->
+                    _state.value = _state.value.copy(
+                        isCheckingUserId = false,
+                        error = "아이디 중복 확인 중 오류가 발생했습니다."
+                    )
+                }
         }
     }
 
@@ -190,16 +233,55 @@ class RegisterViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            // 실제 구현에서는 여기에 회원가입 API 호출 로직이 들어갈 것입니다
-            delay(1000) // 임시 딜레이
+            val request = RegisterRequest(
+                username = _state.value.username,
+                password = _state.value.password,
+                nickname = _state.value.nickname,
+                phoneNumber = _state.value.phoneNumber,
+                verificationCode = _state.value.verificationCode
+            )
 
-            _state.value = _state.value.copy(isLoading = false)
+            userRepository.register(request)
+                .onSuccess {
+                    userRepository.login(
+                        LoginRequest(
+                            username = _state.value.username,
+                            password = _state.value.password
+                        )
+                    ).onSuccess {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = null
+                        )
+                    }.onFailure { loginException ->
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = loginException.message
+                        )
+                    }
+                }
+                .onFailure { registerException ->
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = registerException.message
+                    )
+                }
         }
     }
 
     private fun validateInput(): Boolean {
         if (_state.value.username.isBlank()) {
             _state.value = _state.value.copy(error = "아이디를 입력해주세요.")
+            return false
+        }
+
+        if (!_state.value.isUserIdAvailable) {
+            _state.value = _state.value.copy(error = "아이디 중복확인이 필요합니다.")
+            return false
+        }
+
+        if (_state.value.nickname.isBlank()) {  // 추가
+            _state.value = _state.value.copy(error = "닉네임을 입력해주세요.")
             return false
         }
 
