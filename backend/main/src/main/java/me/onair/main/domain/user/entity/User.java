@@ -15,14 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.jwt.entity.RefreshToken;
-import me.onair.main.domain.jwt.entity.RefreshToken;
 import me.onair.main.domain.story.entity.Story;
-import me.onair.main.domain.user.dto.SignupRequestDto;
 import me.onair.main.domain.user.dto.SignupRequestDto;
 import me.onair.main.domain.user.enums.Role;
 
@@ -31,9 +28,6 @@ import me.onair.main.domain.user.enums.Role;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user")
 public class User {
-
-    // TODO: 기본 프로필 이미지 경로 수정 필요
-    private static final String DEFAULT_PROFILE_PATH = "https://onair.me/images/default_profile.png";
 
     // TODO: 기본 프로필 이미지 경로 수정 필요
     private static final String DEFAULT_PROFILE_PATH = "https://onair.me/images/default_profile.png";
@@ -59,12 +53,9 @@ public class User {
 
     @Column(name = "profile_path", nullable = false)
     private String profilePath = DEFAULT_PROFILE_PATH;
-    private String profilePath = DEFAULT_PROFILE_PATH;
 
-    // TODO: ERD 수정 필요
     @Enumerated(value = EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private Role role = Role.ROLE_USER;
     private Role role = Role.ROLE_USER;
 
     @OneToOne
@@ -82,34 +73,22 @@ public class User {
 
     @Builder
     public User(String nickname, String username, String password, String phoneNumber, Role role) {
-    @Builder
-    public User(String nickname, String username, String password, String phoneNumber, Role role) {
         this.nickname = nickname;
         this.username = username;
         this.password = password;
         this.phoneNumber = phoneNumber;
-        this.role = role;
         this.role = role;
     }
 
     // 일반 유저 생성하는 정적 팩토리 메서드
     public static User createNomalUser(SignupRequestDto request) {
         return User.builder()
-            .nickname(request.getNickname())
-            .username(request.getUsername())
-            .password(request.getPassword())
-            .phoneNumber(request.getPhoneNumber())
-            .role(Role.ROLE_USER)
-            .build();
-    // 일반 유저 생성하는 정적 팩토리 메서드
-    public static User createNomalUser(SignupRequestDto request) {
-        return User.builder()
-            .nickname(request.getNickname())
-            .username(request.getUsername())
-            .password(request.getPassword())
-            .phoneNumber(request.getPhoneNumber())
-            .role(Role.ROLE_USER)
-            .build();
+                .nickname(request.getNickname())
+                .username(request.getUsername())
+                .password(request.getPassword())
+                .phoneNumber(request.getPhoneNumber())
+                .role(Role.ROLE_USER)
+                .build();
     }
 
     public void updatePicture(String picture) {
@@ -128,9 +107,6 @@ public class User {
         fcmToken.changeMobiUser(this);
     }
 
-    public void updateRefreshToken(RefreshToken refreshToken) {
-        this.refreshToken = refreshToken;
-    }
     public void updateRefreshToken(RefreshToken refreshToken) {
         this.refreshToken = refreshToken;
     }
