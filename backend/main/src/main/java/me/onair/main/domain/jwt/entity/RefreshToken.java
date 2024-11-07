@@ -32,7 +32,6 @@ public class RefreshToken {
     @Column(nullable = false)
     private String expiration;
 
-    // TODO: ERD 수정 필요
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
