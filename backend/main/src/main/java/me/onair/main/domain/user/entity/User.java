@@ -45,7 +45,6 @@ public class User {
     private String username;
 
     // 비밀번호
-    // TODO: ERD 수정 필요
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 
@@ -55,7 +54,6 @@ public class User {
     @Column(name = "profile_path", nullable = false)
     private String profilePath = DEFAULT_PROFILE_PATH;
 
-    // TODO: ERD 수정 필요
     @Enumerated(value = EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role = Role.ROLE_USER;
@@ -64,7 +62,6 @@ public class User {
     @JoinColumn(name = "fcm_token_id")
     private FcmToken fcmToken;
 
-    // TODO: ERD 수정 필요
     @OneToOne(mappedBy = "user")
     private RefreshToken refreshToken;
 
@@ -86,12 +83,12 @@ public class User {
     // 일반 유저 생성하는 정적 팩토리 메서드
     public static User createNomalUser(SignupRequestDto request) {
         return User.builder()
-            .nickname(request.getNickname())
-            .username(request.getUsername())
-            .password(request.getPassword())
-            .phoneNumber(request.getPhoneNumber())
-            .role(Role.ROLE_USER)
-            .build();
+                .nickname(request.getNickname())
+                .username(request.getUsername())
+                .password(request.getPassword())
+                .phoneNumber(request.getPhoneNumber())
+                .role(Role.ROLE_USER)
+                .build();
     }
 
     public void updatePicture(String picture) {
