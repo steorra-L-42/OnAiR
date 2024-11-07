@@ -69,8 +69,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_NUM_PARTITIONS: 3  # 기본 파티션 수 설정
       KAFKA_LOG_DIRS: /var/lib/kafka/data  # 로그 데이터 저장 경로
-      KAFKA_NUM_NETWORK_THREADS: 3  # 네트워크 I/O 스레드 수
-      KAFKA_NUM_IO_THREADS: 8  # I/O 작업용 스레드 수
+      KAFKA_NUM_NETWORK_THREADS: 2  # 네트워크 I/O 스레드 수
+      KAFKA_NUM_IO_THREADS: 4  # I/O 작업용 스레드 수
       KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400  # 소켓 송신 버퍼 크기
       KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400  # 소켓 수신 버퍼 크기
       KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600  # 최대 요청 크기
@@ -87,11 +87,6 @@ services:
       - kafka_network
     volumes:
       - kafka_data_1:/var/lib/kafka/data  # Kafka 1 데이터 저장소
-    healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka-1:9092"]
-      interval: 5s
-      retries: 5
-      start_period: 10s
 
   kafka-2:
     image: confluentinc/cp-kafka:7.4.0
@@ -114,8 +109,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_NUM_PARTITIONS: 3  # 기본 파티션 수 설정
       KAFKA_LOG_DIRS: /var/lib/kafka/data
-      KAFKA_NUM_NETWORK_THREADS: 3
-      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_NUM_NETWORK_THREADS: 2
+      KAFKA_NUM_IO_THREADS: 4
       KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
       KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
       KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600
@@ -132,11 +127,6 @@ services:
       - kafka_data_2:/var/lib/kafka/data  # Kafka 2 데이터 저장소
     networks:
       - kafka_network
-    healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka-2:9093"]
-      interval: 5s
-      retries: 5
-      start_period: 10s
 
   kafka-3:
     image: confluentinc/cp-kafka:7.4.0
@@ -159,8 +149,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_NUM_PARTITIONS: 3  # 기본 파티션 수 설정
       KAFKA_LOG_DIRS: /var/lib/kafka/data
-      KAFKA_NUM_NETWORK_THREADS: 3
-      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_NUM_NETWORK_THREADS: 2
+      KAFKA_NUM_IO_THREADS: 4
       KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
       KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
       KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600
@@ -177,72 +167,18 @@ services:
       - kafka_network
     volumes:
       - kafka_data_3:/var/lib/kafka/data  # Kafka 3 데이터 저장소
-    healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka-3:9094"]
-      interval: 5s
-      retries: 5
-      start_period: 10s
 
   kafka-init:
     image: confluentinc/cp-kafka:7.4.0
     depends_on:
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
+      - kafka-1
+      - kafka-2
+      - kafka-3
     command: "/create-topics.sh"
     networks:
       - kafka_network
     volumes:
       - ./create-topics.sh:/create-topics.sh  # 토픽 생성 스크립트 마운트
-
-  mysql:
-    image: mysql:8.0
-    container_name: ec2-1-db
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DB}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    networks:
-      - kafka_network
-    ports:
-      - "${MYSQL_PORT}:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  main-server:
-    image: hotfried/main-server
-    container_name: main-server
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS}
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_PORT=${MYSQL_PORT}
-      - MYSQL_DB=${MYSQL_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    networks:
-      - kafka_network
-    depends_on:
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy  # MySQL이 건강할 때만 시작
 
 networks:
   kafka_network:
@@ -255,4 +191,3 @@ volumes:
   kafka_data_1:
   kafka_data_2:
   kafka_data_3:
-  mysql_data:
