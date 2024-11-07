@@ -1,12 +1,10 @@
 # 외부 패키지
 import os
-import threading
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 # 내부 패키지: 설정
 import config
-from gloval_vars import streams
 
 # 내부 패키지: 기타
 from channel_manager import add_channel, cleanup_channels
@@ -59,16 +57,19 @@ def setup_channels():
   # 기본 채널 정보 셋업
   basic_ch_no = config.BASIC_CHANNEL_NO
   channels = [(
-    config.BASIC_CHANNEL_NAMES[basic_ch_no],                              # 채널 이름
+    config.BASIC_CHANNEL_NAMES[basic_ch_no],  # 채널 이름
     os.path.join(config.CHANNEL_PATHS[basic_ch_no], config.SOURCES_DIR)   # 채널 소스 음성 경로
   )]
 
   # 기본 채널 생성
   for channel, playlist_dir in channels:
-    logger.info(f"기본 채널 음악 초기화 여부 [{config.BASIC_CHANNEL_INIT_MUSIC}]")
     if config.BASIC_CHANNEL_INIT_MUSIC:
       setup_music(playlist_dir)
     add_channel(channel, playlist_dir)
+
+    # content = '#EXTM3u\n'
+    # for f in os.listdir(playlist_dir):
+
 
 
 

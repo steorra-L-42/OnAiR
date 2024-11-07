@@ -46,3 +46,24 @@ def extract_stream_name(hls_output_path):
     if stream_index < len(path_parts):
       return path_parts[stream_index]
   return None
+
+
+
+### 스트리밍한 음악 파일 정리 ###
+def clean_used_source_files(hls_output_path):
+  concat_file_path = os.path.join(hls_output_path, 'concat.txt')
+  if not os.path.exists(concat_file_path):
+    return
+
+  sources = []
+  with open(concat_file_path, 'r', encoding='utf-8') as concat_file:
+    for line in concat_file:
+      source_path = line.strip("file '")[1][:-1]
+      sources.append(source_path)
+  for src_path in sources:
+    if os.path.exists(src_path):
+      os.remove(src_path)
+
+
+
+

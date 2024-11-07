@@ -7,6 +7,7 @@ import gloval_vars as vars
 from config import CHANNEL_RESET, SERVER_BASE_URL
 
 # 내부 패키지: 기타
+from tmp import tmp_generate_stream
 from stream_manager import generate_hls_stream, terminate_ffmpeg_stream_process
 from directory_manager import clean_stream
 from logger import get_logger
@@ -34,6 +35,7 @@ def add_channel(channel_name, playlist_path):
 
   vars.streams[channel_name] = {}
   thread = threading.Thread(
+    # target=tmp_generate_stream,
     target=generate_hls_stream,
     args=(channel_name, playlist_path),
     daemon=True
