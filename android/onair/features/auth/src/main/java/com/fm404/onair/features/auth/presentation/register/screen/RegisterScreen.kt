@@ -1,9 +1,11 @@
 package com.fm404.onair.features.auth.presentation.register.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,8 +54,16 @@ private fun RegisterContent(
         ) {
             OutlinedTextField(
                 value = state.phoneNumber,
-                onValueChange = { onEvent(RegisterEvent.PhoneNumberChanged(it)) },
-                label = { Text("휴대전화 번호") },
+                onValueChange = {
+                    if (it.all { it.isDigit() } && it.length <= 11) {
+                        onEvent(RegisterEvent.PhoneNumberChanged(it))
+                    }
+                },
+                label = { Text("휴대전화 번호('-' 제외)") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.NumberPassword
+                ),
+                singleLine = true,
                 modifier = Modifier.weight(1f),
                 enabled = !state.isPhoneVerified,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -83,8 +93,16 @@ private fun RegisterContent(
             ) {
                 OutlinedTextField(
                     value = state.verificationCode,
-                    onValueChange = { onEvent(RegisterEvent.VerificationCodeChanged(it)) },
-                    label = { Text("인증번호") },
+                    onValueChange = {
+                        if (it.all { it.isDigit() } && it.length <= 6) {
+                            onEvent(RegisterEvent.VerificationCodeChanged(it))
+                        }
+                    },
+                    label = { Text("인증번호(6자리)") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.NumberPassword
+                    ),
+                    singleLine = true,
                     modifier = Modifier.weight(1f),
                     enabled = state.verificationAttempts < state.maxVerificationAttempts
                 )
@@ -122,11 +140,50 @@ private fun RegisterContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             // 기본 정보 입력 (인증 완료 후에만 표시)
-            OutlinedTextField(
-                value = state.username,
-                onValueChange = { onEvent(RegisterEvent.UsernameChanged(it)) },
-                label = { Text("ID") },
+            Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = state.username,
+                    onValueChange = { onEvent(RegisterEvent.UsernameChanged(it)) },
+                    label = { Text("ID") },
+                    modifier = Modifier.weight(1f),
+                    enabled = !state.isUserIdAvailable,
+                    singleLine = true
+                )
+
+                Button(
+                    onClick = { onEvent(RegisterEvent.CheckUserIdAvailability) },
+                    enabled = !state.isUserIdAvailable && state.username.isNotBlank()
+                ) {
+                    if (state.isCheckingUserId) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text("중복확인")
+                    }
+                }
+            }
+
+            if (state.isUserIdAvailable) {
+                Text(
+                    text = "✓ 사용 가능한 아이디입니다.",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = state.nickname,
+                onValueChange = { onEvent(RegisterEvent.NicknameChanged(it)) },
+                label = { Text("닉네임") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -136,7 +193,8 @@ private fun RegisterContent(
                 onValueChange = { onEvent(RegisterEvent.PasswordChanged(it)) },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -146,7 +204,8 @@ private fun RegisterContent(
                 onValueChange = { onEvent(RegisterEvent.ConfirmPasswordChanged(it)) },
                 label = { Text("Confirm Password") },
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
         }
 
