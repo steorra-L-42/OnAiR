@@ -14,18 +14,16 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "Forbidden", "A003"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found", "A004"),
 
-    DUPLICATE_USERNAME(HttpStatus.BAD_REQUEST,"Duplicate username", "B001"),
-    NOT_EXIST_USER(HttpStatus.NOT_FOUND, "Not exist user", "B002"),
+    DUPLICATE_USERNAME(HttpStatus.CONFLICT,"Duplicate username", "B001"),
+    DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "Duplicate phone number", "B002"),
+    NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "Not verified phone number", "B003"),
+    NOT_EXIST_USER(HttpStatus.NOT_FOUND, "Not exist user", "B004"),
 
-    ACCESS_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "Access token is expired", "C001"),
-    REFRESH_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "Refresh token is expired", "C002"),
-    WRONG_CATEGORY_JWT(HttpStatus.BAD_REQUEST, "Wrong Category JWT", "C003"),
-    NOT_EXIST_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "Not exist refresh token", "C004"),
-    NO_REFRESH_TOKEN_COOKIE(HttpStatus.BAD_REQUEST, "No refresh token cookie", "C005");
-
-    // U001 예약
-    // U002 예약
-    // U003 예약
+    ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access token is expired", "C001"),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh token is expired", "C002"),
+    WRONG_CATEGORY_JWT(HttpStatus.UNAUTHORIZED, "Wrong Category JWT", "C003"),
+    NOT_EXIST_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Not exist refresh token", "C004"),
+    NO_REFRESH_TOKEN_COOKIE(HttpStatus.UNAUTHORIZED, "No refresh token cookie", "C005");
 
     private final HttpStatus status;
     private final String message;
