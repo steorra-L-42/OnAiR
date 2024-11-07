@@ -11,19 +11,11 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NetworkModule {
+object ApiModule {
     @Provides
     @Singleton
     fun provideUserApi(retrofit: Retrofit): UserApi {
         return retrofit.create(UserApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("http://your-api-base-url/")  // 실제 API URL로 변경 필요
-            .build()
     }
 
     @Provides
