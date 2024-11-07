@@ -1,7 +1,5 @@
 package me.onair.main.domain.user.entity;
 
-import static me.onair.main.domain.user.enums.Role.USER;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,10 +14,13 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.onair.main.domain.channel.entity.Channel;
+import me.onair.main.domain.jwt.entity.RefreshToken;
 import me.onair.main.domain.story.entity.Story;
+import me.onair.main.domain.user.dto.SignupRequestDto;
 import me.onair.main.domain.user.enums.Role;
 
 @Entity
@@ -27,6 +28,9 @@ import me.onair.main.domain.user.enums.Role;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user")
 public class User {
+
+    // TODO: 기본 프로필 이미지 경로 수정 필요
+    private static final String DEFAULT_PROFILE_PATH = "https://onair.me/images/default_profile.png";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,25 +45,27 @@ public class User {
     private String username;
 
     // 비밀번호
-    @Column(name = "password", nullable = false, length = 25)
+    // TODO: ERD 수정 필요
+    @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 
     @Column(name = "phone_number", nullable = false, unique = true, length = 20)
     private String phoneNumber;
 
     @Column(name = "profile_path", nullable = false)
-    private String profilePath;
+    private String profilePath = DEFAULT_PROFILE_PATH;
 
+    // TODO: ERD 수정 필요
     @Enumerated(value = EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private Role role = USER;
+    private Role role = Role.ROLE_USER;
 
     @OneToOne
     @JoinColumn(name = "fcm_token_id")
     private FcmToken fcmToken;
 
-    @OneToOne
-    @JoinColumn(name = "refresh_token_id")
+    // TODO: ERD 수정 필요
+    @OneToOne(mappedBy = "user")
     private RefreshToken refreshToken;
 
     @OneToMany(mappedBy = "user")
@@ -68,28 +74,28 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Channel> channels = new ArrayList<>();
 
-    private User(String nickname, String username, String password, String phoneNumber, String profilePath) {
+    @Builder
+    public User(String nickname, String username, String password, String phoneNumber, Role role) {
         this.nickname = nickname;
         this.username = username;
         this.password = password;
         this.phoneNumber = phoneNumber;
-        this.profilePath = profilePath;
+        this.role = role;
     }
 
-    public static User of(String nickname, String username, String password, String phoneNumber, String profilePath) {
-        return new User(nickname, username, password, phoneNumber, profilePath);
+    // 일반 유저 생성하는 정적 팩토리 메서드
+    public static User createNomalUser(SignupRequestDto request) {
+        return User.builder()
+            .nickname(request.getNickname())
+            .username(request.getUsername())
+            .password(request.getPassword())
+            .phoneNumber(request.getPhoneNumber())
+            .role(Role.ROLE_USER)
+            .build();
     }
 
     public void updatePicture(String picture) {
         this.profilePath = picture;
-    }
-
-    public void addRefreshToken(RefreshToken refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
-    public void deleteRefreshToken() {
-        this.refreshToken = null;
     }
 
     public void deleteFcmToken() {
@@ -104,4 +110,7 @@ public class User {
         fcmToken.changeMobiUser(this);
     }
 
+    public void updateRefreshToken(RefreshToken refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }
