@@ -30,7 +30,13 @@ class LoggingInterceptor @Inject constructor() : Interceptor {
                 Log.d("API", "Header: $name: $value")
             }
             response.body?.let {
-                Log.d("API", "Body: ${it.toString()}")
+                val bodyString = it.string() // 주의: 응답 body를 소비합니다!
+                Log.d("API", "Response Body: $bodyString")
+
+                // body를 다시 만들어서 반환
+                return response.newBuilder()
+                    .body(ResponseBody.create(it.contentType(), bodyString))
+                    .build()
             }
         }
 
