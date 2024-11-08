@@ -3,7 +3,7 @@ import os
 import threading
 
 # 내부 패키지
-from config import PLAYLIST_PATH, CHUNK_SIZE
+from config import PLAYLIST_PATH, CHUNK_SIZE, CHUNK_STEP
 from file_queue import FileQueue
 from logger import log
 
@@ -18,6 +18,6 @@ def add_channel(channel_name):
     'file_queue': queue,
     'file_size': queue.get_first_file_size(),
     'start': 0,
-    'end': CHUNK_SIZE
+    'end': CHUNK_SIZE*CHUNK_STEP-1
   }
   return channels[channel_name]

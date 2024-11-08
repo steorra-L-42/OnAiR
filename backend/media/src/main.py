@@ -10,7 +10,7 @@ import aiofiles
 import threading
 
 # 내부 패키지
-from config import EMPTY_MP3, BASIC_CHANNEL_NAME, CHUNK_SIZE
+from config import EMPTY_MP3, BASIC_CHANNEL_NAME, CHUNK_SIZE, CHUNK_STEP
 from shared_vars import channels, add_channel
 from logger import log
 
@@ -51,26 +51,34 @@ app.router.lifespan_context = lifespan
 
 
 
+########################   스트리밍 정보   ########################
+@app.get("/stream-info")
+async def stream_info(request: Request):
+  channel_name = "channel_1"
+  channel = channels[channel_name]
+  return {
+    'start': channel['start'],
+    'end': channel['end']
+  }
+
+
+
 ########################  스트리밍 엔드포인트  ########################
 @app.get("/stream")
 async def stream(request: Request):
   channel_name = 'channel_1'
   file_size = channels[channel_name]['file_size']
   start, end  = None, None
+  status_code = 200
 
-  range_header = request.headers.get('Range')
+  range_header = request.headers.get("range")
   if range_header:
-    range_type, range_values = range_header.split('=')
-    if range_type.strip() == 'bytes':
-      range_values = range_values.split('-')
-      start = int(range_values[0]) if range_values[0] else None
-      end = int(range_values[1]) if len(range_values) > 1 and range_values[1] else None
+    range_values = range_header.replace("bytes=", "").split("-")
+    status_code = 206
+    if len(range_values) == 2:
+      start = int(range_values[0])
+      end = int(range_values[1]) if range_values[1] else file_size - 1
 
-  start = start if start is not None else 0
-  end = end or file_size - 1
-  log.info(f"Streaming: [{start} ~ {end}]")
-
-  status_code = 200 if end-start == file_size else 206
   response_headers = {
     'Content-Type': 'audio/mpeg',
     'Accept-Ranges': 'bytes',
@@ -89,15 +97,18 @@ async def stream(request: Request):
 ########################  Generator  ########################
 async def audio_stream_generator(channel_name, start:int, end:int):
   file_path = channels[channel_name]['file_queue'].my_peek(0)
-
   with open(file_path, 'rb') as file:
     file.seek(start)
-    chunk_size = CHUNK_SIZE
+    chunk_size = end-start+1
+    tmp = start
 
     while True:
       if end is not None and file.tell() + chunk_size > end:
         chunk_size = end - file.tell() + 1
       data = file.read(chunk_size)
+
+      log.info(f"Streaming [{tmp} ~ {tmp+chunk_size}]")
+      tmp += chunk_size
 
       if not data:
         break
@@ -106,30 +117,34 @@ async def audio_stream_generator(channel_name, start:int, end:int):
 
 
 
+
 ########################  라이브 청크 관리  ########################
 async def update_range(channel):
-  base_wait_time = 0.512
-  wait_time = 0.512
+  request_range = (CHUNK_SIZE * CHUNK_STEP) - 1
+  base_wait_time = (request_range+1) / 16000
+  wait_time = base_wait_time
 
   while True:
     await asyncio.sleep(wait_time)
     remaining_bytes = channel['file_size'] - channel['end']
-    channel['start'] = channel['end']
 
     if remaining_bytes == 0:
-      log.info("첫 번째 청크 스트리밍 해야 함")
       channel['file_size'] = channel['file_queue'].next()
       channel['start'] = 0
-      channel['end'] = CHUNK_SIZE if CHUNK_SIZE <= channel['file_size'] else channel['file_size']
+      channel['end'] = request_range if request_range <= channel['file_size'] else channel['file_size']
       wait_time = base_wait_time
-      
-    elif remaining_bytes < CHUNK_SIZE:
-      log.info("마지막 청크(byte)입니다.")
+      log.info("첫 번째 청크 스트리밍 해야 함")
+
+    elif remaining_bytes < request_range:
+      channel['start'] = channel['end']+1
       channel['end'] += remaining_bytes
       wait_time = remaining_bytes / 16000
-      
+      log.info("마지막 청크(byte)입니다.")
+
     else:
-      log.info("중간 청크입니다.")
-      channel['end'] += CHUNK_SIZE
+      channel['start'] = channel['end']+1
+      channel['end'] += request_range
       wait_time = base_wait_time
+      log.info(f"중간 청크입니다 [{channel['start']} ~ {channel['start']+request_range}]")
+
 
