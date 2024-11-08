@@ -28,6 +28,9 @@ services:
       placement:
         constraints:
           - node.role == manager
+    volumes:
+      - /streaming_channels:/app/media/streaming_channels
+    
     
 networks:
   onair-overlay-network:
