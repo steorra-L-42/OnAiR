@@ -38,5 +38,8 @@ public class KafkaConsumer {
         // 메시지 처리 소요 시간 계산
         long endTime = System.currentTimeMillis(); // 끝 시간 기록
         log.info("Processing time for thread {} (ID: {}): {} ms", threadName, threadId, (endTime - startTime));
+
+        // Kafa Dead Letter Topic 테스트
+//        throw new IllegalArgumentException();
     }
 }
