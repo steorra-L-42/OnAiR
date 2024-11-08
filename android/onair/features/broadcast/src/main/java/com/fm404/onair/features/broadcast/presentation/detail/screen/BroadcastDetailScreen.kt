@@ -42,7 +42,7 @@ fun BroadcastDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Handle email action */ }) {
+                    IconButton(onClick = { onStoryClick(broadcastId) }) {
                         Icon(imageVector = Icons.Filled.Email, contentDescription = "Message")
                     }
                 },
@@ -131,7 +131,7 @@ fun BroadcastDetailScreen(
 //                        contentDescription = "Previous"
 //                    )
 //                }
-                IconButton(onClick = { onStoryClick(broadcastId) }) {
+                IconButton(onClick = { /* TODO: Handle play/pause action */ }) {
                     Icon(
                         painter = painterResource(id = R.drawable.play),
                         contentDescription = "Play/Pause"
