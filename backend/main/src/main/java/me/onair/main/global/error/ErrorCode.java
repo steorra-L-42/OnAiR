@@ -18,12 +18,15 @@ public enum ErrorCode {
     DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "Duplicate phone number", "B002"),
     NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "Not verified phone number", "B003"),
     NOT_EXIST_USER(HttpStatus.NOT_FOUND, "Not exist user", "B004"),
+    VERIFICATION_CODE_REQUEST_EXCEED_LIMIT(HttpStatus.BAD_REQUEST, "Verification code request exceed limit", "B005"),
 
     ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access token is expired", "C001"),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh token is expired", "C002"),
     WRONG_CATEGORY_JWT(HttpStatus.UNAUTHORIZED, "Wrong Category JWT", "C003"),
     NOT_EXIST_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Not exist refresh token", "C004"),
-    NO_REFRESH_TOKEN_COOKIE(HttpStatus.UNAUTHORIZED, "No refresh token cookie", "C005");
+    NO_REFRESH_TOKEN_COOKIE(HttpStatus.UNAUTHORIZED, "No refresh token cookie", "C005"),
+
+    SMS_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "SMS Exception", "D001");
 
     private final HttpStatus status;
     private final String message;
