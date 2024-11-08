@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.user.dto.PhoneVerifyRequest;
-import me.onair.main.domain.user.dto.PhoneVerifyResponse;
 import me.onair.main.domain.user.dto.SignupRequest;
 import me.onair.main.domain.user.dto.VerificationCodeRequest;
 import me.onair.main.domain.user.entity.User;
@@ -55,13 +54,16 @@ public class UserService {
         smsService.sendSMS(request.getPhoneNumber(), code);
     }
 
-    public PhoneVerifyResponse verifyPhoneNumber(PhoneVerifyRequest request) {
+    public boolean verifyPhoneNumber(PhoneVerifyRequest request) {
 
-        boolean result = verificationCodeRepository.existsByPhoneNumberAndCodeAndExpiredAtAfter(
+        return verificationCodeRepository.existsByPhoneNumberAndCodeAndExpiredAtAfter(
                 request.getPhoneNumber(),
                 request.getVerification(), LocalDateTime.now());
+    }
 
-        return new PhoneVerifyResponse(result);
+    public boolean checkDuplicatedUsername(String username) {
+
+        return true;
     }
 
     @Transactional
