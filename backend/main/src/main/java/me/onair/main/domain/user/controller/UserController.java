@@ -11,6 +11,7 @@ import me.onair.main.domain.user.dto.VerificationCodeRequest;
 import me.onair.main.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,8 +50,8 @@ public class UserController {
     }
 
     // 3. Username 중복 확인
-    @GetMapping("/valid-username")
-    public ResponseEntity<Object> checkDuplicatedUsername(String username) {
+    @GetMapping("/valid-username/{username}")
+    public ResponseEntity<Object> checkDuplicatedUsername(@PathVariable("username") String username) {
         log.info("UserController.checkDuplicatedUsername username: {}", username);
 
         boolean result = userService.checkDuplicatedUsername(username);

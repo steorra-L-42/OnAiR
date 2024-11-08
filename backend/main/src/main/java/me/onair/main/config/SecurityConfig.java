@@ -96,7 +96,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 new AntPathRequestMatcher("/api/v1/user/phone-verification/verification-code"),
                                 new AntPathRequestMatcher("/api/v1/user/phone-verification"),
-                                new AntPathRequestMatcher("/api/v1/user/valid-username"),
+                                new AntPathRequestMatcher("/api/v1/user/valid-username/*"),
                                 new AntPathRequestMatcher("/api/v1/user/signup"),
                                 new AntPathRequestMatcher("/api/v1/user/login"),
                                 new AntPathRequestMatcher("/api/v1/user/reissue")

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class SignupRequest {
 
-    @Size(min = 1, max = 25)
+    @Size(min = 1, max = 40)
     @NotBlank(message = "username is required")
     private String username;
 
@@ -28,7 +28,7 @@ public class SignupRequest {
     @NotBlank(message = "phoneNumber is required")
     private String phoneNumber;
 
-    @Size(min=6, max=6)
+    @Size(min = 6, max = 6)
     @NotBlank(message = "verification is required")
     private String verification;
 

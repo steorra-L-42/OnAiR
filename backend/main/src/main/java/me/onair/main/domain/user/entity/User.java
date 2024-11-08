@@ -44,7 +44,8 @@ public class User {
     @Column(name = "username", nullable = false, length = 40)
     private String username;
 
-    // 비밀번호
+    // 암호화된 비밀번호
+    // 자체로는 25글자 이하
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 

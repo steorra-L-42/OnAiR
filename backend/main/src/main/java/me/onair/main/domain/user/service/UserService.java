@@ -10,6 +10,7 @@ import me.onair.main.domain.user.entity.User;
 import me.onair.main.domain.user.entity.VerificationCode;
 import me.onair.main.domain.user.error.DuplicatePhoneNumberException;
 import me.onair.main.domain.user.error.DuplicateUsername;
+import me.onair.main.domain.user.error.UsernameTooShortOrLongException;
 import me.onair.main.domain.user.error.VerificationCodeRequestExceedLimitException;
 import me.onair.main.domain.user.repository.UserRepository;
 import me.onair.main.domain.user.repository.VerificationCodeRepository;
@@ -63,13 +64,20 @@ public class UserService {
 
     public boolean checkDuplicatedUsername(String username) {
 
-        return true;
+        // username이 0~40자
+        username = username.trim();
+        if (username.isEmpty() || username.length() > 40) {
+            throw new UsernameTooShortOrLongException();
+        }
+
+        return !userRepository.existsByUsername(username);
     }
 
     @Transactional
     public void signup(SignupRequest request) {
 
         validateDuplicateUsername(request.getUsername()); // 중복되는 username이 있는지 확인하는 로직
+        // TODO : 이미 가입한 전화번호
         // TODO : 6자리 인증번호 확인
 
         encodePassword(request); // password를 암호화하는 로직
