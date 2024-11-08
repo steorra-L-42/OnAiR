@@ -32,7 +32,6 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-
     buildFeatures {
         compose = true
     }
@@ -45,22 +44,15 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.compose.bom)
-    implementation(libs.ui)
-    implementation(libs.ui.graphics)
-    implementation(libs.ui.tooling.preview)
-    implementation(libs.material3)
+    implementation(libs.material)
     implementation(libs.androidx.runtime)
-    implementation(libs.hilt.android)
-    implementation(project(":core:contract"))
     implementation(libs.androidx.navigation.compose)
-    implementation(project(":domain"))
+    implementation(libs.androidx.compose.bom)
+    implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(project(":core:media"))
-    implementation(project(":core:designsystem"))
+    implementation(project(":core:common"))
+    implementation(project(":core:contract"))
     kapt(libs.hilt.compiler)
-    debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.ui.test.manifest)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
