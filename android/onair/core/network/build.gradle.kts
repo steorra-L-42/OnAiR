@@ -22,6 +22,7 @@ android {
             load(rootProject.file("local.properties").inputStream())
         }
         buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
+        buildConfigField("String", "MEDIA_BASE_URL", "\"${properties.getProperty("MEDIA_BASE_URL")}\"")
     }
 
     buildTypes {

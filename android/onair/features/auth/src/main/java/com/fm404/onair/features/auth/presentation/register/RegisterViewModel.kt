@@ -11,6 +11,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import android.content.Context
+import android.telephony.TelephonyManager
+import android.util.Log
+
+private const val TAG = "RegisterViewModel"
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
@@ -26,27 +31,48 @@ class RegisterViewModel @Inject constructor(
             is RegisterEvent.UsernameChanged -> {
                 _state.value = _state.value.copy(
                     username = event.username,
-                    error = null
+                    usernameError = if (!isUsernameValid(event.username))
+                        "4~20자의 영문, 숫자 허용 및 영문으로 시작"
+                    else
+                        null,
+                    isUserIdAvailable = false
                 )
             }
             is RegisterEvent.PasswordChanged -> {
+                val newPassword = event.password
                 _state.value = _state.value.copy(
-                    password = event.password,
-                    error = null
+                    password = newPassword,
+                    passwordError = if (!isPasswordValid(newPassword))
+                        "8~40자 영문, 숫자, 특수문자(!@#%^&*()-_=+[]{}|;:,<.>?)"
+                    else
+                        null,
+                    // 비밀번호 바뀌면 비밀번호 확인과 일치하는지 비교하는 코드
+                    confirmPasswordError = if (_state.value.confirmPassword.isNotEmpty()
+                        && _state.value.confirmPassword != newPassword)
+                        "비밀번호가 일치하지 않습니다."
+                    else
+                        null
                 )
             }
             is RegisterEvent.ConfirmPasswordChanged -> {
                 _state.value = _state.value.copy(
                     confirmPassword = event.confirmPassword,
-                    error = null
+                    confirmPasswordError = if (event.confirmPassword != _state.value.password)
+                        "비밀번호 불일치"
+                    else
+                        null
                 )
             }
             is RegisterEvent.NicknameChanged -> {
                 _state.value = _state.value.copy(
                     nickname = event.nickname,
-                    error = null
+                    nicknameError = if (!isNicknameValid(event.nickname))
+                        "2~24자 한글(초성불가), 영문, 숫자"
+                    else
+                        null
                 )
             }
+
             is RegisterEvent.CheckUserIdAvailability -> {
                 checkUserIdAvailability()
             }
@@ -78,6 +104,83 @@ class RegisterViewModel @Inject constructor(
             }
         }
     }
+
+    // 아이디: 4~20 길이, 소문자만 허용, 알파벳으로 시작
+    private fun isUsernameValid(username: String): Boolean {
+        val usernameRegex = "^[a-z][a-z0-9]{3,19}$".toRegex()
+        return username.matches(usernameRegex)
+    }
+
+    // 비번: 최소 8자 + 영문, 숫자 필수, 특수문자는 ( !@#%^&*()-_=+[]{}|;:,<.>? ) 만 허용
+    private fun isPasswordValid(password: String): Boolean {
+        val passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d!@#%^&*()\\-_=+\\[\\]{}|;:,<.>?]{8,40}$".toRegex()
+        return password.matches(passwordRegex)
+    }
+
+    // 닉네임: 2~24 글자, 영숫한
+    private fun isNicknameValid(nickname: String): Boolean {
+        val nicknameRegex = "^[가-힣a-zA-Z0-9]{2,24}$".toRegex()
+        // 글자 세기. 한글은 2글자로 침.
+        val length = nickname.fold(0) { acc, char ->
+            acc + if (char in '가'..'힣') 2 else 1
+        }
+        return length in 2..24 && nickname.matches(nicknameRegex)
+    }
+
+    fun retrievePhoneNumber(context: Context) {
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+        try {
+            val phoneNumber = telephonyManager?.line1Number
+            if (!phoneNumber.isNullOrBlank()) {
+                // 대한민국 전화번호가 아니면 빠꾸
+                if (!phoneNumber.startsWith("+82")) {
+                    // 커스텀 exception
+                    handleInvalidCountryCodeException(phoneNumber)
+                    return
+                }
+
+                // 대한민국 전화번호 확인 및 포맷 맞추기
+                val formattedNumber = formatPhoneNumber(phoneNumber)
+
+                _state.value = _state.value.copy(
+                    phoneNumberForUI = formattedNumber.displayFormat, // UI
+                    phoneNumber = formattedNumber.backendFormat, // 백엔드 전송용
+//                    isPhoneVerified = true
+                )
+
+            } else {
+                _state.value = _state.value.copy(
+                    error = "휴대전화 번호를 확인할 수 없습니다."
+                )
+            }
+        } catch (e: SecurityException) {
+            Log.e("RegisterViewModel", "권한이 거부되어 전화번호를 가져올 수 없습니다.")
+        }
+    }
+
+    private fun formatPhoneNumber(phoneNumber: String): PhoneNumberFormat {
+        // +82를 0으로 변경 (+8210 -> 010)
+        val cleanedNumber = phoneNumber.replace("+82", "0").replace("[^0-9]".toRegex(), "")
+
+        // 전화번호가 10자리 / 11자리인 경우에만 처리. 010-1234-5678, 011-222-3333 등
+        return if (cleanedNumber.length == 10 || cleanedNumber.length == 11) {
+            val displayFormat = cleanedNumber.replaceFirst("(\\d{3})(\\d{3,4})(\\d{4})".toRegex(), "$1-$2-$3")
+            PhoneNumberFormat(displayFormat = displayFormat, backendFormat = cleanedNumber)
+        } else {
+            PhoneNumberFormat(displayFormat = phoneNumber, backendFormat = cleanedNumber) // 조건 안 맞으면 원래 번호 그대로 반환
+        }
+    }
+
+    data class PhoneNumberFormat(
+        val displayFormat: String,  // e.g., "0aa-bbbb-cccc" UI용
+        val backendFormat: String   // e.g., "0aabbbbcccc" 백엔드 전송용
+    )
+
+    private fun handleInvalidCountryCodeException(phoneNumber: String) {
+        Log.e(TAG, "handleInvalidCountryCodeException: +82가 아닌 국가코드 발견!!")
+    }
+
+
 
     private fun checkUserIdAvailability() {
         if (_state.value.username.isBlank()) {
