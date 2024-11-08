@@ -88,6 +88,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 new AntPathRequestMatcher("/kafka/publish/test-topic")
                         ).permitAll()
+                        // for actuator
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/actuator/**")
+                        ).permitAll()
                         // /login, /join, / 경로로 들어오는 요청은 인증이 필요하지 않음
                         .requestMatchers(
                                 new AntPathRequestMatcher("/api/v1/user/phone-verification/verification-code"),
