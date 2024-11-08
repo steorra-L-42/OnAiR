@@ -37,6 +37,11 @@ class FileQueue:
       return self.queue.popleft()
     return None
 
+  """ 큐에서 파일을 제거하고 다음 파일의 사이즈를 반환 """
+  def next(self):
+    self.dequeue()
+    return self.get_first_file_size()
+
   """ 채널 시작 시 큐 초기화 및 MP3 파일 로드 """
   def initialize_queue(self):
     mp3_files = sorted(

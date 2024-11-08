@@ -36,11 +36,14 @@ app.add_middleware(
 async def lifespan(app: FastAPI):
   global channels
   log.info("서버 초기화 루틴 시작")
-  channel = add_channel(BASIC_CHANNEL_NAME)
 
+  channel = add_channel(BASIC_CHANNEL_NAME)
+  channel['update_range_task'] = asyncio.create_task(update_range(channel))
+  channels[BASIC_CHANNEL_NAME] = channel
 
   yield
   log.info("서버 종료 루틴 시작")
+  channels[BASIC_CHANNEL_NAME]['update_range_task'].cancel()
 
 """  서버 시작 핸들러 등록 """
 app.router.lifespan_context = lifespan
@@ -64,7 +67,7 @@ async def stream(request: Request):
       end = int(range_values[1]) if len(range_values) > 1 and range_values[1] else None
 
   start = start if start is not None else 0
-  end = end if end is not None else file_size - 1
+  end = end or file_size - 1
   log.info(f"Streaming: [{start} ~ {end}]")
 
   status_code = 200 if end-start == file_size else 206
@@ -85,7 +88,7 @@ async def stream(request: Request):
 
 ########################  Generator  ########################
 async def audio_stream_generator(channel_name, start:int, end:int):
-  file_path = channels[channel_name]['chunk_queue'].my_peek(0)
+  file_path = channels[channel_name]['file_queue'].my_peek(0)
 
   with open(file_path, 'rb') as file:
     file.seek(start)
@@ -99,3 +102,34 @@ async def audio_stream_generator(channel_name, start:int, end:int):
       if not data:
         break
       yield data
+
+
+
+
+########################  라이브 청크 관리  ########################
+async def update_range(channel):
+  base_wait_time = 0.512
+  wait_time = 0.512
+
+  while True:
+    await asyncio.sleep(wait_time)
+    remaining_bytes = channel['file_size'] - channel['end']
+    channel['start'] = channel['end']
+
+    if remaining_bytes == 0:
+      log.info("첫 번째 청크 스트리밍 해야 함")
+      channel['file_size'] = channel['file_queue'].next()
+      channel['start'] = 0
+      channel['end'] = CHUNK_SIZE if CHUNK_SIZE <= channel['file_size'] else channel['file_size']
+      wait_time = base_wait_time
+      
+    elif remaining_bytes < CHUNK_SIZE:
+      log.info("마지막 청크(byte)입니다.")
+      channel['end'] += remaining_bytes
+      wait_time = remaining_bytes / 16000
+      
+    else:
+      log.info("중간 청크입니다.")
+      channel['end'] += CHUNK_SIZE
+      wait_time = base_wait_time
+
