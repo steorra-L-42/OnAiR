@@ -3,6 +3,7 @@ package me.onair.main.domain.user.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.user.dto.PhoneVerifyRequest;
 import me.onair.main.domain.user.dto.PhoneVerifyResponse;
 import me.onair.main.domain.user.dto.SignupRequest;
 import me.onair.main.domain.user.dto.VerificationCodeRequest;
@@ -23,7 +24,8 @@ public class UserController {
 
     // 1. 휴대폰 인증 번호 요청
     @PostMapping("/phone-verification/verification-code")
-    public ResponseEntity<PhoneVerifyResponse> requestVerificationCode(@RequestBody @Valid VerificationCodeRequest request) {
+    public ResponseEntity<Object> requestVerificationCode(
+            @RequestBody @Valid VerificationCodeRequest request) {
         log.info("UserController.requestVerificationCode request: {}", request);
 
         userService.requestVerificationCode(request);
@@ -33,9 +35,12 @@ public class UserController {
 
     // 2. 휴대폰 인증 번호 확인
     @PostMapping("/phone-verification")
-    public ResponseEntity<Object> verifyPhoneNumber(){
+    public ResponseEntity<PhoneVerifyResponse> verifyPhoneNumber(@RequestBody @Valid PhoneVerifyRequest request) {
+        log.info("UserController.verifyPhoneNumber request: {}", request);
 
-        return null;
+        PhoneVerifyResponse response = userService.verifyPhoneNumber(request);
+
+        return ResponseEntity.ok(response);
     }
 
     // 3. Username 중복 확인

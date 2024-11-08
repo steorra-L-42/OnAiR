@@ -83,9 +83,9 @@ public class RequestVerificationCodeTest {
                     """;
             // when
             ResultActions result = mockMvc.perform(post(url).with(csrf())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody));
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody));
             // then
             result.andExpect(status().isBadRequest());
             assertThat(verificationCodeRepository.findAll()).isEmpty();
@@ -102,9 +102,9 @@ public class RequestVerificationCodeTest {
                     """;
             // when
             ResultActions result = mockMvc.perform(post(url).with(csrf())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody));
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody));
             // then
             result.andExpect(status().isBadRequest());
             assertThat(verificationCodeRepository.findAll()).isEmpty();
@@ -121,9 +121,9 @@ public class RequestVerificationCodeTest {
                     """;
             // when
             ResultActions result = mockMvc.perform(post(url).with(csrf())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody));
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody));
             // then
             result.andExpect(status().isBadRequest());
             assertThat(verificationCodeRepository.findAll()).isEmpty();
@@ -140,9 +140,9 @@ public class RequestVerificationCodeTest {
                     """;
             // when
             ResultActions result = mockMvc.perform(post(url).with(csrf())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody));
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody));
             // then
             result.andExpect(status().isBadRequest());
             assertThat(verificationCodeRepository.findAll()).isEmpty();
@@ -159,9 +159,9 @@ public class RequestVerificationCodeTest {
                     """;
             // when
             ResultActions result = mockMvc.perform(post(url).with(csrf())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody));
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody));
             // then
             result.andExpect(status().isBadRequest());
             assertThat(verificationCodeRepository.findAll()).isEmpty();
@@ -178,9 +178,9 @@ public class RequestVerificationCodeTest {
                     """;
             // when
             ResultActions result = mockMvc.perform(post(url).with(csrf())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody));
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody));
             // then
             result.andExpect(status().isBadRequest());
             assertThat(verificationCodeRepository.findAll()).isEmpty();
@@ -192,25 +192,25 @@ public class RequestVerificationCodeTest {
             final String url = "/api/v1/user/phone-verification/verification-code";
             final String phoneNumber = "01012345678";
             final String requestBody = """
-                        {
-                            "phoneNumber": "%s"
-                        }
-                        """.formatted(phoneNumber);
+                    {
+                        "phoneNumber": "%s"
+                    }
+                    """.formatted(phoneNumber);
             for (int i = 0; i < 5; i++) {
                 mockMvc.perform(post(url).with(csrf())
-                                .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody));
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody));
             }
             // when
             ResultActions result = mockMvc.perform(post(url).with(csrf())
-                            .accept(MediaType.APPLICATION_JSON)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody));
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody));
             // then
             result.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code")
-                        .value(ErrorCode.VERIFICATION_CODE_REQUEST_EXCEED_LIMIT.getCode()));
+                    .andExpect(jsonPath("$.code")
+                            .value(ErrorCode.VERIFICATION_CODE_REQUEST_EXCEED_LIMIT.getCode()));
             assertThat(verificationCodeRepository.findAll()).hasSize(5);
         }
     }
@@ -237,9 +237,9 @@ public class RequestVerificationCodeTest {
                 """.formatted(phoneNumber);
         // when
         ResultActions result = mockMvc.perform(post(url).with(csrf())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody));
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody));
         // then
         result.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code")
@@ -254,10 +254,10 @@ public class RequestVerificationCodeTest {
         Mockito.doThrow(new SMSException()).when(smsService).sendSMS(Mockito.anyString(), Mockito.anyString());
         final String url = "/api/v1/user/phone-verification/verification-code";
         final String requestBody = """
-                    {
-                        "phoneNumber": "01012345678"
-                    }
-                    """;
+                {
+                    "phoneNumber": "01012345678"
+                }
+                """;
         // when
         ResultActions result = mockMvc.perform(post(url).with(csrf())
                 .accept(MediaType.APPLICATION_JSON)
@@ -270,7 +270,7 @@ public class RequestVerificationCodeTest {
         assertThat(verificationCodeRepository.findAll()).isEmpty();
     }
 
-   @Test
+    @Test
     @DisplayName("성공 - 200 OK - 인증번호 요청 성공")
     void 인증번호_요청_성공() throws Exception {
         // given
@@ -283,9 +283,9 @@ public class RequestVerificationCodeTest {
                 """.formatted(phoneNumber);
         // when
         ResultActions result = mockMvc.perform(post(url).with(csrf())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody));
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody));
         // then
         result.andExpect(status().isOk());
         assertThat(verificationCodeRepository.findAll()).hasSize(1);
