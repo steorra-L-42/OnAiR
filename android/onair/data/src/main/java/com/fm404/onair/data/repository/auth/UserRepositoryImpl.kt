@@ -24,8 +24,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun checkUsername(username: String): Result<Boolean> = runCatching {
-//        userApi.checkUsername(username).result
-        true
+        userApi.checkUsername(username).result
     }
 
     override suspend fun register(request: RegisterRequest): Result<Unit> = runCatching {
