@@ -6,12 +6,12 @@ import time
 
 # 내부 패키지
 from logger import log
-from chunk_queue import ChunkQueue
+from file_queue import FileQueue
 
 
 # 파일 이벤트 핸들러 정의
 class MP3FileHandler(FileSystemEventHandler):
-  def __init__(self, queue:ChunkQueue):
+  def __init__(self, queue:FileQueue):
     super().__init__()
     self.queue = queue  # 사용할 큐를 인스턴스 변수로 저장
 
