@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
 import com.fm404.onair.R
 
 
@@ -42,7 +43,7 @@ fun BroadcastDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Handle email action */ }) {
+                    IconButton(onClick = { /* TODO: Message */ }) {
                         Icon(imageVector = Icons.Filled.Email, contentDescription = "Message")
                     }
                 },
@@ -118,6 +119,8 @@ fun BroadcastDetailScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+
+//            AudioVisualizerScreen()
 
             // Playback Controls
             Row(
