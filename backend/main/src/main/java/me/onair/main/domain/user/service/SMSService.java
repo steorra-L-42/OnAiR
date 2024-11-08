@@ -4,25 +4,23 @@ import me.onair.main.domain.user.error.SMSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.http.HttpHeaders;
 
 @Component
 public class SMSService {
 
     private static final Logger log = LoggerFactory.getLogger(SMSService.class);
-
+    private final RestClient restClient = RestClient.create();
     @Value("${sms.api.url}")
     private String SMS_API_URL;
     @Value("${sms.api.username}")
     private String SMS_API_USERNAME;
     @Value("${sms.api.key}")
     private String SMS_API_KEY;
-
-    private final RestClient restClient = RestClient.create();
 
     public void sendSMS(String phoneNumber, String code) {
 
@@ -52,7 +50,7 @@ public class SMSService {
                         HttpStatusCode::isError,
                         (request, response) -> {
                             log.error("SMSUtil.sendSMS error: {}", response);
-                            throw new SMSException(response.getHeaders());
+                            throw new SMSException();
                         }
                 ).body(String.class);
         log.info("SMSUtil.sendSMS result: {}", result);
