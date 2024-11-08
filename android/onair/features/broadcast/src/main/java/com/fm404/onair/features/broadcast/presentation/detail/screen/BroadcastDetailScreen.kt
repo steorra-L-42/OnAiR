@@ -19,16 +19,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.fm404.onair.R
+import com.fm404.onair.features.broadcast.presentation.detail.BroadcastDetailViewModel
+import com.fm404.onair.features.broadcast.presentation.detail.state.BroadcastDetailEvent
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BroadcastDetailScreen(
+    viewModel: BroadcastDetailViewModel = hiltViewModel(),
     broadcastId: String,
     onStoryClick: (String) -> Unit,
     onBack: () -> Unit = {}
 ) {
+
+    val state by viewModel.state.collectAsState()
 
     Scaffold(
         topBar = {
@@ -56,6 +62,17 @@ fun BroadcastDetailScreen(
                 .background(Color.White),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { viewModel.onEvent(BroadcastDetailEvent.ToggleStreaming) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = if (state.isPlaying) "Stop Streaming" else "Start Streaming"
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Channel Cover Image
@@ -88,7 +105,9 @@ fun BroadcastDetailScreen(
                 text = "• Live",
                 color = Color.Red,
                 fontSize = 14.sp,
-                modifier = Modifier.align(Alignment.Start).padding(start = 32.dp)
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(start = 32.dp)
             )
             Slider(
                 value = 0.5f,
@@ -123,7 +142,9 @@ fun BroadcastDetailScreen(
             Row(
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 64.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 64.dp)
             ) {
 //                IconButton(onClick = { /* TODO: Handle previous action */ }) {
 //                    Icon(

@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.runtime)
     implementation(project(":core:contract"))
+    implementation(project(":features:media"))
     kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.core.ktx)

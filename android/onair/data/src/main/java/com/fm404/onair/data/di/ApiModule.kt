@@ -2,11 +2,13 @@ package com.fm404.onair.data.di
 
 import com.fm404.onair.data.remote.api.auth.UserApi
 import com.fm404.onair.data.remote.api.broadcast.BroadcastApi
+import com.fm404.onair.data.remote.api.media.MediaStreamingApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -22,5 +24,13 @@ object ApiModule {
     @Singleton
     fun provideBroadcastApi(retrofit: Retrofit): BroadcastApi {
         return retrofit.create(BroadcastApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMediaStreamingApi(
+        @Named("mediaRetrofit") retrofit: Retrofit
+    ): MediaStreamingApi {
+        return retrofit.create(MediaStreamingApi::class.java)
     }
 }
