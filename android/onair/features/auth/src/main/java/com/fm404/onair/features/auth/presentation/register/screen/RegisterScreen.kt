@@ -1,18 +1,27 @@
 package com.fm404.onair.features.auth.presentation.register.screen
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.fm404.onair.features.auth.presentation.register.RegisterViewModel
-import com.fm404.onair.features.auth.presentation.register.state.RegisterState
 import com.fm404.onair.features.auth.presentation.register.state.RegisterEvent
+
+private const val TAG = "RegisterScreen"
+private const val REQUEST_PHONE_STATE_PERMISSION = 100
 
 @Composable
 fun RegisterScreen(
@@ -20,20 +29,21 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
 
-    RegisterContent(
-        state = state,
-        onEvent = viewModel::onEvent,
-        onNavigateBack = { navController.navigateUp() }
-    )
-}
+    LaunchedEffect(Unit) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+            == PackageManager.PERMISSION_GRANTED) {
+            viewModel.retrievePhoneNumber(context)
+        } else {
+            ActivityCompat.requestPermissions(
+                (context as Activity),
+                arrayOf(Manifest.permission.READ_PHONE_STATE),
+                REQUEST_PHONE_STATE_PERMISSION
+            )
+        }
+    }
 
-@Composable
-private fun RegisterContent(
-    state: RegisterState,
-    onEvent: (RegisterEvent) -> Unit,
-    onNavigateBack: () -> Unit
-) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,64 +57,46 @@ private fun RegisterContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 휴대전화 인증 섹션
-        Row(
+        ValidationTextField(
+            value = state.phoneNumberForUI,
+            onValueChange = { }, // 읽기 전용이라 { }
+            label = "휴대전화 번호",
+            enabled = false,
+            error = state.phoneError,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = state.phoneNumber,
-                onValueChange = {
-                    if (it.all { it.isDigit() } && it.length <= 11) {
-                        onEvent(RegisterEvent.PhoneNumberChanged(it))
-                    }
-                },
-                label = { Text("휴대전화 번호('-' 제외)") },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.NumberPassword
-                ),
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-                enabled = !state.isPhoneVerified,
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                    disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                )
-            )
+            filteringType = FilteringType.DEFAULT
+        )
 
-            if (!state.isPhoneVerified) {
-                Button(
-                    onClick = { onEvent(RegisterEvent.RequestVerificationCode) },
-                    enabled = !state.isVerificationCodeSent && state.phoneNumber.length == 11
-                ) {
-                    Text("인증요청")
-                }
+        // SIM에서 전화번호 retrieve 성공시 표시
+        if (!state.isPhoneVerified) {
+            Button(
+                onClick = { viewModel.onEvent(RegisterEvent.RequestVerificationCode) },
+                enabled = !state.isVerificationCodeSent && state.phoneNumber.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("인증요청")
             }
         }
 
+        // 인증번호 입력란
         if (state.isVerificationCodeSent && !state.isPhoneVerified) {
             Spacer(modifier = Modifier.height(8.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField(
+                ValidationTextField(
                     value = state.verificationCode,
-                    onValueChange = {
-                        if (it.all { it.isDigit() } && it.length <= 6) {
-                            onEvent(RegisterEvent.VerificationCodeChanged(it))
+                    onValueChange = { code ->
+                        if (code.all { it.isDigit() } && code.length <= 6) {
+                            viewModel.onEvent(RegisterEvent.VerificationCodeChanged(code))
                         }
                     },
-                    label = { Text("인증번호(6자리)") },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.NumberPassword
-                    ),
-                    singleLine = true,
+                    label = "인증번호",
+                    error = state.verificationError,
                     modifier = Modifier.weight(1f),
-                    enabled = state.verificationAttempts < state.maxVerificationAttempts
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    filteringType = FilteringType.VERIFICATION_CODE
                 )
 
                 Text(
@@ -113,49 +105,39 @@ private fun RegisterContent(
                 )
 
                 Button(
-                    onClick = { onEvent(RegisterEvent.VerifyPhoneNumber) },
-                    enabled = state.verificationAttempts < state.maxVerificationAttempts &&
-                            state.verificationCode.length == 6
+                    onClick = { viewModel.onEvent(RegisterEvent.VerifyPhoneNumber) },
+                    enabled = state.verificationCode.length == 6 &&
+                            state.verificationAttempts < state.maxVerificationAttempts,
+                    modifier = Modifier.padding(start = 8.dp)
                 ) {
                     Text("확인")
                 }
             }
-
-            if (state.verificationAttempts > 0) {
-                Text(
-                    text = "인증 시도: ${state.verificationAttempts}/${state.maxVerificationAttempts}",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
         }
 
-        if (state.isPhoneVerified) {
-            Text(
-                text = "✓ 휴대전화 인증이 완료되었습니다.",
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+        Spacer(modifier = Modifier.height(24.dp))
 
+        // 회원가입 폼 (번호 인증 후 표시)
+        if (state.isPhoneVerified) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 기본 정보 입력 (인증 완료 후에만 표시)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField(
+                ValidationTextField(
                     value = state.username,
-                    onValueChange = { onEvent(RegisterEvent.UsernameChanged(it)) },
-                    label = { Text("ID") },
-                    modifier = Modifier.weight(1f),
+                    onValueChange = { viewModel.onEvent(RegisterEvent.UsernameChanged(it)) },
+                    label = "ID",
+                    error = state.usernameError,
                     enabled = !state.isUserIdAvailable,
-                    singleLine = true
+                    modifier = Modifier.weight(1f),
+                    filteringType = FilteringType.USERNAME
                 )
 
                 Button(
-                    onClick = { onEvent(RegisterEvent.CheckUserIdAvailability) },
-                    enabled = !state.isUserIdAvailable && state.username.isNotBlank()
+                    onClick = { viewModel.onEvent(RegisterEvent.CheckUserIdAvailability) },
+                    enabled = !state.isUserIdAvailable && state.username.isNotBlank() && !state.isCheckingUserId
                 ) {
                     if (state.isCheckingUserId) {
                         CircularProgressIndicator(
@@ -176,57 +158,61 @@ private fun RegisterContent(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
+            ValidationTextField(
                 value = state.nickname,
-                onValueChange = { onEvent(RegisterEvent.NicknameChanged(it)) },
-                label = { Text("닉네임") },
+                onValueChange = { viewModel.onEvent(RegisterEvent.NicknameChanged(it)) },
+                label = "닉네임",
+                error = state.nicknameError,
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                filteringType = FilteringType.NICKNAME
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
+            ValidationTextField(
                 value = state.password,
-                onValueChange = { onEvent(RegisterEvent.PasswordChanged(it)) },
-                label = { Text("Password") },
+                onValueChange = { viewModel.onEvent(RegisterEvent.PasswordChanged(it)) },
+                label = "비밀번호",
+                error = state.passwordError,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                filteringType = FilteringType.PASSWORD
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
+            ValidationTextField(
                 value = state.confirmPassword,
-                onValueChange = { onEvent(RegisterEvent.ConfirmPasswordChanged(it)) },
-                label = { Text("Confirm Password") },
+                onValueChange = { viewModel.onEvent(RegisterEvent.ConfirmPasswordChanged(it)) },
+                label = "비밀번호 확인",
+                error = state.confirmPasswordError,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                filteringType = FilteringType.PASSWORD
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        // Buttons Section
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // 다음/회원가입 버튼
         Button(
             onClick = {
                 if (state.isPhoneVerified) {
-                    onEvent(RegisterEvent.RegisterClicked)
+                    viewModel.onEvent(RegisterEvent.RegisterClicked)
                 } else {
-                    onEvent(RegisterEvent.NextClicked)
+                    viewModel.onEvent(RegisterEvent.NextClicked)
                 }
             },
             enabled = if (state.isPhoneVerified) {
-                // 회원가입 버튼 활성화 조건
-                state.username.isNotBlank() &&
-                        state.password.isNotBlank() &&
-                        state.confirmPassword.isNotBlank()
+                state.username.isNotBlank() && state.isUserIdAvailable &&
+                        state.password.isNotBlank() && state.confirmPassword.isNotBlank() &&
+                        state.nickname.isNotBlank() &&
+                        state.usernameError == null && state.passwordError == null &&
+                        state.confirmPasswordError == null && state.nicknameError == null
             } else {
-                // 다음 버튼 활성화 조건
+                Log.d(TAG, "RegisterScreen: isPhoneVerified FALSE")
                 state.isPhoneVerified
             },
             modifier = Modifier.fillMaxWidth()
@@ -241,21 +227,66 @@ private fun RegisterContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButton(
-            onClick = onNavigateBack,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("로그인으로 돌아가기")
-        }
-
-        if (state.error != null) {
-            Spacer(modifier = Modifier.height(16.dp))
+        // Display general error if any
+        if (state.generalError != null) {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = state.error,
-                color = MaterialTheme.colorScheme.error
+                text = state.generalError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
+}
+
+@Composable
+private fun ValidationTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    error: String?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    filteringType: FilteringType
+) {
+    // 비밀번호 규칙에 따라 input 자체를 필터링함
+    val regex = when (filteringType) {
+        FilteringType.USERNAME -> "[a-z0-9]".toRegex()
+        FilteringType.PASSWORD -> "[A-Za-z\\d!@#%^&*()\\-_=+\\[\\]{}|;:,<.>?]".toRegex()
+        FilteringType.NICKNAME -> "^[ㄱ-ㅎ가-힣a-zA-Z0-9]{0,24}$".toRegex()
+        FilteringType.VERIFICATION_CODE -> "\\d".toRegex()
+        FilteringType.DEFAULT -> ".*".toRegex()
+    }
+
+
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {
+                val filteredValue = it.filter { char -> regex.matches(char.toString()) }
+                onValueChange(filteredValue)
+            },
+            label = { Text(label) },
+            isError = error != null,
+            enabled = enabled,
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+enum class FilteringType {
+    USERNAME, PASSWORD, NICKNAME, VERIFICATION_CODE, DEFAULT
 }
