@@ -57,6 +57,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(project(":core:media"))
+    implementation(project(":core:designsystem"))
     kapt(libs.hilt.compiler)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)

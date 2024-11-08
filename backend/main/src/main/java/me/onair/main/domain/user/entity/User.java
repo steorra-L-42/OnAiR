@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.jwt.entity.RefreshToken;
 import me.onair.main.domain.story.entity.Story;
-import me.onair.main.domain.user.dto.SignupRequestDto;
+import me.onair.main.domain.user.dto.SignupRequest;
 import me.onair.main.domain.user.enums.Role;
 
 @Entity
@@ -48,7 +48,7 @@ public class User {
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 
-    @Column(name = "phone_number", nullable = false, unique = true, length = 20)
+    @Column(name = "phone_number", nullable = false, unique = true, length = 11)
     private String phoneNumber;
 
     @Column(name = "profile_path", nullable = false)
@@ -81,7 +81,7 @@ public class User {
     }
 
     // 일반 유저 생성하는 정적 팩토리 메서드
-    public static User createNomalUser(SignupRequestDto request) {
+    public static User createNomalUser(SignupRequest request) {
         return User.builder()
                 .nickname(request.getNickname())
                 .username(request.getUsername())

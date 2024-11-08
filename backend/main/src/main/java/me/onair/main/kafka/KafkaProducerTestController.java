@@ -35,7 +35,8 @@ public class KafkaProducerTestController {
     }
 
     private CompletableFuture<String> sendMessageToKafka(String message) {
-        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(Topics.TEST.getName(), message);
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(Topics.TEST.getName(), "key-1",
+                message);
 
         return future.thenApply(result -> {
             log.info("레코드 전송 성공 = [{}] with offset=[{}]", message, result.getRecordMetadata().offset());
