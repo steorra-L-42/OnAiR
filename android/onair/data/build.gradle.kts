@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.gson)
     implementation(project(":domain"))
     implementation(libs.androidx.runtime)
+    implementation(project(":core:network"))
     kapt(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
