@@ -30,7 +30,7 @@ public class UserService {
     public void requestVerificationCode(VerificationCodeRequest request) {
 
         // 이미 가입된 전화번호
-        if(userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new DuplicatePhoneNumberException();
         }
 
@@ -39,7 +39,7 @@ public class UserService {
         int count = verificationCodeRepository.countAllByPhoneNumberAndExpiredAtAfter(request.getPhoneNumber(),
                 LocalDateTime.now().minusDays(1));
 
-        if(count >= 5) {
+        if (count >= 5) {
             throw new VerificationCodeRequestExceedLimitException();
         }
 
@@ -61,11 +61,11 @@ public class UserService {
 
         encodePassword(request); // password를 암호화하는 로직
 
-        userRepository.save(User.createNomalUser(request));
+        userRepository.save(User.createNormalUser(request));
     }
 
     private void validateDuplicateUsername(String username) {
-        if(userRepository.existsByUsername(username)) {
+        if (userRepository.existsByUsername(username)) {
             throw new DuplicateUsername(username);
         }
     }

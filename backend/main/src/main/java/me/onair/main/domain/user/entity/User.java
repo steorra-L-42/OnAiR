@@ -81,7 +81,7 @@ public class User {
     }
 
     // 일반 유저 생성하는 정적 팩토리 메서드
-    public static User createNomalUser(SignupRequest request) {
+    public static User createNormalUser(SignupRequest request) {
         return User.builder()
                 .nickname(request.getNickname())
                 .username(request.getUsername())
