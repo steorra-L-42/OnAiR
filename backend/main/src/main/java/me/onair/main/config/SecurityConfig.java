@@ -88,8 +88,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         // /login, /join, / 경로로 들어오는 요청은 인증이 필요하지 않음
                         .requestMatchers(
-                                new AntPathRequestMatcher("/api/v1/phone-verification/verification-number"),
-                                new AntPathRequestMatcher("/api/v1/phone-verification"),
+                                new AntPathRequestMatcher("/api/v1/user/phone-verification/verification-code"),
+                                new AntPathRequestMatcher("/api/v1/user/phone-verification"),
                                 new AntPathRequestMatcher("/api/v1/user/valid-username"),
                                 new AntPathRequestMatcher("/api/v1/user/signup"),
                                 new AntPathRequestMatcher("/api/v1/user/login"),
