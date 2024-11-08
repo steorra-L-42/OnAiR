@@ -2,6 +2,9 @@ package me.onair.main.kafka.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import me.onair.main.kafka.consumer.ConsumerErrorsHandler;
+import me.onair.main.kafka.consumer.KafkaConsumerConstants;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -18,7 +21,13 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ContainerProperties.AckMode;
+import org.springframework.kafka.retrytopic.RetryTopicConfiguration;
+import org.springframework.kafka.retrytopic.RetryTopicConfigurationBuilder;
+import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
+import org.springframework.kafka.support.EndpointHandlerMethod;
 
+@Slf4j
 @EnableKafka  // @KafkaListener 사용을 위한 설정
 @Configuration
 public class KafkaConfig {
@@ -76,6 +85,20 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.getContainerProperties().setAckMode(AckMode.RECORD);
         return factory;
+    }
+
+    @Bean
+    public RetryTopicConfiguration retryTopicConfig(KafkaTemplate<String, String> kafkaTemplate) {
+        return RetryTopicConfigurationBuilder
+                .newInstance()
+                .autoCreateTopicsWith(KafkaConsumerConstants.REPLICA_COUNT, KafkaConsumerConstants.REPLICATION_FACTOR)
+                .maxAttempts(KafkaConsumerConstants.MAX_ATTEMPT_COUNT)
+                .fixedBackOff(KafkaConsumerConstants.BACK_OFF_PERIOD)
+                .listenerFactory(kafkaListenerContainerFactory())
+                .setTopicSuffixingStrategy(TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE)
+                .dltHandlerMethod(new EndpointHandlerMethod(ConsumerErrorsHandler.class, "postProcessDltMessage"))
+                .create(kafkaTemplate);
     }
 }

@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -30,7 +31,6 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 @RequiredArgsConstructor
 @Configuration
@@ -38,18 +38,15 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 public class SecurityConfig {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final String LOGIN_URL = "/api/v1/user/login";
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final CookieUtil cookieUtil;
     private final RefreshRepository refreshRepository;
-
     @Value("${cors.url}")
     private String corsURL;
-
     @Value("${spring.jwt.refresh.cookie.path}")
     private String REFRESH_TOKEN_COOKIE_PATH;
-
-    private static final String LOGIN_URL = "/api/v1/user/login";
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -79,17 +76,26 @@ public class SecurityConfig {
                                 configuration.setMaxAge(3600L); // 1시간동안 캐싱
 
                                 // 클라이언트에서 Authorization 헤더를 사용할 수 있도록 설정
-                                configuration.setExposedHeaders(Collections.singletonList(TokenType.ACCESS.getHeader()));
+                                configuration.setExposedHeaders(
+                                        Collections.singletonList(TokenType.ACCESS.getHeader()));
 
                                 return configuration;
                             }
                         })
                 )
                 .authorizeHttpRequests((auth) -> auth
+                        // KafKa Publish Test
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/kafka/publish/test-topic")
+                        ).permitAll()
+                        // for actuator
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/actuator/**")
+                        ).permitAll()
                         // /login, /join, / 경로로 들어오는 요청은 인증이 필요하지 않음
                         .requestMatchers(
-                                new AntPathRequestMatcher("/api/v1/phone-verification/verification-number"),
-                                new AntPathRequestMatcher("/api/v1/phone-verification"),
+                                new AntPathRequestMatcher("/api/v1/user/phone-verification/verification-code"),
+                                new AntPathRequestMatcher("/api/v1/user/phone-verification"),
                                 new AntPathRequestMatcher("/api/v1/user/valid-username"),
                                 new AntPathRequestMatcher("/api/v1/user/signup"),
                                 new AntPathRequestMatcher("/api/v1/user/login"),
@@ -129,7 +135,8 @@ public class SecurityConfig {
                 .exceptionHandling((exceptionHandling) -> exceptionHandling
                         .defaultAuthenticationEntryPointFor(
                                 //new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                                new CustomAuthenticationEntryPoint(HttpStatus.UNAUTHORIZED), // log를 찍기 위해 커스텀한 EntryPoint
+                                new CustomAuthenticationEntryPoint(HttpStatus.UNAUTHORIZED),
+                                // log를 찍기 위해 커스텀한 EntryPoint
                                 new AntPathRequestMatcher("/api/**")
                         )
                 )
