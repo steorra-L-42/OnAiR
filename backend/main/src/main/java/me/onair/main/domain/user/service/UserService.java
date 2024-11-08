@@ -3,6 +3,8 @@ package me.onair.main.domain.user.service;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.user.dto.PhoneVerifyRequest;
+import me.onair.main.domain.user.dto.PhoneVerifyResponse;
 import me.onair.main.domain.user.dto.SignupRequest;
 import me.onair.main.domain.user.dto.VerificationCodeRequest;
 import me.onair.main.domain.user.entity.User;
@@ -30,7 +32,7 @@ public class UserService {
     public void requestVerificationCode(VerificationCodeRequest request) {
 
         // 이미 가입된 전화번호
-        if(userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new DuplicatePhoneNumberException();
         }
 
@@ -39,7 +41,7 @@ public class UserService {
         int count = verificationCodeRepository.countAllByPhoneNumberAndExpiredAtAfter(request.getPhoneNumber(),
                 LocalDateTime.now().minusDays(1));
 
-        if(count >= 5) {
+        if (count >= 5) {
             throw new VerificationCodeRequestExceedLimitException();
         }
 
@@ -53,6 +55,15 @@ public class UserService {
         smsService.sendSMS(request.getPhoneNumber(), code);
     }
 
+    public PhoneVerifyResponse verifyPhoneNumber(PhoneVerifyRequest request) {
+
+        boolean result = verificationCodeRepository.existsByPhoneNumberAndCodeAndExpiredAtAfter(
+                request.getPhoneNumber(),
+                request.getVerification(), LocalDateTime.now());
+
+        return new PhoneVerifyResponse(result);
+    }
+
     @Transactional
     public void signup(SignupRequest request) {
 
@@ -61,11 +72,11 @@ public class UserService {
 
         encodePassword(request); // password를 암호화하는 로직
 
-        userRepository.save(User.createNomalUser(request));
+        userRepository.save(User.createNormalUser(request));
     }
 
     private void validateDuplicateUsername(String username) {
-        if(userRepository.existsByUsername(username)) {
+        if (userRepository.existsByUsername(username)) {
             throw new DuplicateUsername(username);
         }
     }
