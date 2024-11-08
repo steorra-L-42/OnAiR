@@ -5,8 +5,11 @@ import me.onair.main.domain.jwt.error.ExpiredRefreshTokenException;
 import me.onair.main.domain.jwt.error.NoRefreshTokenCookieException;
 import me.onair.main.domain.jwt.error.NotExistRefreshTokenException;
 import me.onair.main.domain.jwt.error.WrongCategoryJwtException;
+import me.onair.main.domain.user.error.DuplicatePhoneNumberException;
 import me.onair.main.domain.user.error.DuplicateUsername;
 import me.onair.main.domain.user.error.NotExistUserException;
+import me.onair.main.domain.user.error.SMSException;
+import me.onair.main.domain.user.error.VerificationCodeRequestExceedLimitException;
 import me.onair.main.global.error.ErrorCode;
 import me.onair.main.global.error.ErrorResponseDto;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +54,24 @@ public class ControllerAdvice {
     public ResponseEntity<ErrorResponseDto> handleNoRefreshTokenCookieException(NoRefreshTokenCookieException e) {
         log.error("handleNoRefreshTokenCookieException", e);
         return getResponse(ErrorCode.NO_REFRESH_TOKEN_COOKIE);
+    }
+
+    @ExceptionHandler(VerificationCodeRequestExceedLimitException.class)
+    public ResponseEntity<ErrorResponseDto> handleVerificationCodeRequestExceedLimitException(VerificationCodeRequestExceedLimitException e) {
+        log.error("handleVerificationCodeRequestExceedLimitException", e);
+        return getResponse(ErrorCode.VERIFICATION_CODE_REQUEST_EXCEED_LIMIT);
+    }
+
+    @ExceptionHandler(DuplicatePhoneNumberException.class)
+    public ResponseEntity<ErrorResponseDto> handleDuplicatePhoneNumberException(DuplicatePhoneNumberException e) {
+        log.error("handleDuplicatePhoneNumberException", e);
+        return getResponse(ErrorCode.DUPLICATE_PHONE_NUMBER);
+    }
+
+    @ExceptionHandler(SMSException.class)
+    public ResponseEntity<ErrorResponseDto> handleSMSException(SMSException e) {
+        log.error("handleSMSException", e);
+        return getResponse(ErrorCode.SMS_EXCEPTION);
     }
 
     private ResponseEntity<ErrorResponseDto> getResponse(ErrorCode errorCode) {
