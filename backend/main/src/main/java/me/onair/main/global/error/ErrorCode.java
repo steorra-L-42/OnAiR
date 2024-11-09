@@ -14,11 +14,12 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "Forbidden", "A003"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found", "A004"),
 
-    DUPLICATE_USERNAME(HttpStatus.CONFLICT,"Duplicate username", "B001"),
+    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "Duplicate username", "B001"),
     DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "Duplicate phone number", "B002"),
     NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "Not verified phone number", "B003"),
     NOT_EXIST_USER(HttpStatus.NOT_FOUND, "Not exist user", "B004"),
     VERIFICATION_CODE_REQUEST_EXCEED_LIMIT(HttpStatus.BAD_REQUEST, "Verification code request exceed limit", "B005"),
+    USERNAME_TOO_SHORT_OR_LONG(HttpStatus.BAD_REQUEST, "Username too short or long", "B006"),
 
     ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access token is expired", "C001"),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh token is expired", "C002"),
