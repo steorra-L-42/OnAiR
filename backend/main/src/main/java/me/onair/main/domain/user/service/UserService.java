@@ -3,13 +3,16 @@ package me.onair.main.domain.user.service;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.user.dto.CustomUserDetails;
 import me.onair.main.domain.user.dto.PhoneVerifyRequest;
 import me.onair.main.domain.user.dto.SignupRequest;
+import me.onair.main.domain.user.dto.UserInfoResponse;
 import me.onair.main.domain.user.dto.VerificationCodeRequest;
 import me.onair.main.domain.user.entity.User;
 import me.onair.main.domain.user.entity.VerificationCode;
 import me.onair.main.domain.user.error.DuplicatePhoneNumberException;
 import me.onair.main.domain.user.error.DuplicateUsername;
+import me.onair.main.domain.user.error.NotExistUserException;
 import me.onair.main.domain.user.error.NotVerifiedPhoneNumberException;
 import me.onair.main.domain.user.error.UsernameTooShortOrLongException;
 import me.onair.main.domain.user.error.VerificationCodeRequestExceedLimitException;
@@ -95,6 +98,13 @@ public class UserService {
         userRepository.save(User.createNormalUser(request));
     }
 
+    public UserInfoResponse getUserInfo(CustomUserDetails customUserDetails) {
+
+        User user = userRepository.findById(customUserDetails.getId())
+                .orElseThrow(NotExistUserException::new);
+
+        return UserInfoResponse.from(user);
+    }
 
     private void validateDuplicateUsername(String username) {
         if (userRepository.existsByUsername(username)) {
@@ -112,5 +122,4 @@ public class UserService {
         String encodedPassword = bCryptPasswordEncoder.encode(request.getPassword());
         request.encodePassword(encodedPassword);
     }
-
 }

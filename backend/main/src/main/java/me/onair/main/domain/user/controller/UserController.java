@@ -5,11 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.user.dto.CustomUserDetails;
 import me.onair.main.domain.user.dto.PhoneVerifyRequest;
 import me.onair.main.domain.user.dto.SignupRequest;
+import me.onair.main.domain.user.dto.UserInfoResponse;
 import me.onair.main.domain.user.dto.VerificationCodeRequest;
 import me.onair.main.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -73,6 +76,15 @@ public class UserController {
     }
 
     // 7. 회원 정보 조회
+    @GetMapping
+    public ResponseEntity<UserInfoResponse> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        log.info("UserController.getUserInfo");
+
+        UserInfoResponse response = userService.getUserInfo(customUserDetails);
+
+        return ResponseEntity.ok(response);
+    }
 
     // 8. 닉네임 수정
 
