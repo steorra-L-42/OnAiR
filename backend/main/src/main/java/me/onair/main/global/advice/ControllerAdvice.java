@@ -8,6 +8,7 @@ import me.onair.main.domain.jwt.error.WrongCategoryJwtException;
 import me.onair.main.domain.user.error.DuplicatePhoneNumberException;
 import me.onair.main.domain.user.error.DuplicateUsername;
 import me.onair.main.domain.user.error.NotExistUserException;
+import me.onair.main.domain.user.error.NotVerifiedPhoneNumberException;
 import me.onair.main.domain.user.error.SMSException;
 import me.onair.main.domain.user.error.UsernameTooShortOrLongException;
 import me.onair.main.domain.user.error.VerificationCodeRequestExceedLimitException;
@@ -80,6 +81,12 @@ public class ControllerAdvice {
     public ResponseEntity<ErrorResponseDto> handleUsernameTooLongException(UsernameTooShortOrLongException e) {
         log.error("handleUsernameTooLongException", e);
         return getResponse(ErrorCode.USERNAME_TOO_SHORT_OR_LONG);
+    }
+
+    @ExceptionHandler(NotVerifiedPhoneNumberException.class)
+    public ResponseEntity<ErrorResponseDto> handleNotVerifiedPhoneNumberException(NotVerifiedPhoneNumberException e) {
+        log.error("handleNotVerifiedPhoneNumberException", e);
+        return getResponse(ErrorCode.NOT_VERIFIED_PHONE_NUMBER);
     }
 
     private ResponseEntity<ErrorResponseDto> getResponse(ErrorCode errorCode) {
