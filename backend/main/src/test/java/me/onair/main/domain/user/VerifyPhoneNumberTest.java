@@ -1,5 +1,6 @@
 package me.onair.main.domain.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -315,6 +316,8 @@ public class VerifyPhoneNumberTest {
             // then
             result.andExpect(status().isOk())
                     .andExpect(jsonPath("$.result").value(true));
+            assertThat(verificationCodeRepository.findByPhoneNumberAndCodeAndExpiredAtAfter("01012345678", "123456",
+                    LocalDateTime.now()).isVerified()).isTrue();
         }
 
         @Test
@@ -349,6 +352,10 @@ public class VerifyPhoneNumberTest {
             // then
             result.andExpect(status().isOk())
                     .andExpect(jsonPath("$.result").value(true));
+            assertThat(verificationCodeRepository.findByPhoneNumberAndCodeAndExpiredAtAfter("01012345678", "123456",
+                    LocalDateTime.now()).isVerified()).isTrue();
+            assertThat(verificationCodeRepository.findByPhoneNumberAndCodeAndExpiredAtAfter("01012345678", "789012",
+                    LocalDateTime.now()).isVerified()).isFalse();
         }
 
         @Test
@@ -399,6 +406,8 @@ public class VerifyPhoneNumberTest {
             // then
             result.andExpect(status().isOk())
                     .andExpect(jsonPath("$.result").value(false));
+            assertThat(verificationCodeRepository.findByPhoneNumberAndCodeAndExpiredAtAfter("01012345678", "123456",
+                    LocalDateTime.now().minusMinutes(9999)).isVerified()).isFalse();
         }
     }
 }

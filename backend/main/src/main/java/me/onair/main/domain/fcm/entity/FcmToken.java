@@ -1,4 +1,4 @@
-package me.onair.main.domain.user.entity;
+package me.onair.main.domain.fcm.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.onair.main.domain.user.entity.User;
 
 @Entity
 @Getter
@@ -35,7 +36,7 @@ public class FcmToken {
         this.value = value;
     }
 
-   public static FcmToken from(String value) {
+    public static FcmToken from(String value) {
         return new FcmToken(value);
     }
 

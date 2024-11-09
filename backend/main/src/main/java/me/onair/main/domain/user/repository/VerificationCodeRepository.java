@@ -15,5 +15,7 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
 
     void deleteByExpiredAtBefore(LocalDateTime twoDaysAgo);
 
-    boolean existsByPhoneNumberAndCodeAndExpiredAtAfter(String phoneNumber, String verification, LocalDateTime now);
+    VerificationCode findByPhoneNumberAndCodeAndExpiredAtAfter(String phoneNumber, String verification,
+                                                               LocalDateTime now);
+
 }

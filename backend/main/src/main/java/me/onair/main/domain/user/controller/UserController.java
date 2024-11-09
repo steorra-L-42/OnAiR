@@ -1,14 +1,17 @@
 package me.onair.main.domain.user.controller;
 
 import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.user.dto.PhoneVerifyRequest;
-import me.onair.main.domain.user.dto.PhoneVerifyResponse;
 import me.onair.main.domain.user.dto.SignupRequest;
 import me.onair.main.domain.user.dto.VerificationCodeRequest;
 import me.onair.main.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,15 +38,29 @@ public class UserController {
 
     // 2. 휴대폰 인증 번호 확인
     @PostMapping("/phone-verification")
-    public ResponseEntity<PhoneVerifyResponse> verifyPhoneNumber(@RequestBody @Valid PhoneVerifyRequest request) {
+    public ResponseEntity<Object> verifyPhoneNumber(@RequestBody @Valid PhoneVerifyRequest request) {
         log.info("UserController.verifyPhoneNumber request: {}", request);
 
-        PhoneVerifyResponse response = userService.verifyPhoneNumber(request);
+        boolean result = userService.verifyPhoneNumber(request);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("result", result);
 
         return ResponseEntity.ok(response);
     }
 
     // 3. Username 중복 확인
+    @GetMapping("/valid-username/{username}")
+    public ResponseEntity<Object> checkDuplicatedUsername(@PathVariable("username") String username) {
+        log.info("UserController.checkDuplicatedUsername username: {}", username);
+
+        boolean result = userService.checkDuplicatedUsername(username);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("result", result);
+
+        return ResponseEntity.ok(response);
+    }
 
     // 4. 회원 가입
     @PostMapping("/signup")
@@ -60,7 +77,5 @@ public class UserController {
     // 8. 닉네임 수정
 
     // 9. 프로필 수정
-
-    // 12. FCM token 저장
 
 }

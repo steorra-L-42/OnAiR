@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.onair.main.domain.channel.entity.Channel;
+import me.onair.main.domain.fcm.entity.FcmToken;
 import me.onair.main.domain.jwt.entity.RefreshToken;
 import me.onair.main.domain.story.entity.Story;
 import me.onair.main.domain.user.dto.SignupRequest;
@@ -44,7 +45,8 @@ public class User {
     @Column(name = "username", nullable = false, length = 40)
     private String username;
 
-    // 비밀번호
+    // 암호화된 비밀번호
+    // 자체로는 25글자 이하
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 
