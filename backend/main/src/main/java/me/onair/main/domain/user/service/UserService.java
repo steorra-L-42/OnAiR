@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.user.dto.CustomUserDetails;
+import me.onair.main.domain.user.dto.NicknameChangeRequest;
 import me.onair.main.domain.user.dto.PhoneVerifyRequest;
 import me.onair.main.domain.user.dto.SignupRequest;
 import me.onair.main.domain.user.dto.UserInfoResponse;
@@ -104,6 +105,15 @@ public class UserService {
                 .orElseThrow(NotExistUserException::new);
 
         return UserInfoResponse.from(user);
+    }
+
+    @Transactional
+    public void updateNickname(CustomUserDetails customUserDetails, NicknameChangeRequest request) {
+
+        User user = userRepository.findById(customUserDetails.getId())
+                .orElseThrow(NotExistUserException::new);
+
+        user.updateNickname(request.getNickname());
     }
 
     private void validateDuplicateUsername(String username) {

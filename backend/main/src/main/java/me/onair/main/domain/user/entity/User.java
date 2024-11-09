@@ -31,7 +31,7 @@ import me.onair.main.domain.user.enums.Role;
 public class User {
 
     // TODO: 기본 프로필 이미지 경로 수정 필요
-    private static final String DEFAULT_PROFILE_PATH = "https://onair.me/images/default_profile.png";
+    private static final String DEFAULT_PROFILE_PATH = "https://i.namu.wiki/i/MD2QdCJ3W0DvXgUHI8u_dUbdo1y5H_jFBx5w0d8XhTPPbjO8kJeHcvVR6_hOsvHGxhhrKqlGkZvqk744wwYtvtWqyfs3OmXrJ-6B5zLP11S7LglORDjvx3BUS57PCAeRNDfKOCRyYH3VDMdENcMmig.webp";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -111,5 +111,9 @@ public class User {
 
     public void updateRefreshToken(RefreshToken refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

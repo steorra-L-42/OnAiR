@@ -6,6 +6,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.user.dto.CustomUserDetails;
+import me.onair.main.domain.user.dto.NicknameChangeRequest;
 import me.onair.main.domain.user.dto.PhoneVerifyRequest;
 import me.onair.main.domain.user.dto.SignupRequest;
 import me.onair.main.domain.user.dto.UserInfoResponse;
@@ -14,6 +15,7 @@ import me.onair.main.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -87,6 +89,16 @@ public class UserController {
     }
 
     // 8. 닉네임 수정
+    @PatchMapping("/nickname")
+    public ResponseEntity<Object> updateNickname(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                 @RequestBody @Valid NicknameChangeRequest request) {
+
+        log.info("UserController.updateNickname request: {}", request);
+
+        userService.updateNickname(customUserDetails, request);
+
+        return ResponseEntity.ok().build();
+    }
 
     // 9. 프로필 수정
 
