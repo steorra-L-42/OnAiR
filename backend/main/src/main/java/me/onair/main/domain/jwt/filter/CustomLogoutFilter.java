@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import me.onair.main.domain.fcm.repository.FcmRepository;
 import me.onair.main.domain.jwt.enums.TokenType;
 import me.onair.main.domain.jwt.repository.RefreshRepository;
 import me.onair.main.domain.jwt.util.JWTUtil;
+import me.onair.main.domain.user.repository.UserRepository;
 import me.onair.main.global.error.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,17 +30,21 @@ public class CustomLogoutFilter extends GenericFilterBean {
     private static final Pattern LOGOUT_PATTERN = Pattern.compile("^/api/v1/user/logout$");
     private static final String POST_METHOD = "POST";
 
+    private final UserRepository userRepository;
+    private final FcmRepository fcmRepository;
     private final RefreshRepository refreshRepository;
     private final String REFRESH_TOKEN_COOKIE_PATH;
     private final JWTUtil jwtUtil;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
         doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
     }
 
-    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws IOException, ServletException {
 
         // 로그아웃 경로와 다르거나 POST 요청이 아닌 경우
         if (isNotLogoutRequest(request)) {
@@ -57,9 +63,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         refreshToken = refreshToken.trim();
-        try{
+        try {
             jwtUtil.isExpired(refreshToken);
-        }catch (ExpiredJwtException e){
+        } catch (ExpiredJwtException e) {
             log.error("JWTFilter : Refresh Token is Expired");
             response.setStatus(ErrorCode.REFRESH_TOKEN_EXPIRED.getStatus().value());
             return;
@@ -75,13 +81,22 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         // DB에 저장된 RefreshToken인지 확인
         Boolean isExist = refreshRepository.existsByValue(refreshToken);
-        if(!isExist) {
+        if (!isExist) {
             log.error("refresh token not exist : {}", refreshToken);
             setResponse(response, ErrorCode.NOT_EXIST_REFRESH_TOKEN);
             return;
         }
 
         // 로그아웃 진행
+        // FCM Token 삭제
+        userRepository.findById(jwtUtil.getUserId(refreshToken))
+                .ifPresent(user -> {
+                    Long fcmTokenId = user.getFcmToken().getId();
+                    user.deleteFcmToken();
+                    userRepository.save(user);
+                    fcmRepository.deleteById(fcmTokenId);
+                });
+
         //Refresh 토큰 DB에서 제거
         refreshRepository.deleteByValue(refreshToken);
 
@@ -117,10 +132,10 @@ public class CustomLogoutFilter extends GenericFilterBean {
         response.setStatus(errorCode.getStatus().value());
         response.setContentType("application/json");
         response.getWriter().write(String.format("""
-                {
-                    "message": "%s",
-                    "code": "%s"
-                }
-            """, errorCode.getMessage(), errorCode.getCode()));
+                    {
+                        "message": "%s",
+                        "code": "%s"
+                    }
+                """, errorCode.getMessage(), errorCode.getCode()));
     }
 }

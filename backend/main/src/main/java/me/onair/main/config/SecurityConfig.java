@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
+import me.onair.main.domain.fcm.repository.FcmRepository;
 import me.onair.main.domain.jwt.CustomAuthenticationEntryPoint;
 import me.onair.main.domain.jwt.enums.TokenType;
 import me.onair.main.domain.jwt.filter.CustomLogoutFilter;
@@ -12,6 +13,7 @@ import me.onair.main.domain.jwt.filter.LoginFilter;
 import me.onair.main.domain.jwt.repository.RefreshRepository;
 import me.onair.main.domain.jwt.util.CookieUtil;
 import me.onair.main.domain.jwt.util.JWTUtil;
+import me.onair.main.domain.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +45,9 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final CookieUtil cookieUtil;
     private final RefreshRepository refreshRepository;
+    private final UserRepository userRepository;
+    private final FcmRepository fcmRepository;
+
     @Value("${cors.url}")
     private String corsURL;
     @Value("${spring.jwt.refresh.cookie.path}")
@@ -96,7 +101,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 new AntPathRequestMatcher("/api/v1/user/phone-verification/verification-code"),
                                 new AntPathRequestMatcher("/api/v1/user/phone-verification"),
-                                new AntPathRequestMatcher("/api/v1/user/valid-username"),
+                                new AntPathRequestMatcher("/api/v1/user/valid-username/*"),
                                 new AntPathRequestMatcher("/api/v1/user/signup"),
                                 new AntPathRequestMatcher("/api/v1/user/login"),
                                 new AntPathRequestMatcher("/api/v1/user/reissue")
@@ -123,6 +128,8 @@ public class SecurityConfig {
                 // logout : 커스텀 logout filter 추가
                 .addFilterBefore(CustomLogoutFilter.builder()
                                 .jwtUtil(jwtUtil)
+                                .userRepository(userRepository)
+                                .fcmRepository(fcmRepository)
                                 .refreshRepository(refreshRepository)
                                 .REFRESH_TOKEN_COOKIE_PATH(REFRESH_TOKEN_COOKIE_PATH)
                                 .build()
