@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.onair.main.domain.channel.entity.Channel;
+import me.onair.main.domain.fcm.entity.FcmToken;
 import me.onair.main.domain.jwt.entity.RefreshToken;
 import me.onair.main.domain.story.entity.Story;
 import me.onair.main.domain.user.dto.SignupRequest;

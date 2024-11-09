@@ -78,6 +78,4 @@ public class UserController {
 
     // 9. 프로필 수정
 
-    // 12. FCM token 저장
-
 }
