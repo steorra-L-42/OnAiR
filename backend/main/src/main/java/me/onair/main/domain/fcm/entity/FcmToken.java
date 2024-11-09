@@ -40,7 +40,7 @@ public class FcmToken {
         return new FcmToken(value);
     }
 
-    public void changeMobiUser(User user) {
+    public void changeUser(User user) {
         this.user = user;
     }
 }

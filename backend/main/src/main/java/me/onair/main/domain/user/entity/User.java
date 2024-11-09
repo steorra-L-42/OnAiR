@@ -103,10 +103,10 @@ public class User {
 
     public void setFcmToken(FcmToken fcmToken) {
         if (this.fcmToken != null) {
-            this.fcmToken.changeMobiUser(null);
+            this.fcmToken.changeUser(null);
         }
         this.fcmToken = fcmToken;
-        fcmToken.changeMobiUser(this);
+        fcmToken.changeUser(this);
     }
 
     public void updateRefreshToken(RefreshToken refreshToken) {
