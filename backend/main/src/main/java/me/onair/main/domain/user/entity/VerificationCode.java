@@ -33,10 +33,18 @@ public class VerificationCode {
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
 
+    @Column(name = "verified", nullable = false)
+    private boolean verified;
+
     @Builder
     public VerificationCode(String phoneNumber, String code, LocalDateTime expiredAt) {
         this.phoneNumber = phoneNumber;
         this.code = code;
         this.expiredAt = expiredAt;
+        verified = false;
+    }
+
+    public void verify() {
+        this.verified = true;
     }
 }
