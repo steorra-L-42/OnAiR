@@ -76,7 +76,7 @@ async def update_m3u8(channel):
         await f.write(f"segment_{index:04d}_{number:05d}.ts\n")
 
     async with aiofiles.open(m3u8_path, 'r+') as f:
-      await f.seek(50)  # 포맷 고정 조심
+      await f.seek(74)  # 포맷 고정 조심
       await f.write(f'{segments[0][1]:05d}'.ljust(5))
       await f.flush()
 
