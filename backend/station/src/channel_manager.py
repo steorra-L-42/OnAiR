@@ -1,10 +1,8 @@
 import json
 import logging
 
-from confluent_kafka import KafkaError
-
 from src.channel import Channel
-from src.kafka_consumer_wrapper import kafka_consumer_wrapper
+from src.kafkaconsumerwrapper import KafkaConsumerWrapper
 
 
 class ChannelManager:
@@ -28,33 +26,32 @@ class ChannelManager:
             logging.info(f"Channel {channel_id} removed.")
 
 
-def listen_for_channel_creation():
-    # Kafka Consumer 설정
-    consumer = kafka_consumer_wrapper().consumer
-    consumer.subscribe(['channel_info_topic'])
+def process_channel_creation(msg):
+    """Kafka 메시지를 받아 채널을 생성하는 콜백 함수"""
 
     channel_manager = ChannelManager()
+    try:
+        value = json.loads(msg.value().decode('utf-8'))
+        channel_id = msg.key().decode('utf-8')
+        logging.info(f"Received channel creation request for {channel_id}")
+
+        # 채널 생성
+        channel_manager.add_channel(channel_id, value)
+    except Exception as e:
+        logging.error(f"Error processing message: {e}")
+        raise e
+
+
+def listen_for_channel_creation():
+    """Kafka Consumer를 사용하여 채널 생성 요청을 수신"""
+    consumer = KafkaConsumerWrapper(
+        topic='channel_info_topic',
+        on_message_callback=process_channel_creation
+    )
 
     try:
-        while True:
-            msg = consumer.poll(1.0)
-            if msg is None:
-                continue
-
-            if msg.error():
-                if msg.error().code() != KafkaError._PARTITION_EOF:
-                    logging.error(f"Error occurred: {msg.error().str()}")
-                    continue
-                logging.warning(f"End of partition reached {msg.topic()} / {msg.partition()}")
-
-            # 메시지 수신 시 채널 생성 로직 수행
-            value = json.loads(msg.value().decode('utf-8'))
-            channel_id = msg.key().decode('utf-8')
-
-            logging.info(f"Received channel creation request for {channel_id}")
-            # 채널 생성
-            channel_manager.add_channel(channel_id, value)
+        consumer.consume_messages()
     except KeyboardInterrupt:
-        pass
+        logging.info("Consumer stopped by user.")
     finally:
         consumer.close()
