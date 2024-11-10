@@ -4,6 +4,8 @@ import com.fm404.onair.core.network.manager.TokenManager
 import com.fm404.onair.core.network.model.ErrorResponse
 import com.fm404.onair.data.remote.api.auth.UserApi
 import com.fm404.onair.data.remote.dto.auth.LoginRequestDto
+import com.fm404.onair.data.remote.dto.auth.PhoneVerificationRequestDto
+import com.fm404.onair.data.remote.dto.auth.PhoneVerifyRequestDto
 import com.fm404.onair.data.remote.dto.auth.SignupRequestDto
 import com.fm404.onair.domain.model.auth.LoginRequest
 import com.fm404.onair.domain.model.auth.LoginResult
@@ -22,8 +24,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun checkUsername(username: String): Result<Boolean> = runCatching {
-//        userApi.checkUsername(username).result
-        true
+        userApi.checkUsername(username).result
     }
 
     override suspend fun register(request: RegisterRequest): Result<Unit> = runCatching {
@@ -59,5 +60,21 @@ class UserRepositoryImpl @Inject constructor(
             val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
             throw Exception(errorResponse.message)
         }
+    }
+
+    override suspend fun requestVerificationCode(phoneNumber: String): Result<Unit> = runCatching {
+        userApi.requestVerificationCode(PhoneVerificationRequestDto(phoneNumber = phoneNumber))
+    }
+
+    override suspend fun verifyPhoneNumber(
+        phoneNumber: String,
+        verificationCode: String
+    ): Result<Boolean> = runCatching {
+        userApi.verifyPhoneNumber(
+            PhoneVerifyRequestDto(
+                phoneNumber = phoneNumber,
+                verification = verificationCode
+            )
+        ).result
     }
 }
