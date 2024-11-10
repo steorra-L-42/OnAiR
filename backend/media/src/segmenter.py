@@ -51,7 +51,7 @@ def m3u8_setup(channel, channel_name):
   with open(m3u8_path, "w") as f:
     f.write("#EXTM3U\n")
     f.write("#EXT-X-VERSION:3\n")
-    f.write(f"#EXT-X-TARGETDURATION:{int(SEGMENT_DURATION)+1}\n")
+    f.write(f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n")
 
     # SEGMENT_LIST_SIZE 만큼 큐에서 빼서 파일에 작성
     segments = channel['queue'].dequeue(SEGMENT_LIST_SIZE)
@@ -67,7 +67,7 @@ async def update_m3u8(channel):
   channel_path = channel['channel_path']
   m3u8_path = os.path.join(channel_path, "index.m3u8")
   # await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * (SEGMENT_LIST_SIZE/2))
-  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * 2)
+  # await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * 2)
 
   while True:
     await asyncio.sleep(SEGMENT_UPDATE_INTERVAL)
@@ -90,7 +90,7 @@ async def update_m3u8(channel):
     # SEQUENCE 값 변경
     async with aiofiles.open(m3u8_path, 'r+') as f:
       lines = await f.readlines()
-      line = lines[7] if len(lines[7]) == INDEX_SEGMENT_CHAR_NUM else lines[8]
+      line = lines[5] if len(lines[5]) == INDEX_SEGMENT_CHAR_NUM else lines[6]
 
       await f.seek(74)  # 포맷 고정 조심
       await f.write(f'{line[13:18]}'.ljust(5))

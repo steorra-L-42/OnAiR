@@ -5,6 +5,7 @@ import os
 
 # 내부 패키지
 from logger import log
+from config import IS_INF
 
 ######################  ts 관리 큐  ######################
 class SegmentQueue:
@@ -23,6 +24,9 @@ class SegmentQueue:
       segments = []
       for _ in range(min(count, len(self.queue))):
         segments.append(self.queue.popleft())
+      if IS_INF:
+        for index, number in segments:
+          self.queue.append((index, number))
     self.buffer = segments[-1][0] # 마지막 세그먼트 값
     return segments
 
