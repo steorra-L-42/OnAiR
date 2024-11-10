@@ -29,7 +29,7 @@ def add_channel(channel_name):
 
   # 세그먼트 큐 생성
   channels[channel_name] = {
-    'queue': SegmentQueue(hls_path, last_index), # 방금 만든 세그먼트들 넣기
+    'queue': SegmentQueue(hls_path), # 방금 만든 세그먼트들 넣기
     'channel_path': channel_path,
     'hls_path': hls_path,
     'playlist_path': playlist_path

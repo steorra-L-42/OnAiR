@@ -7,8 +7,9 @@ from threading import Lock
 import aiofiles
 
 from logger import log
-from config import STREAMING_CHANNELS, SEGMENT_DURATION, SEGMENT_LIST_SIZE, \
-  SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
+from config import STREAMING_CHANNELS
+from config import SEGMENT_DURATION, SEGMENT_LIST_SIZE, SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
+
 
 
 ######################  파일 -ffmpeg-> 세그먼트  ######################
@@ -65,22 +66,33 @@ def m3u8_setup(channel, channel_name):
 async def update_m3u8(channel):
   channel_path = channel['channel_path']
   m3u8_path = os.path.join(channel_path, "index.m3u8")
+  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * (SEGMENT_LIST_SIZE/2))
 
   while True:
     await asyncio.sleep(SEGMENT_UPDATE_INTERVAL)
     segments = channel['queue'].dequeue(SEGMENT_UPDATE_SIZE)
 
+    # 새 세그먼트 추가
     async with aiofiles.open(m3u8_path, 'a') as f:
+      previous_index = None
       for index, number in segments:
+        if previous_index is not None and previous_index != index:
+          await f.write("#EXT-X-DISCONTINUITY\n")
         await f.write(f"#EXTINF:{SEGMENT_DURATION},\n")
         await f.write(f"segment_{index:04d}_{number:05d}.ts\n")
+        previous_index = index
 
+    # 오래된 세그먼트 삭제
+    await remove_old_segments(m3u8_path)
+
+    # SEQUENCE 값 변경
     async with aiofiles.open(m3u8_path, 'r+') as f:
+      for line_number in range(8):
+        line = await f.readline()
       await f.seek(74)  # 포맷 고정 조심
-      await f.write(f'{segments[0][1]:05d}'.ljust(5))
+      await f.write(f'{line[13:18]}'.ljust(5))
       await f.flush()
 
-    await remove_old_segments(m3u8_path)
     log.info(f"m3u8 파일 업데이트 완료 [{segments}]")
 
 

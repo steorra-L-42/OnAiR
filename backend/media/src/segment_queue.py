@@ -8,12 +8,9 @@ from logger import log
 
 ######################  ts 관리 큐  ######################
 class SegmentQueue:
-  def __init__(self, hls_path, last_index):
+  def __init__(self, hls_path):
     self.queue = deque()
     self.lock = Lock()
-
-    self._now_index = 0
-    self._now_number = 0
     self.init_segments_from_directory(hls_path)
 
   def enqueue(self, index, number):
