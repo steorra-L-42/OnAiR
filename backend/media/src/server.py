@@ -78,7 +78,6 @@ async def serve_playlist(stream_name: str):
 ######################  API: 세그먼트 파일 조회  ######################
 @app.get("/channel/{stream_name}/{segment}")
 async def serve_segment(stream_name: str, segment: str):
-  log.info(f"요청 [{segment}]")
   segment_path = os.path.join(STREAMING_CHANNELS, stream_name, HLS_DIR, segment)
   if not os.path.exists(segment_path):
     raise HTTPException(status_code=404, detail="Segment not found")

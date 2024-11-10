@@ -7,8 +7,9 @@ from threading import Lock
 import aiofiles
 
 from logger import log
-from config import STREAMING_CHANNELS, SEGMENT_DURATION, SEGMENT_LIST_SIZE, \
-  SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
+from config import STREAMING_CHANNELS
+from config import SEGMENT_DURATION, SEGMENT_LIST_SIZE, SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
+from config import INDEX_DISC_CHAR_NUM, INDEX_INF_CHAR_NUM, INDEX_SEGMENT_CHAR_NUM
 
 
 ######################  파일 -ffmpeg-> 세그먼트  ######################
@@ -50,7 +51,7 @@ def m3u8_setup(channel, channel_name):
   with open(m3u8_path, "w") as f:
     f.write("#EXTM3U\n")
     f.write("#EXT-X-VERSION:3\n")
-    f.write(f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n")
+    f.write(f"#EXT-X-TARGETDURATION:{int(SEGMENT_DURATION)+1}\n")
 
     # SEGMENT_LIST_SIZE 만큼 큐에서 빼서 파일에 작성
     segments = channel['queue'].dequeue(SEGMENT_LIST_SIZE)
@@ -65,23 +66,35 @@ def m3u8_setup(channel, channel_name):
 async def update_m3u8(channel):
   channel_path = channel['channel_path']
   m3u8_path = os.path.join(channel_path, "index.m3u8")
+  # await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * (SEGMENT_LIST_SIZE/2))
+  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * 2)
 
   while True:
     await asyncio.sleep(SEGMENT_UPDATE_INTERVAL)
+
+    previous_index = channel['queue'].get_buffer()
     segments = channel['queue'].dequeue(SEGMENT_UPDATE_SIZE)
 
+    # 새 세그먼트 추가
     async with aiofiles.open(m3u8_path, 'a') as f:
       for index, number in segments:
+        if previous_index != -1 and previous_index != index: # 다음 파일 스트리밍 경우
+          await f.write("#EXT-X-DISCONTINUITY\n")
+          
         await f.write(f"#EXTINF:{SEGMENT_DURATION},\n")
         await f.write(f"segment_{index:04d}_{number:05d}.ts\n")
 
-    async with aiofiles.open(m3u8_path, 'r+') as f:
-      await f.seek(50)  # 포맷 고정 조심
-      await f.write(f'{segments[0][1]:05d}'.ljust(5))
-      await f.flush()
-
+    # 오래된 세그먼트 삭제
     await remove_old_segments(m3u8_path)
-    log.info(f"m3u8 파일 업데이트 완료 [{segments}]")
+
+    # SEQUENCE 값 변경
+    async with aiofiles.open(m3u8_path, 'r+') as f:
+      lines = await f.readlines()
+      line = lines[7] if len(lines[7]) == INDEX_SEGMENT_CHAR_NUM else lines[8]
+
+      await f.seek(74)  # 포맷 고정 조심
+      await f.write(f'{line[13:18]}'.ljust(5))
+      await f.flush()
 
 
 # ######################  세그먼트 리스트 업데이트(오래된거 삭제)  ######################
@@ -92,13 +105,15 @@ async def remove_old_segments(m3u8_path, max_segments=5):
       lines = await f.readlines()
 
     segment_count = len(lines)/2
-    if segment_count > SEGMENT_LIST_SIZE:                          # 오래된 세그먼트가 max_segments를 초과하는 경우 삭제
-      new_lines = lines[-SEGMENT_LIST_SIZE * 2:]                   # 최신 max_segments만 남기고 삭제
-      async with aiofiles.open(m3u8_path, 'w') as f:    # 파일을 다시 작성 (앞의 4줄 + 최신 세그먼트)
+    if segment_count > SEGMENT_LIST_SIZE:
+
+      update_lines = SEGMENT_UPDATE_SIZE*2
+      update_lines = update_lines+1 if len(lines[update_lines]) == INDEX_DISC_CHAR_NUM else update_lines
+      new_lines = lines[update_lines:]
+
+      async with aiofiles.open(m3u8_path, 'w') as f:
         await f.writelines(header)
         await f.writelines(new_lines)
-
-      log.info(f"오래된 세그먼트 삭제 완료 [{segment_count - max_segments}]")
 
   except Exception as e:
     log.error(f"세그먼트 삭제 오류: {e}")
