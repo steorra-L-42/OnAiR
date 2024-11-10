@@ -10,4 +10,6 @@ interface UserRepository {
     suspend fun checkUsername(username: String): Result<Boolean>
     suspend fun register(request: RegisterRequest): Result<Unit>
     suspend fun login(request: LoginRequest): Result<LoginResult>
+    suspend fun requestVerificationCode(phoneNumber: String): Result<Unit>
+    suspend fun verifyPhoneNumber(phoneNumber: String, verificationCode: String): Result<Boolean>
 }

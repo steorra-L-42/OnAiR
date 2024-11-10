@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.features.auth.presentation.register.RegisterViewModel
 import com.fm404.onair.features.auth.presentation.register.state.RegisterEvent
 
@@ -50,6 +53,15 @@ fun RegisterScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        IconButton(
+            onClick =  {
+                navController.popBackStack()
+                Unit
+            }
+        ) {
+            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
+        }
+
         Text(
             text = "회원가입",
             style = MaterialTheme.typography.headlineMedium

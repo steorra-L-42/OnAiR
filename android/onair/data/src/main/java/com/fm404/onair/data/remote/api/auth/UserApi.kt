@@ -2,6 +2,9 @@ package com.fm404.onair.data.remote.api.auth
 
 import com.fm404.onair.core.network.annotation.PublicApi
 import com.fm404.onair.data.remote.dto.auth.LoginRequestDto
+import com.fm404.onair.data.remote.dto.auth.PhoneVerificationRequestDto
+import com.fm404.onair.data.remote.dto.auth.PhoneVerifyRequestDto
+import com.fm404.onair.data.remote.dto.auth.PhoneVerifyResponseDto
 import com.fm404.onair.data.remote.dto.auth.SignupRequestDto
 import com.fm404.onair.data.remote.dto.auth.UserRoleDto
 import com.fm404.onair.data.remote.dto.auth.ValidUsernameResponse
@@ -23,4 +26,12 @@ interface UserApi {
     @PublicApi
     @POST("api/v1/user/login")
     suspend fun login(@Body request: LoginRequestDto): Response<Unit>
+
+    @PublicApi
+    @POST("api/v1/user/phone-verification/verification-code")
+    suspend fun requestVerificationCode(@Body request: PhoneVerificationRequestDto)
+
+    @PublicApi
+    @POST("api/v1/user/phone-verification")
+    suspend fun verifyPhoneNumber(@Body request: PhoneVerifyRequestDto): PhoneVerifyResponseDto
 }
