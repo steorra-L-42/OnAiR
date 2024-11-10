@@ -11,6 +11,7 @@ class SegmentQueue:
   def __init__(self, hls_path):
     self.queue = deque()
     self.lock = Lock()
+    self.buffer = -1
     self.init_segments_from_directory(hls_path)
 
   def enqueue(self, index, number):
@@ -22,6 +23,7 @@ class SegmentQueue:
       segments = []
       for _ in range(min(count, len(self.queue))):
         segments.append(self.queue.popleft())
+    self.buffer = segments[-1][0] # 마지막 세그먼트 값
     return segments
 
   def init_segments_from_directory(self, hls_path):
@@ -33,3 +35,6 @@ class SegmentQueue:
   def get_all_segments(self):
     with self.lock:
       return list(self.queue)
+
+  def get_buffer(self):
+    return self.buffer
