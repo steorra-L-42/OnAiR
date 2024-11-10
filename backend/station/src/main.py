@@ -4,6 +4,7 @@ import time
 from src.channel_manager import listen_for_channel_creation
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
     while True:  # 계속 실행되도록 무한 루프
         try:
             listen_for_channel_creation()
