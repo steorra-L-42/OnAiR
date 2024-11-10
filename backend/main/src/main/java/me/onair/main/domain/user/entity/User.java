@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.onair.main.domain.channel.entity.Channel;
+import me.onair.main.domain.fcm.entity.FcmToken;
 import me.onair.main.domain.jwt.entity.RefreshToken;
 import me.onair.main.domain.story.entity.Story;
 import me.onair.main.domain.user.dto.SignupRequest;
@@ -30,7 +31,7 @@ import me.onair.main.domain.user.enums.Role;
 public class User {
 
     // TODO: 기본 프로필 이미지 경로 수정 필요
-    private static final String DEFAULT_PROFILE_PATH = "https://onair.me/images/default_profile.png";
+    private static final String DEFAULT_PROFILE_PATH = "https://i.namu.wiki/i/MD2QdCJ3W0DvXgUHI8u_dUbdo1y5H_jFBx5w0d8XhTPPbjO8kJeHcvVR6_hOsvHGxhhrKqlGkZvqk744wwYtvtWqyfs3OmXrJ-6B5zLP11S7LglORDjvx3BUS57PCAeRNDfKOCRyYH3VDMdENcMmig.webp";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +45,8 @@ public class User {
     @Column(name = "username", nullable = false, length = 40)
     private String username;
 
-    // 비밀번호
+    // 암호화된 비밀번호
+    // 자체로는 25글자 이하
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 
@@ -101,13 +103,17 @@ public class User {
 
     public void setFcmToken(FcmToken fcmToken) {
         if (this.fcmToken != null) {
-            this.fcmToken.changeMobiUser(null);
+            this.fcmToken.changeUser(null);
         }
         this.fcmToken = fcmToken;
-        fcmToken.changeMobiUser(this);
+        fcmToken.changeUser(this);
     }
 
     public void updateRefreshToken(RefreshToken refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 }
