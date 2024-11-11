@@ -12,11 +12,6 @@ services:
     networks:
       - nginx
       - monitoring
-    deploy:
-      mode: replicated
-      replicas: 2
-      restart_policy:
-        condition: on-failure
 
   grafana:
     image: grafana/grafana:latest
@@ -28,15 +23,10 @@ services:
     networks:
       - nginx
       - monitoring
-    deploy:
-      mode: replicated
-      replicas: 2
-      restart_policy:
-        condition: on-failure
 
 networks:
   monitoring:
-      driver: overlay
+      driver: bridge
       name: monitoring
   nginx:
     external: true

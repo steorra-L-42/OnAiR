@@ -11,14 +11,9 @@ services:
       ZOOKEEPER_SYNC_LIMIT: 5
       ZOOKEEPER_SERVER: "onair_zookeeper-1:2888:3888;onair_zookeeper-2:2888:3888;onair_zookeeper-3:2888:3888"
     networks:
-      - onair-overlay-network
+      - onair-network
     volumes:
       - zookeeper_data_1:/data
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
 
   zookeeper-2:
     image: confluentinc/cp-zookeeper:7.4.0
@@ -30,14 +25,9 @@ services:
       ZOOKEEPER_SYNC_LIMIT: 5
       ZOOKEEPER_SERVER: "onair_zookeeper-1:2888:3888;onair_zookeeper-2:2888:3888;onair_zookeeper-3:2888:3888"
     networks:
-      - onair-overlay-network
+      - onair-network
     volumes:
       - zookeeper_data_2:/data
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
 
   zookeeper-3:
     image: confluentinc/cp-zookeeper:7.4.0
@@ -49,17 +39,12 @@ services:
       ZOOKEEPER_SYNC_LIMIT: 5
       ZOOKEEPER_SERVER: "onair_zookeeper-1:2888:3888;onair_zookeeper-2:2888:3888;onair_zookeeper-3:2888:3888"
     networks:
-      - onair-overlay-network
+      - onair-network
     volumes:
       - zookeeper_data_3:/data
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
 
 networks:
-  onair-overlay-network:
+  onair-network:
     external: true
 
 volumes:

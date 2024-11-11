@@ -27,14 +27,9 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
     networks:
-      - onair-overlay-network
+      - onair-network
     volumes:
       - kafka_data_1:/var/lib/kafka/data
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
 
   kafka-2:
     image: confluentinc/cp-kafka:7.4.0
@@ -62,14 +57,10 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
     networks:
-      - onair-overlay-network
+      - onair-network
     volumes:
       - kafka_data_2:/var/lib/kafka/data
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
+
 
   kafka-3:
     image: confluentinc/cp-kafka:7.4.0
@@ -97,14 +88,9 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
     networks:
-      - onair-overlay-network
+      - onair-network
     volumes:
       - kafka_data_3:/var/lib/kafka/data
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
 
 networks:
   onair-overlay-network:

@@ -6,14 +6,6 @@ services:
       - /exec/onair/nginx:/etc/nginx/conf.d
       - /exec/cert/certbot/conf:/etc/letsencrypt
       - /exec/cert/certbot/www:/var/www/certbot
-
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-      placement:
-        constraints:
-          - node.role == manager
     networks:
       - nginx
 
@@ -23,8 +15,9 @@ services:
 
 networks:
   nginx:
-    attachable: true
+    driver: bridge
     name: nginx
+    
 volumes:
   certbot_data:
     driver: local
