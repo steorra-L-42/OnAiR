@@ -34,4 +34,7 @@ interface UserApi {
     @PublicApi
     @POST("api/v1/user/phone-verification")
     suspend fun verifyPhoneNumber(@Body request: PhoneVerifyRequestDto): PhoneVerifyResponseDto
+
+    @GET("api/v1/user/logout")
+    suspend fun logout(): Response<Unit>
 }

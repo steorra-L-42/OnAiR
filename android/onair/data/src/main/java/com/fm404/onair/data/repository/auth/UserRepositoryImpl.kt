@@ -77,4 +77,16 @@ class UserRepositoryImpl @Inject constructor(
             )
         ).result
     }
+
+    override suspend fun logout(): Result<Unit> = runCatching {
+        val response = userApi.logout()
+
+        if (response.isSuccessful) {
+            tokenManager.clearToken()
+        } else {
+            val errorBody = response.errorBody()?.string()
+            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+            throw Exception(errorResponse.message)
+        }
+    }
 }
