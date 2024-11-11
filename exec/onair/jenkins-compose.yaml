@@ -1,0 +1,27 @@
+services:
+  jenkins:
+    image: myjenkins-blueocean:2.462.3-1
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker 소켓 공유
+    networks:
+      - nginx
+      - jenkins
+
+  socat:
+    image: alpine/socat
+    command: tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
+    restart: always
+    networks:
+      - jenkins
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  jenkins:
+    name: jenkins
+  nginx:
+    external: true
+
+volumes:
+  jenkins_home:
