@@ -1,7 +1,7 @@
 import logging
 from colorama import Fore, Style, init
 
-# colorama 초기화
+# Initialize colorama
 init(autoreset=True)
 
 LOG_COLORS = {

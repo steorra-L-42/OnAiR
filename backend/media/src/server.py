@@ -10,7 +10,6 @@ import os
 from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR
 from logger import log
 from shared_vars import add_channel, channels
-from segmenter import update_m3u8
 
 app = FastAPI()
 
@@ -26,15 +25,24 @@ app.add_middleware(
 async def lifespan(app: FastAPI):
   global channels
 
-  log.info("서버 초기화 루틴 시작")
+  log.info("Server initialization started")
   basic_channel = add_channel(BASIC_CHANNEL_NAME)
-  basic_channel['update_task'] = asyncio.create_task(update_m3u8(basic_channel))
-  log.info(f"서버 초기화 끝(채널 추가 완료) [{BASIC_CHANNEL_NAME}]")
+  if basic_channel is None:
+    log.error("Failed to initialize the basic channel.")
+    raise RuntimeError("Failed to initialize the basic channel.")
+
+  log.info(f"Server initialization complete [Channel: {BASIC_CHANNEL_NAME}]")
 
   yield
-  log.info("서버 종료 루틴 시작")
-  del channels
-  log.info("서버 종료")
+
+  log.info("Server shutdown started")
+  for channel in channels.values():
+    process = channel.get('ffmpeg_process')
+    if process:
+      process.terminate()
+      process.wait()
+  log.info("Server shutdown complete")
+
 app.router.lifespan_context = lifespan
 
 @app.get("/api/streams")
@@ -42,13 +50,6 @@ async def get_streams():
   return JSONResponse({
     "status": "success",
     "streams": list(channels.keys())
-  })
-
-@app.get("/api/queue")
-async def get_streams():
-  return JSONResponse({
-    "status": "success",
-    "streams": channels["channel_1"]["queue"].get_all_segments()
   })
 
 @app.get("/channel/{stream_name}/index.m3u8")
