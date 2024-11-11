@@ -81,4 +81,7 @@ async def serve_segment(stream_name: str, segment: str):
   segment_path = os.path.join(STREAMING_CHANNELS, stream_name, HLS_DIR, segment)
   if not os.path.exists(segment_path):
     raise HTTPException(status_code=404, detail="Segment not found")
-  return FileResponse(segment_path)
+
+  response = FileResponse(segment_path)
+  response.headers["Cache-Control"] = "no-cache"
+  return response
