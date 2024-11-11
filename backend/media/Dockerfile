@@ -18,5 +18,8 @@ WORKDIR src
 # FastAPI 포트 노출
 EXPOSE 8000
 
+# 컨테이너 내부 볼륨 설정
+VOLUME ["/backend/media/streaming_channels"]
+
 # uvicorn 실행
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
