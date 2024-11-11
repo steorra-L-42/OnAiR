@@ -26,7 +26,11 @@ def add_channel(channel_name):
   last_index = 0 # 새로 생긴 채널의 last_index는 0부터 시작
   for file in os.listdir(playlist_path):
     if file.endswith('mp3'):
-      last_index = generate_segment(hls_path, os.path.join(playlist_path, file), last_index)
+      last_index = generate_segment(
+          hls_path,
+          os.path.join(playlist_path, file),
+          last_index
+      )
 
   # 세그먼트 큐 생성
   channels[channel_name] = {
