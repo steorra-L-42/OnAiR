@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s  # 메트릭 수집 간격 설정
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 필요한 타겟 추가 예시 (다른 서비스의 메트릭을 수집할 경우)
+  # - job_name: 'your_service'
+  #   static_configs:
+  #     - targets: ['your_service_name:your_service_port']
