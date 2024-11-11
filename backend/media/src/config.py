@@ -26,4 +26,4 @@ INDEX_INF_CHAR_NUM = 11
 BASIC_CHANNEL_NAME = 'channel_1'
 
 # (임시) 노래 무한 반복
-IS_INF = True
+IS_INF = False

@@ -10,11 +10,12 @@ from config import IS_INF, SEGMENT_LIST_SIZE
 
 ######################  ts 관리 큐  ######################
 class SegmentQueue:
-  def __init__(self, hls_path):
+  def __init__(self, hls_path, last_index):
     self.queue = deque()
     self.lock = Lock()
     self.buffer = deque(maxlen=int(SEGMENT_LIST_SIZE)-1)
     self.init_segments_from_directory(hls_path)
+    self.last_index = last_index
 
   def enqueue(self, index, number):
     with self.lock:
@@ -32,12 +33,14 @@ class SegmentQueue:
     self.buffer.extend(starmap(lambda index,number: (index,number), segments))
     return segments
 
-  def init_segments_from_directory(self, hls_path):
+  def init_segments_from_directory(self, hls_path, index=-1):
     list = sorted(os.listdir(hls_path))
     for file_name in list:
       index = int(file_name[8:12])
       number = int(file_name[13:18])
-      self.enqueue(index, number)
+
+      if index == -1 or index == index:
+        self.enqueue(index, number)
 
   def get_all_segments(self):
     with self.lock:
@@ -48,3 +51,9 @@ class SegmentQueue:
 
   def get_buffer(self):
     return list(self.buffer)
+
+  def get_next_index(self):
+    return self.last_index
+
+  def clear(self):
+    self.queue.clear()
