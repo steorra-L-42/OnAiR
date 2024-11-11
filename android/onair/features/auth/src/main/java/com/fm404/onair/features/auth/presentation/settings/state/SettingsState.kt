@@ -7,6 +7,7 @@ data class SettingsState(
     val userInfo: UserInfo? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val errorCode: String? = null,
     val showNicknameDialog: Boolean = false,
     val showImageDialog: Boolean = false,
     val newNickname: String = "",

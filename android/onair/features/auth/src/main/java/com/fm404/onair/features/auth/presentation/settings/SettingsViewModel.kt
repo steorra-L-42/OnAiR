@@ -6,11 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.fm404.onair.core.common.base.BaseViewModel
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.broadcast.BroadcastNavigationContract
+import com.fm404.onair.domain.exception.DomainException
 import com.fm404.onair.domain.repository.auth.UserRepository
 import com.fm404.onair.domain.usecase.auth.GetUserInfoUseCase
 import com.fm404.onair.features.auth.presentation.settings.state.SettingsEvent
 import com.fm404.onair.features.auth.presentation.settings.state.SettingsState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -44,20 +47,43 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun fetchUserInfo() {
-        viewModelScope.launch {
-            setState { copy(isLoading = true, error = null) }
+        viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+            viewModelScope.launch(Dispatchers.Main) {
+                when (throwable) {
+                    is DomainException -> {
+                        if (throwable.code == "C001") { // 401 Unauthorized
+                            // 로그인 화면으로 이동
+                            authNavigationContract.navigateToLogin()
+                        } else {
+                            setState {
+                                copy(
+                                    isLoading = false,
+                                    error = throwable.message,
+                                    errorCode = throwable.code
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = throwable.message ?: "알 수 없는 오류가 발생했습니다",
+                                errorCode = "UNKNOWN"
+                            )
+                        }
+                    }
+                }
+            }
+        }) {
+            setState { copy(isLoading = true, error = null, errorCode = null) }
 
             getUserInfoUseCase()
                 .onSuccess { userInfo ->
                     setState { copy(isLoading = false, userInfo = userInfo) }
                 }
                 .onFailure { exception ->
-                    setState {
-                        copy(
-                            isLoading = false,
-                            error = exception.message ?: "사용자 정보를 불러오는데 실패했습니다."
-                        )
-                    }
+                    throw exception // CoroutineExceptionHandler에서 처리
                 }
         }
     }
@@ -71,11 +97,25 @@ class SettingsViewModel @Inject constructor(
                     broadcastNavigationContract.navigateToBroadcastList()
                 }
                 .onFailure { exception ->
-                    setState {
-                        copy(
-                            isLoading = false,
-                            error = exception.message ?: "로그아웃 중 오류가 발생했습니다."
-                        )
+                    when (exception) {
+                        is DomainException -> {
+                            setState {
+                                copy(
+                                    isLoading = false,
+                                    error = exception.message,
+                                    errorCode = exception.code
+                                )
+                            }
+                        }
+                        else -> {
+                            setState {
+                                copy(
+                                    isLoading = false,
+                                    error = exception.message ?: "로그아웃 중 오류가 발생했습니다.",
+                                    errorCode = "UNKNOWN"
+                                )
+                            }
+                        }
                     }
                 }
         }
@@ -97,11 +137,25 @@ class SettingsViewModel @Inject constructor(
                     fetchUserInfo()
                 }
                 .onFailure { exception ->
-                    setState {
-                        copy(
-                            isLoading = false,
-                            error = exception.message ?: "닉네임 변경 중 오류가 발생했습니다."
-                        )
+                    when (exception) {
+                        is DomainException -> {
+                            setState {
+                                copy(
+                                    isLoading = false,
+                                    error = exception.message,
+                                    errorCode = exception.code
+                                )
+                            }
+                        }
+                        else -> {
+                            setState {
+                                copy(
+                                    isLoading = false,
+                                    error = exception.message ?: "닉네임 변경 중 오류가 발생했습니다.",
+                                    errorCode = "UNKNOWN"
+                                )
+                            }
+                        }
                     }
                 }
         }
@@ -112,24 +166,39 @@ class SettingsViewModel @Inject constructor(
             setState { copy(isLoading = true, error = null) }
 
             try {
-                val file = uri.toFile() // 실제 구현에서는 ContentResolver를 사용하여 파일로 변환
+                val file = uri.toFile()
                 userRepository.updateProfileImage(file)
                     .onSuccess {
                         fetchUserInfo()
                     }
                     .onFailure { exception ->
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = exception.message ?: "프로필 이미지 변경 중 오류가 발생했습니다."
-                            )
+                        when (exception) {
+                            is DomainException -> {
+                                setState {
+                                    copy(
+                                        isLoading = false,
+                                        error = exception.message,
+                                        errorCode = exception.code
+                                    )
+                                }
+                            }
+                            else -> {
+                                setState {
+                                    copy(
+                                        isLoading = false,
+                                        error = exception.message ?: "프로필 이미지 변경 중 오류가 발생했습니다.",
+                                        errorCode = "UNKNOWN"
+                                    )
+                                }
+                            }
                         }
                     }
             } catch (e: Exception) {
                 setState {
                     copy(
                         isLoading = false,
-                        error = "이미지 처리 중 오류가 발생했습니다."
+                        error = "이미지 처리 중 오류가 발생했습니다.",
+                        errorCode = "UNKNOWN"
                     )
                 }
             }
