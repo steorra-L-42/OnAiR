@@ -11,109 +11,115 @@ from config import STREAMING_CHANNELS
 from config import SEGMENT_DURATION, SEGMENT_LIST_SIZE, SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
 from config import INDEX_DISC_CHAR_NUM, INDEX_INF_CHAR_NUM, INDEX_SEGMENT_CHAR_NUM
 
-
-######################  파일 -ffmpeg-> 세그먼트  ######################
 def generate_segment(hls_path, file_path, last_index):
-  log.info(f'세그먼트 생성 시작 [{file_path}]')
+  log.info(f'Starting segment generation [{file_path}] (Index: {last_index})')
+
+  segment_pattern = os.path.join(hls_path, "segment_%03d.ts")
+
   ffmpeg_command = [
     'ffmpeg',
     '-loglevel', 'info',
     '-i', file_path,
     '-c:a', 'aac',
     '-b:a', '128k',
-    '-f', 'hls',
-    '-hls_time', str(SEGMENT_DURATION),
-    '-hls_list_size', '0',
-    '-hls_segment_type', 'mpegts',
-    '-hls_segment_filename', os.path.join(hls_path, f'segment_{last_index:04d}_%5d.ts'),
-    os.path.join(STREAMING_CHANNELS, "channel_1/dummy.m3u8")
+    '-f', 'segment',
+    '-segment_time', str(SEGMENT_DURATION),
+    '-segment_format', 'mpegts',
+    '-segment_list', os.path.join(STREAMING_CHANNELS, "channel_1/index.m3u8"),
+    segment_pattern
   ]
 
   process = subprocess.Popen(
-      ffmpeg_command,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      universal_newlines=True,
-      encoding='utf-8'
+    ffmpeg_command,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    universal_newlines=True,
+    encoding='utf-8'
   )
 
   stdout, stderr = process.communicate()
   if process.returncode == 0:
-    log.info(f"세그먼트 생성 완료 [{file_path}]")
+    log.info(f"Segment generation completed [{file_path}] (Index: {last_index})")
   else:
-    log.error(f"세그먼트 생성 실패 [{file_path}\n{stderr}]")
-  return (last_index+1)
+    log.error(f"Segment generation failed [{file_path}] (Index: {last_index})\n{stderr}")
 
+  return last_index + 1
 
-######################  채널 시작시 HLS 준비  ######################
 def m3u8_setup(channel, channel_name):
   m3u8_path = os.path.join(STREAMING_CHANNELS, channel_name, "index.m3u8")
   with open(m3u8_path, "w") as f:
     f.write("#EXTM3U\n")
     f.write("#EXT-X-VERSION:3\n")
-    f.write(f"#EXT-X-TARGETDURATION:{int(SEGMENT_DURATION)+1}\n")
+    f.write(f"#EXT-X-TARGETDURATION:{int(SEGMENT_DURATION) + 1}\n")
 
-    # SEGMENT_LIST_SIZE 만큼 큐에서 빼서 파일에 작성
+    # Don't add #EXT-X-ENDLIST to keep the playlist live
     segments = channel['queue'].dequeue(SEGMENT_LIST_SIZE)
+
+    if not segments:
+      log.error(f"No segments available for channel {channel_name}; .m3u8 may be empty.")
+      return
+
     f.write(f"#EXT-X-MEDIA-SEQUENCE:{segments[0][1]:05d}\n")
     for index, number in segments:
       f.write(f"#EXTINF:{SEGMENT_DURATION},\n")
-      f.write(f"segment_{index:04d}_{number:05d}.ts\n")
-  log.info(f"index.m3u8 생성 [{channel_name}]")
+      f.write(f"segment_{index:03d}.ts\n")
 
+  log.info(f"index.m3u8 created for channel [{channel_name}] with {len(segments)} segments.")
 
-######################  세그먼트 리스트 업데이트  ######################
 async def update_m3u8(channel):
   channel_path = channel['channel_path']
   m3u8_path = os.path.join(channel_path, "index.m3u8")
-  # await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * (SEGMENT_LIST_SIZE/2))
-  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * 2)
+
+  # Keep track of the media sequence number
+  media_sequence = 0
+  max_segments_in_playlist = 10  # Maintain a sliding window of segments
+
+  await asyncio.sleep(SEGMENT_DURATION)
 
   while True:
     await asyncio.sleep(SEGMENT_UPDATE_INTERVAL)
 
-    previous_index = channel['queue'].get_buffer()
-    segments = channel['queue'].dequeue(SEGMENT_UPDATE_SIZE)
+    async with channel.get('lock', asyncio.Lock()):
+      segments = channel['queue'].get_all_segments()
 
-    # 새 세그먼트 추가
-    async with aiofiles.open(m3u8_path, 'a') as f:
-      for index, number in segments:
-        if previous_index != -1 and previous_index != index: # 다음 파일 스트리밍 경우
-          await f.write("#EXT-X-DISCONTINUITY\n")
-          
-        await f.write(f"#EXTINF:{SEGMENT_DURATION},\n")
-        await f.write(f"segment_{index:04d}_{number:05d}.ts\n")
+      if not segments:
+        continue
 
-    # 오래된 세그먼트 삭제
-    await remove_old_segments(m3u8_path)
-
-    # SEQUENCE 값 변경
-    async with aiofiles.open(m3u8_path, 'r+') as f:
-      lines = await f.readlines()
-      line = lines[7] if len(lines[7]) == INDEX_SEGMENT_CHAR_NUM else lines[8]
-
-      await f.seek(74)  # 포맷 고정 조심
-      await f.write(f'{line[13:18]}'.ljust(5))
-      await f.flush()
-
-
-# ######################  세그먼트 리스트 업데이트(오래된거 삭제)  ######################
-async def remove_old_segments(m3u8_path, max_segments=5):
-  try:
-    async with aiofiles.open(m3u8_path, 'r') as f:
-      header = [await f.readline() for _ in range(4)]
-      lines = await f.readlines()
-
-    segment_count = len(lines)/2
-    if segment_count > SEGMENT_LIST_SIZE:
-
-      update_lines = SEGMENT_UPDATE_SIZE*2
-      update_lines = update_lines+1 if len(lines[update_lines]) == INDEX_DISC_CHAR_NUM else update_lines
-      new_lines = lines[update_lines:]
-
+      # Write a complete new playlist each time
       async with aiofiles.open(m3u8_path, 'w') as f:
-        await f.writelines(header)
-        await f.writelines(new_lines)
+        await f.write("#EXTM3U\n")
+        await f.write("#EXT-X-VERSION:3\n")
+        await f.write(f"#EXT-X-TARGETDURATION:{int(SEGMENT_DURATION) + 1}\n")
 
+        # Update media sequence to create a sliding window
+        if len(segments) > max_segments_in_playlist:
+          media_sequence = segments[-max_segments_in_playlist][1]
+          segments = segments[-max_segments_in_playlist:]
+
+        await f.write(f"#EXT-X-MEDIA-SEQUENCE:{media_sequence}\n")
+
+        previous_index = None
+        for index, number in segments:
+          if previous_index is not None and previous_index != index - 1:
+            await f.write("#EXT-X-DISCONTINUITY\n")
+
+          await f.write(f"#EXTINF:{SEGMENT_DURATION},\n")
+          await f.write(f"segment_{index:03d}.ts\n")
+          previous_index = index
+
+      # Clean up old segments
+      await remove_old_segments(channel['hls_path'], segments)
+
+async def remove_old_segments(hls_path, current_segments, keep_count=15):
+  """Remove segments that are no longer in the playlist while keeping a buffer."""
+  try:
+    current_segment_files = {f"segment_{index:03d}.ts" for index, _ in current_segments}
+    for file in os.listdir(hls_path):
+      if file.endswith('.ts') and file not in current_segment_files:
+        try:
+          os.remove(os.path.join(hls_path, file))
+          log.info(f"Removed old segment: {file}")
+        except Exception as e:
+          log.error(f"Error removing segment {file}: {e}")
   except Exception as e:
-    log.error(f"세그먼트 삭제 오류: {e}")
+    log.error(f"Error during segment cleanup: {e}")
