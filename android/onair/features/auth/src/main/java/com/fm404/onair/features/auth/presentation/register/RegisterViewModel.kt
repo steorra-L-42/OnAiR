@@ -177,7 +177,7 @@ class RegisterViewModel @Inject constructor(
     )
 
     private fun handleInvalidCountryCodeException(phoneNumber: String) {
-        Log.e(TAG, "handleInvalidCountryCodeException: +82가 아닌 국가코드 발견!!")
+        Log.e(TAG, "handleInvalidCountryCodeException: +82가 아닌 국가코드 발견!!, $phoneNumber")
     }
 
 
@@ -235,19 +235,24 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            // 실제 구현에서는 여기에 API 호출 로직이 들어갈 것입니다
-            delay(1000) // 임시 딜레이
-
-            _state.value = _state.value.copy(
-                isLoading = false,
-                isVerificationCodeSent = true,
-                remainingTimeSeconds = 180,
-                verificationAttempts = 0,
-                verificationCode = "",
-                error = null
-            )
-
-            startVerificationTimer()
+            userRepository.requestVerificationCode(_state.value.phoneNumber)
+                .onSuccess {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        isVerificationCodeSent = true,
+                        remainingTimeSeconds = 180,
+                        verificationAttempts = 0,
+                        verificationCode = "",
+                        error = null
+                    )
+                    startVerificationTimer()
+                }
+                .onFailure { exception ->
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "인증번호 요청 중 오류가 발생했습니다."
+                    )
+                }
         }
     }
 
@@ -268,28 +273,38 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            // 임시로 성공 케이스로 변경
-            delay(1000) // 임시 딜레이
-            val isVerificationSuccessful = true // 실제 구현 시 API 응답으로 대체
-
-            if (isVerificationSuccessful) {
+            userRepository.verifyPhoneNumber(
+                _state.value.phoneNumber,
+                _state.value.verificationCode
+            ).onSuccess { isVerified ->
+                if (isVerified) {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        isPhoneVerified = true,
+                        error = null
+                    )
+                    verificationTimer?.cancel()
+                } else {
+                    handleVerificationFailure()
+                }
+            }.onFailure { exception ->
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    isPhoneVerified = true,
-                    error = null
-                )
-                verificationTimer?.cancel()
-            } else {
-                val newAttempts = _state.value.verificationAttempts + 1
-                val remainingAttempts = _state.value.maxVerificationAttempts - newAttempts
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    verificationAttempts = newAttempts,
-                    error = "인증번호가 일치하지 않습니다. (남은 시도 횟수: ${remainingAttempts}회)",
-                    verificationCode = ""
+                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
                 )
             }
         }
+    }
+
+    private fun handleVerificationFailure() {
+        val newAttempts = _state.value.verificationAttempts + 1
+        val remainingAttempts = _state.value.maxVerificationAttempts - newAttempts
+        _state.value = _state.value.copy(
+            isLoading = false,
+            verificationAttempts = newAttempts,
+            error = "인증번호가 일치하지 않습니다. (남은 시도 횟수: ${remainingAttempts}회)",
+            verificationCode = ""
+        )
     }
 
     private fun startVerificationTimer() {

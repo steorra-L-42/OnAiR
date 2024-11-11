@@ -14,6 +14,7 @@ from logger import log
 
 from shared_vars import add_channel, channels
 from segmenter import update_m3u8
+from audio_listener import listen_directory
 
 app = FastAPI()
 
@@ -36,10 +37,15 @@ async def lifespan(app: FastAPI):
   log.info("서버 초기화 루틴 시작")
   basic_channel = add_channel(BASIC_CHANNEL_NAME)
   basic_channel['update_task'] = asyncio.create_task(update_m3u8(basic_channel))
+  basic_channel['listen'] = listen_directory(basic_channel)
   log.info(f"서버 초기화 끝(채널 추가 완료) [{BASIC_CHANNEL_NAME}]")
 
   yield
   log.info("서버 종료 루틴 시작")
+  for channel in channels.values():
+    channel['queue'].clear()
+    channel['listen'].stop()
+    channel['listen'].join()
   del channels
   log.info("서버 종료")
 app.router.lifespan_context = lifespan
@@ -78,8 +84,10 @@ async def serve_playlist(stream_name: str):
 ######################  API: 세그먼트 파일 조회  ######################
 @app.get("/channel/{stream_name}/{segment}")
 async def serve_segment(stream_name: str, segment: str):
-  log.info(f"요청 [{segment}]")
   segment_path = os.path.join(STREAMING_CHANNELS, stream_name, HLS_DIR, segment)
   if not os.path.exists(segment_path):
     raise HTTPException(status_code=404, detail="Segment not found")
-  return FileResponse(segment_path)
+
+  response = FileResponse(segment_path)
+  response.headers["Cache-Control"] = "no-cache"
+  return response
