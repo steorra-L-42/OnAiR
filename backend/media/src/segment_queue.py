@@ -7,6 +7,8 @@ import os
 # 내부 패키지
 from logger import log
 from config import IS_INF, SEGMENT_LIST_SIZE
+from config import SEGMENT_FILE_INDEX_START, SEGMENT_FILE_INDEX_END, SEGMENT_FILE_NUMBER_START, SEGMENT_FILE_NUMBER_END
+
 
 ######################  ts 관리 큐  ######################
 class SegmentQueue:
@@ -36,11 +38,11 @@ class SegmentQueue:
   def init_segments_from_directory(self, hls_path, index=-1):
     list = sorted(os.listdir(hls_path))
     for file_name in list:
-      index = int(file_name[8:12])
-      number = int(file_name[13:18])
+      file_index = int(file_name[SEGMENT_FILE_INDEX_START:SEGMENT_FILE_INDEX_END])
+      file_number = int(file_name[SEGMENT_FILE_NUMBER_START:SEGMENT_FILE_NUMBER_END])
 
-      if index == -1 or index == index:
-        self.enqueue(index, number)
+      if index == -1 or index == file_index:
+        self.enqueue(file_index, file_number)
 
   def get_all_segments(self):
     with self.lock:

@@ -23,7 +23,7 @@ def generate_segment(hls_path, file_path, last_index):
     '-hls_time', str(SEGMENT_DURATION),
     '-hls_list_size', '0',
     '-hls_segment_type', 'mpegts',
-    '-hls_segment_filename', os.path.join(hls_path, f'segment_{last_index:04d}_%5d.ts'),
+    '-hls_segment_filename', os.path.join(hls_path, f'segment_{last_index:04d}%5d.ts'),
     os.path.join(STREAMING_CHANNELS, "channel_1/dummy.m3u8")
   ]
 
@@ -49,7 +49,7 @@ async def write_m3u8(channel, m3u8_path, segments):
     "#EXTM3U\n",
     "#EXT-X-VERSION:3\n",
     f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n",
-    f'#EXT-X-MEDIA-SEQUENCE:{segments[0][1]}\n'
+    f'#EXT-X-MEDIA-SEQUENCE:{segments[0][0]}{segments[0][1]:05d}\n'
   ]
   m3u8_lines.extend(get_m3u8_seg_list(channel, segments))
 
@@ -73,7 +73,7 @@ def get_m3u8_seg_list(channel, segments):
 
     # 세그먼트 리스트 작성
     playlist_lines.append(f"#EXTINF:{SEGMENT_DURATION},\n")
-    playlist_lines.append(f"segment_{index:04d}_{number:05d}.ts\n")
+    playlist_lines.append(f"segment_{index:04d}{number:05d}.ts\n")
     previous_index = index
   return playlist_lines
 
@@ -83,7 +83,7 @@ async def update_m3u8(channel):
   channel_path = channel['channel_path']
   m3u8_path = os.path.join(channel_path, "index.m3u8")
   temp_m3u8_path = os.path.join(channel_path, "index_temp.m3u8")
-  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL)
+  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL-0.1)
 
   while True:
     # 루프 시작 시간 기록
@@ -105,7 +105,7 @@ async def update_m3u8(channel):
 
     # 루프 종료 시간 기록
     end_time = time.perf_counter()
-    execution_time = end_time - start_time
+    execution_time = end_time - start_time + 0.01
 
     # 남은 시간 계산하여 대기 (최소 대기 시간은 0으로 설정)
     sleep_time = first_seg_length - execution_time if first_seg_length > execution_time else 0
