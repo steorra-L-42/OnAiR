@@ -76,15 +76,12 @@ pipeline {
                 script {
                     // env 파일 설정
                     withCredentials([file(credentialsId: 'ENV', variable: 'ENV_FILE_PATH')]) {
-                        // Docker Compose 파일이 있는 디렉토리로 이동
                         sh "cp ${ENV_FILE_PATH} .env"
-                        dir('exec') {
-                            echo "copy env ..."
-                            sh "cp ${ENV_FILE_PATH} .env"
-                            // Docker Stack 배포
-                            sh 'docker stack deploy -c onair-compose.yaml onair'
-                            sh 'docker stack deploy -c nginx-compose.yaml onair'
-                        }
+                        
+                        // Docker Compose 파일이 있는 디렉토리로 이동
+                        // 도커 컴포즈를 통한 배포
+                        // ssh 통신을 통한 접속
+                        
                     }
                 }
             }
