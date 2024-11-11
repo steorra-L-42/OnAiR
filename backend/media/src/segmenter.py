@@ -49,12 +49,13 @@ async def write_m3u8(channel, m3u8_path, segments):
     "#EXTM3U\n",
     "#EXT-X-VERSION:3\n",
     f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n",
+    f'#EXT-X-MEDIA-SEQUENCE:{segments[0][1]}\n'
   ]
   m3u8_lines.extend(get_m3u8_seg_list(channel, segments))
 
   async with aiofiles.open(m3u8_path, "w") as f:
     await f.writelines(m3u8_lines)
-  wait_time = (m3u8_lines[3].strip())[8:-1]
+  wait_time = (m3u8_lines[4].strip())[8:-1]
   return float(wait_time)
 
 
