@@ -16,8 +16,8 @@ interface UserApi {
     suspend fun checkAdminRole(): UserRoleDto
 
     @PublicApi
-    @GET("api/v1/user/valid-username")
-    suspend fun checkUsername(@Query("username") username: String): ValidUsernameResponse
+    @GET("api/v1/user/valid-username/{username}")
+    suspend fun checkUsername(@Path("username") username: String): ValidUsernameResponse
 
     @PublicApi
     @POST("api/v1/user/signup")
