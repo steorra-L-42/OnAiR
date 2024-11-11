@@ -23,6 +23,7 @@ def add_channel(channel_name):
   
   # 세그먼트 생성
   last_index = 0 # 새로 생긴 채널의 last_index는 0부터 시작
+
   for file in os.listdir(playlist_path):
     if file.endswith('mp3'):
       last_index = generate_segment(hls_path, os.path.join(playlist_path, file), last_index)
@@ -36,6 +37,7 @@ def add_channel(channel_name):
   }
   
   # .m3u8 생성
+  print(f'm3u8 생성 [{channel_name}]')
   m3u8_setup(channels[channel_name], channel_name)
 
   # m3u8 업데이트 스레드 동작

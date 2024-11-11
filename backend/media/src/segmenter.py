@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import os
 import subprocess
 import time
@@ -51,7 +52,7 @@ def m3u8_setup(channel, channel_name):
   with open(m3u8_path, "w") as f:
     f.write("#EXTM3U\n")
     f.write("#EXT-X-VERSION:3\n")
-    f.write(f"#EXT-X-TARGETDURATION:{int(SEGMENT_DURATION)+1}\n")
+    f.write(f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n")
 
     # SEGMENT_LIST_SIZE 만큼 큐에서 빼서 파일에 작성
     segments = channel['queue'].dequeue(SEGMENT_LIST_SIZE)
@@ -66,35 +67,48 @@ def m3u8_setup(channel, channel_name):
 async def update_m3u8(channel):
   channel_path = channel['channel_path']
   m3u8_path = os.path.join(channel_path, "index.m3u8")
-  # await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * (SEGMENT_LIST_SIZE/2))
-  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL * 2)
+  temp_m3u8_path = os.path.join(channel_path, "index_temp.m3u8")
 
   while True:
     await asyncio.sleep(SEGMENT_UPDATE_INTERVAL)
+    log.info("index.m3u8 업데이트")
 
-    previous_index = channel['queue'].get_buffer()
-    segments = channel['queue'].dequeue(SEGMENT_UPDATE_SIZE)
+    previous_index = channel['queue'].get_last()
+    segments = channel['queue'].get_buffer()
+    for index, number in channel['queue'].dequeue(SEGMENT_UPDATE_SIZE):
+      segments.append((index, number))
+
+    playlist_lines = [
+      "#EXTM3U\n",
+      "#EXT-X-VERSION:3\n",
+      f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n",
+      f"#EXT-X-MEDIA-SEQUENCE:{segments[0][1]}\n"
+    ]
 
     # 새 세그먼트 추가
-    async with aiofiles.open(m3u8_path, 'a') as f:
-      for index, number in segments:
-        if previous_index != -1 and previous_index != index: # 다음 파일 스트리밍 경우
-          await f.write("#EXT-X-DISCONTINUITY\n")
-          
-        await f.write(f"#EXTINF:{SEGMENT_DURATION},\n")
-        await f.write(f"segment_{index:04d}_{number:05d}.ts\n")
+    for index, number in segments:
+      if previous_index != -1 and previous_index != index: # 다음 파일 스트리밍 경우
+        playlist_lines.append("#EXT-X-DISCONTINUITY\n")
+      playlist_lines.append(f"#EXTINF:{SEGMENT_DURATION},\n")
+      playlist_lines.append(f"segment_{index:04d}_{number:05d}.ts\n")
+      previous_index = index
 
-    # 오래된 세그먼트 삭제
-    await remove_old_segments(m3u8_path)
+    # 임시 파일에 쓰기
+    async with aiofiles.open(temp_m3u8_path, 'w') as f:
+      await f.writelines(playlist_lines)
 
-    # SEQUENCE 값 변경
-    async with aiofiles.open(m3u8_path, 'r+') as f:
-      lines = await f.readlines()
-      line = lines[7] if len(lines[7]) == INDEX_SEGMENT_CHAR_NUM else lines[8]
+    # 파일이 완전히 닫힐 시간을 기다림
+    await asyncio.sleep(0.1)  # 파일이 닫힐 시간을 확보
 
-      await f.seek(74)  # 포맷 고정 조심
-      await f.write(f'{line[13:18]}'.ljust(5))
-      await f.flush()
+    try:
+      # 기존 플레이리스트를 원자적으로 교체
+      os.replace(temp_m3u8_path, m3u8_path)
+      log.info("기존 플레이리스트를 원자적으로 교체 완료")
+    except PermissionError as e:
+      log.error(f"파일 교체 실패: {e}")
+      await asyncio.sleep(0.2)  # 잠시 대기 후 재시도
+
+
 
 
 # ######################  세그먼트 리스트 업데이트(오래된거 삭제)  ######################
