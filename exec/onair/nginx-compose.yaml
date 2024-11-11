@@ -1,0 +1,30 @@
+services:
+  nginx:
+    image: nginx:1.27
+    volumes:
+      - certbot_data:/etc/nginx/certbot  # 인증서 볼륨을 공유하여 모든 노드에서 접근 가능하게 함
+      - /exec/onair/nginx:/etc/nginx/conf.d
+      - /exec/cert/certbot/conf:/etc/letsencrypt
+      - /exec/cert/certbot/www:/var/www/certbot
+
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - nginx
+
+    ports:
+      - "80:80"   # HTTP 접근
+      - "443:443" # HTTPS 접근
+
+networks:
+  nginx:
+    attachable: true
+    name: nginx
+volumes:
+  certbot_data:
+    driver: local

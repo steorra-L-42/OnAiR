@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - prometheus_data:/prometheus  # 데이터 보존을 위한 볼륨
+      - /exec/onair/log/prometheus.yaml:/etc/prometheus/prometheus.yaml  # Prometheus 설정 파일
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--web.route-prefix=/prometheus/'
+    networks:
+      - nginx
+      - monitoring
+    deploy:
+      mode: replicated
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - grafana_data:/var/lib/grafana  # 데이터 보존을 위한 볼륨
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # 기본 Grafana 관리자 비밀번호 (필요에 따라 변경 가능)
+      - GF_SERVER_ROOT_URL=/grafana
+    networks:
+      - nginx
+      - monitoring
+    deploy:
+      mode: replicated
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+networks:
+  monitoring:
+      driver: overlay
+      name: monitoring
+  nginx:
+    external: true
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
