@@ -6,14 +6,14 @@ import os
 
 # 내부 패키지
 from logger import log
-from config import IS_INF
+from config import IS_INF, SEGMENT_LIST_SIZE
 
 ######################  ts 관리 큐  ######################
 class SegmentQueue:
   def __init__(self, hls_path):
     self.queue = deque()
     self.lock = Lock()
-    self.buffer = deque(maxlen=4)
+    self.buffer = deque(maxlen=int(SEGMENT_LIST_SIZE)-1)
     self.init_segments_from_directory(hls_path)
 
   def enqueue(self, index, number):
