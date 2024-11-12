@@ -50,4 +50,7 @@ interface UserApi {
     @Multipart
     @PATCH("api/v1/user/profile-image")
     suspend fun updateProfileImage(@Part file: MultipartBody.Part): Response<Unit>
+
+    @POST("api/v1/user/reissue")
+    suspend fun reissue(): Response<Unit>
 }

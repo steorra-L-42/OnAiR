@@ -13,6 +13,7 @@ interface AuthNavigationContract : NavControllerHolder {
     fun navigateToSettings()
     fun navigateBack()
     fun navigateToHome()
+    fun navigateToBroadcastList()
 
     companion object Route {
         const val ROUTE_LOGIN = "login"
@@ -21,5 +22,6 @@ interface AuthNavigationContract : NavControllerHolder {
         const val ROUTE_SETTINGS = "settings"
         const val GRAPH_AUTH = "auth_graph"
         const val ROUTE_HOME = "home"
+        const val ROUTE_BROADCAST_LIST = "broadcast/broadcast_list"
     }
 }

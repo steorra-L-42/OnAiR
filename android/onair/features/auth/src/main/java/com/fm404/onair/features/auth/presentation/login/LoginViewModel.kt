@@ -68,7 +68,7 @@ class LoginViewModel @Inject constructor(
                     isLoading = false,
                     error = null
                 )
-                navigationContract.navigateToHome()
+                navigationContract.navigateToBroadcastList()
             }.onFailure { exception ->
                 _state.value = currentState.copy(
                     isLoading = false,

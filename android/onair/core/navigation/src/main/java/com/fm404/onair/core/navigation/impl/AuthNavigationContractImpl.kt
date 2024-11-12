@@ -39,4 +39,11 @@ class AuthNavigationContractImpl @Inject constructor() : AuthNavigationContract 
             popUpTo(AuthNavigationContract.ROUTE_LOGIN) { inclusive = true }
         }
     }
+
+    override fun navigateToBroadcastList() {
+        navController?.navigate(AuthNavigationContract.ROUTE_BROADCAST_LIST) {
+            // 로그인 화면을 백스택에서 제거
+            popUpTo(AuthNavigationContract.ROUTE_LOGIN) { inclusive = true }
+        }
+    }
 }
