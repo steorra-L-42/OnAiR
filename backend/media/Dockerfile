@@ -5,21 +5,22 @@ ENV PYTHONENCODING=utf-8
 WORKDIR /media
 
 # requirements.txt 복사 및 설치
-COPY src/requirements.txt /media/src/
+COPY requirements.txt .
 
 RUN pip install --upgrade pip
-RUN pip install -r /media/src/requirements.txt
+RUN pip install -r requirements.txt
 
 # 소스 코드 복사
-COPY src /media/src
+COPY src .
 
-WORKDIR src
+# empty.mp3 파일 복사
+COPY ./streaming_channels/channel_1/empty.mp3 /media/streaming_channels/channel_1/empty.mp3
 
 # FastAPI 포트 노출
 EXPOSE 8000
 
 # 컨테이너 내부 볼륨 설정
-VOLUME ["/backend/media/streaming_channels"]
+VOLUME ["/media/streaming_channels"]
 
 # uvicorn 실행
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]

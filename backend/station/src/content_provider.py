@@ -4,9 +4,10 @@ import threading
 
 from confluent_kafka import Producer
 
-from src import config, typecast
-from src.instance import channel_manager
-from src.music_downloader import download_from_keyword
+import config
+import typecast
+from instance import channel_manager
+from music_downloader import download_from_keyword
 
 # Lock 객체를 사용하여 동기화
 queue_lock = threading.Lock()

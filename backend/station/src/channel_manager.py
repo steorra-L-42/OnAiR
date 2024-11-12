@@ -13,7 +13,7 @@ class ChannelManager:
             return
 
         if channel_id not in self.channels:
-            from src.channel import Channel
+            from channel import Channel
             # 채널 생성
             self.channels[channel_id] = Channel(channel_id, config)
 
