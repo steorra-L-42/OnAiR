@@ -1,9 +1,15 @@
+import json
 import logging
+from collections import deque
 
-from confluent_kafka import Consumer, Producer
+from confluent_kafka import Consumer
 from confluent_kafka.admin import AdminClient, NewTopic
 
 import config
+from src import instance
+from src.instance import channel_manager
+
+dlt_queue = deque()  # DLT 전송을 위한 큐 생성
 
 
 class KafkaConsumerWrapper:
@@ -16,8 +22,8 @@ class KafkaConsumerWrapper:
             'bootstrap.servers': config.bootstrap_server,
             'group.id': config.group_id,
             'auto.offset.reset': config.auto_offset_reset,
+            'api.version.request': False,  # 버전 협상 비활성화
         })
-        self.producer = Producer({'bootstrap.servers': config.bootstrap_server})
         self.admin_client = AdminClient({'bootstrap.servers': config.bootstrap_server})
 
     def create_topic_if_not_exists(self, topic_name):
@@ -29,6 +35,7 @@ class KafkaConsumerWrapper:
             logging.info(f"Topic '{topic_name}' created.")
         else:
             logging.info(f"Topic '{topic_name}' already exists.")
+        return True
 
     def consume_messages(self):
         """메시지 소비 및 처리"""
@@ -72,18 +79,63 @@ class KafkaConsumerWrapper:
         dlt_topic = f"{self.topic}-dlt"
 
         # DLT 토픽이 없으면 생성
-        self.create_topic_if_not_exists(dlt_topic)
-
-        self.producer.produce(
-            dlt_topic,
-            key=msg.key(),
-            value=msg.value(),
-            headers=msg.headers()
-        )
-        self.producer.flush()
-        logging.error(f"Message sent to DLT: {msg.value().decode('utf-8')}")
+        if self.create_topic_if_not_exists(dlt_topic):
+            logging.info(f"Send Record to {dlt_topic}, Key : {msg.key()}, Value : {msg.value()}")
 
     def close(self):
         """Consumer 종료"""
         self.consumer.close()
         logging.info("Consumer closed successfully")
+
+
+def process_channel_creation(msg):
+    """Kafka 메시지를 받아 채널을 생성하는 콜백 함수"""
+
+    try:
+        value = json.loads(msg.value().decode('utf-8'))
+        channel_id = msg.key().decode('utf-8')
+        logging.info(f"Received channel creation request for {channel_id}")
+
+        # 채널 생성
+        channel_manager.add_channel(channel_id, value)
+        logging.info(f"Finished to create channel {channel_id}")
+
+    except Exception as e:
+        logging.error(f"Error processing message: {e}")
+        raise e
+
+
+def add_channel_info_to_story(msg):
+    """Kafka 메시지를 받아 사연에 채널 정보를 더해 Produce하는 콜백 함수"""
+
+    # Kafka 메시지에서 key와 value 추출
+    channel_id = msg.key().decode('utf-8')
+    value = json.loads(msg.value().decode('utf-8'))
+
+    # 채널이 존재하는지 확인
+    if channel_id not in channel_manager.channels:
+        logging.warning(f"Channel {channel_id} not found. Skipping.")
+        return
+
+    # 채널 정보 가져오기
+    channel = channel_manager.channels[channel_id]
+
+    # 채널 정보에서 TTS 엔진과 성격(personality) 설정
+    tts_engine = channel.tts_engine  # 채널에서 TTS 엔진 정보 가져오기
+    personality = channel.personality  # 채널에서 성격 정보 가져오기
+
+    # 채널 정보 추가
+    value["channelInfo"] = {
+        "ttsEngine": tts_engine,
+        "personality": personality
+    }
+
+    # 수정된 값 확인 (디버그용)
+    logging.info(f"Modified message with channel info: {json.dumps(value, ensure_ascii=False)}")
+
+    # Kafka Producer 설정
+    producer = instance.producer
+
+    # 수정된 메시지 생성 및 전송
+    value_json = json.dumps(value, ensure_ascii=False).encode('utf-8')
+    producer.send_message("story_with_channel_info_topic", channel_id, value_json)

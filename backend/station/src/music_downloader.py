@@ -6,7 +6,7 @@ from pytubefix import YouTube
 from youtubesearchpython import VideosSearch
 
 
-def download_from_keyword(title, artist, index, channel):
+def download_from_keyword(title, artist, channel_id, content_type):
     keyword = f"{title} - {artist}"
     # 유튜브에서 키워드로 검색하여 가장 상단의 결과를 가져옴
     videos_search = VideosSearch(keyword, limit=1)
@@ -26,7 +26,7 @@ def download_from_keyword(title, artist, index, channel):
 
     # medias 디렉토리의 절대 경로 설정 (프로젝트 루트 기준)
     project_root = Path(__file__).resolve().parent.parent.parent  # backend 디렉토리의 상위
-    output_filepath = project_root / "station" / "medias" / channel.channel_id / "playlists"
+    output_filepath = project_root / "station" / "medias" / channel_id / content_type
     output_filename = output_filepath / f"{safe_filename}.mp3"
 
     # 경로가 존재하지 않으면 생성
@@ -35,7 +35,7 @@ def download_from_keyword(title, artist, index, channel):
     # 이미 파일이 존재하면 다운로드를 건너뜁니다.
     if output_filename.exists():
         logging.info(f"File '{output_filename}' already exists, skipping download.")
-        return
+        return str(output_filename)
 
     # pytubefix로 YouTube 오디오 다운로드
     try:
@@ -43,8 +43,8 @@ def download_from_keyword(title, artist, index, channel):
         audio_stream = yt.streams.filter(only_audio=True).first()
         if audio_stream:
             audio_stream.download(output_path=str(output_filepath), filename=f"{safe_filename}.mp3")
-            channel.add_to_playlist(str(output_filename), index)
             logging.info(f"Downloaded audio as '{output_filename}'")
+            return str(output_filename)
         else:
             logging.info("No audio stream available for this video.")
     except Exception as e:
