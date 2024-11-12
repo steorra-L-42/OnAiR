@@ -10,8 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.channel.enums.NewsTopic;
 import me.onair.main.domain.channel.enums.Personality;
 import me.onair.main.domain.channel.enums.TtsEngine;
@@ -42,11 +44,30 @@ public class Dj {
     @OneToOne(mappedBy = "dj")
     private Channel channel;
 
-    public void setChannel(Channel channel){
-        if(this.channel != null){
+    public void setChannel(Channel channel) {
+        if (this.channel != null) {
             this.channel.changeDj(null);
         }
         this.channel = channel;
         channel.changeDj(this);
     }
+
+    @Builder
+    private Dj(TtsEngine ttsEngine, Personality personality, NewsTopic newsTopic) {
+        this.ttsEngine = ttsEngine;
+        this.personality = personality;
+        this.newsTopic = newsTopic;
+    }
+
+    public static Dj createDj(CreateNewChannelRequest request, Channel channel) {
+        Dj dj = Dj.builder()
+                .ttsEngine(request.getTtsEngine())
+                .personality(request.getPersonality())
+                .newsTopic(request.getNewsTopic())
+                .build();
+        dj.setChannel(channel);
+        return dj;
+    }
+
+
 }

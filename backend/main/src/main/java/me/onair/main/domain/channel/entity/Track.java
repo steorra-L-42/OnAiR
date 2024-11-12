@@ -9,9 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.onair.main.domain.channel.dto.CreateNewChannelRequest.CreateNewChannelTrackRequest;
 
 @Entity
 @Getter
@@ -43,5 +47,29 @@ public class Track {
         }
         this.channel = channel;
         channel.getTracks().add(this);
+    }
+
+    @Builder
+    private Track(String title, String artist, String cover) {
+        this.title = title;
+        this.artist = artist;
+        this.cover = cover;
+    }
+
+    public static Track createTrack(CreateNewChannelTrackRequest request, Channel channel) {
+        Track track = Track.builder()
+                .title(request.getTitle())
+                .artist(request.getArtist())
+                .build();
+        track.setChannel(channel);
+        return track;
+    }
+
+    public static List<Track> createTrackList(List<CreateNewChannelTrackRequest> trackListRequest, Channel channel) {
+        List<Track> trackList = new ArrayList<>();
+        for (CreateNewChannelTrackRequest track : trackListRequest) {
+            trackList.add(createTrack(track, channel));
+        }
+        return trackList;
     }
 }

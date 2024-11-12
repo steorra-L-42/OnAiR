@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.onair.main.domain.user.entity.User;
@@ -79,5 +80,25 @@ public class Channel {
 
     public void changeThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    @Builder
+    private Channel(Boolean isDefault, String thumbnail, LocalDateTime start, LocalDateTime end, Boolean isEnded) {
+        this.isDefault = isDefault;
+        this.thumbnail = thumbnail;
+        this.start = start;
+        this.end = end;
+        this.isEnded = isEnded;
+    }
+
+    public static Channel createChannel(Boolean isDefault, String thumbnail, LocalDateTime end) {
+        Channel channel = Channel.builder()
+                .isDefault(isDefault)
+                .thumbnail(thumbnail)
+                .start(LocalDateTime.now())
+                .end(end)
+                .isEnded(false)
+                .build();
+        return channel;
     }
 }
