@@ -28,6 +28,26 @@ public class KafkaProducerTestController {
         return sendMessageToKafka(message);
     }
 
+    @GetMapping("/publish/media-topic")
+    public CompletableFuture<String> publishToMediaTopicTest() {
+        String message = "C:\\heodongwon\\3. 자율\\S11P31D204\\backend\\media\\streaming_channels\\channel_1\\playlist\\supersonic.mp3";
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
+            Topics.MEDIA.getName(),
+            "channel_1",
+            message
+        );
+
+        return future.thenApply(result -> {
+            log.info("레코드 전송 성공 = [{}] with offset=[{}]", message, result.getRecordMetadata().offset());
+            return "success";
+        }).exceptionally(ex -> {
+            log.error("레코드 보낼 수 없음=[{}] due to : {}", message, ex.getMessage());
+            return "fail";
+        });
+    }
+
+
+
     private String createMessage() {
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String uuid = UUID.randomUUID().toString().substring(0, 6); // UUID의 앞 6자리 추출
