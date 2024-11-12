@@ -1,7 +1,5 @@
-import asyncio
-from contextlib import asynccontextmanager
-
 # 외부 패키지
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import HTTPException
@@ -9,12 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 # 내부 패키지
+from audio_listener import create_audio_listener_consumer
 from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR
 from logger import log
 
 from shared_vars import add_channel, channels
-from segmenter import update_m3u8
-from audio_listener import listen_directory
+
 
 app = FastAPI()
 
@@ -33,9 +31,9 @@ app.add_middleware(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   global channels
-
   log.info("서버 초기화 루틴 시작")
   add_channel(BASIC_CHANNEL_NAME)
+  consumer_thread = create_audio_listener_consumer()
 
   yield
   log.info("서버 종료 루틴 시작")
@@ -44,6 +42,7 @@ async def lifespan(app: FastAPI):
     channel['listen'].stop()
     channel['listen'].join()
   del channels
+  consumer_thread.close()
   log.info("서버 종료")
 app.router.lifespan_context = lifespan
 
