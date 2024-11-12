@@ -44,7 +44,11 @@ def generate_segment(hls_path, file_path, last_index):
 
 
 ######################  m3u8 작성  ######################
-async def write_m3u8(channel, m3u8_path, segments):
+async def write_m3u8(channel, m3u8_path, segments: list):
+  if len(segments) == 0:
+    log.info(f"빈 segments 입니다. m3u8 작성 불가 [{channel['name']}]")
+    return
+
   m3u8_lines = [
     "#EXTM3U\n",
     "#EXT-X-VERSION:3\n",
