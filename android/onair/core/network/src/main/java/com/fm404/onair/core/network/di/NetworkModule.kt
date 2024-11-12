@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.fm404.onair.BuildConfig
 import com.fm404.onair.core.network.interceptor.AuthInterceptor
+import com.fm404.onair.core.network.interceptor.ErrorHandlingInterceptor
 import com.fm404.onair.core.network.interceptor.LoggingInterceptor
 import dagger.*
 import dagger.hilt.InstallIn
@@ -45,6 +46,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideErrorHandlingInterceptor(): ErrorHandlingInterceptor {
+        return ErrorHandlingInterceptor()
+    }
+
+    @Provides
+    @Singleton
     fun provideLoggingInterceptor(): LoggingInterceptor {
         return LoggingInterceptor()
     }
@@ -53,9 +60,11 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
-        loggingInterceptor: LoggingInterceptor
+        loggingInterceptor: LoggingInterceptor,
+        errorHandlingInterceptor: ErrorHandlingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(errorHandlingInterceptor)
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)

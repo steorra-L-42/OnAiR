@@ -55,6 +55,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":core:common"))
     implementation(libs.androidx.material.icons.extended)
+    implementation(project(":core:designsystem"))
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(project(":core:contract"))

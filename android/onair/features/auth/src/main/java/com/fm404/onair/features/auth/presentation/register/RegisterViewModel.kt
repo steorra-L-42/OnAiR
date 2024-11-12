@@ -132,55 +132,76 @@ class RegisterViewModel @Inject constructor(
         try {
             val phoneNumber = telephonyManager?.line1Number
             if (!phoneNumber.isNullOrBlank()) {
-                // 대한민국 전화번호가 아니면 빠꾸
-                if (!phoneNumber.startsWith("+82")) {
-                    // 커스텀 exception
-                    handleInvalidCountryCodeException(phoneNumber)
-                    return
+                // 전화번호 형식 검증 및 변환
+                when {
+                    // +82로 시작하는 경우
+                    phoneNumber.startsWith("+82") -> {
+                        val formattedNumber = formatPhoneNumber(phoneNumber)
+                        updatePhoneNumberState(formattedNumber)
+                    }
+                    // 010으로 시작하는 경우
+                    phoneNumber.startsWith("010") -> {
+                        val formattedNumber = formatPhoneNumber(phoneNumber)
+                        updatePhoneNumberState(formattedNumber)
+                    }
+                    else -> {
+                        handleInvalidPhoneNumberFormat(phoneNumber)
+                    }
                 }
-
-                // 대한민국 전화번호 확인 및 포맷 맞추기
-                val formattedNumber = formatPhoneNumber(phoneNumber)
-
-                _state.value = _state.value.copy(
-                    phoneNumberForUI = formattedNumber.displayFormat, // UI
-                    phoneNumber = formattedNumber.backendFormat, // 백엔드 전송용
-//                    isPhoneVerified = true
-                )
-
             } else {
                 _state.value = _state.value.copy(
-                    error = "휴대전화 번호를 확인할 수 없습니다."
+                    phoneError = "휴대전화 번호를 확인할 수 없습니다."
                 )
             }
         } catch (e: SecurityException) {
-            Log.e("RegisterViewModel", "권한이 거부되어 전화번호를 가져올 수 없습니다.")
+            Log.e(TAG, "권한이 거부되어 전화번호를 가져올 수 없습니다.", e)
+            _state.value = _state.value.copy(
+                phoneError = "전화번호 접근 권한이 필요합니다."
+            )
         }
     }
 
     private fun formatPhoneNumber(phoneNumber: String): PhoneNumberFormat {
-        // +82를 0으로 변경 (+8210 -> 010)
-        val cleanedNumber = phoneNumber.replace("+82", "0").replace("[^0-9]".toRegex(), "")
+        // 모든 특수문자 제거 및 숫자만 추출
+        val cleaned = phoneNumber.replace("[^0-9]".toRegex(), "")
 
-        // 전화번호가 10자리 / 11자리인 경우에만 처리. 010-1234-5678, 011-222-3333 등
-        return if (cleanedNumber.length == 10 || cleanedNumber.length == 11) {
-            val displayFormat = cleanedNumber.replaceFirst("(\\d{3})(\\d{3,4})(\\d{4})".toRegex(), "$1-$2-$3")
-            PhoneNumberFormat(displayFormat = displayFormat, backendFormat = cleanedNumber)
+        // +82로 시작하는 경우 처리
+        val nationalNumber = if (cleaned.startsWith("82")) {
+            "0${cleaned.substring(2)}"
         } else {
-            PhoneNumberFormat(displayFormat = phoneNumber, backendFormat = cleanedNumber) // 조건 안 맞으면 원래 번호 그대로 반환
+            cleaned
+        }
+
+        // 전화번호 길이 검증 (11자리)
+        return if (nationalNumber.length == 11 && nationalNumber.startsWith("010")) {
+            val displayFormat = nationalNumber.replaceFirst("(\\d{3})(\\d{4})(\\d{4})".toRegex(), "$1-$2-$3")
+            PhoneNumberFormat(displayFormat = displayFormat, backendFormat = nationalNumber)
+        } else {
+            throw IllegalPhoneNumberFormatException("유효하지 않은 전화번호 형식입니다: $phoneNumber")
         }
     }
+
+    private fun updatePhoneNumberState(formattedNumber: PhoneNumberFormat) {
+        _state.value = _state.value.copy(
+            phoneNumberForUI = formattedNumber.displayFormat,
+            phoneNumber = formattedNumber.backendFormat,
+            phoneError = null
+        )
+    }
+
+    private fun handleInvalidPhoneNumberFormat(phoneNumber: String) {
+        Log.e(TAG, "handleInvalidPhoneNumberFormat: 유효하지 않은 전화번호 형식, $phoneNumber")
+        _state.value = _state.value.copy(
+            phoneError = "올바른 휴대전화 번호 형식이 아닙니다."
+        )
+    }
+
+    class IllegalPhoneNumberFormatException(message: String) : IllegalArgumentException(message)
 
     data class PhoneNumberFormat(
         val displayFormat: String,  // e.g., "0aa-bbbb-cccc" UI용
         val backendFormat: String   // e.g., "0aabbbbcccc" 백엔드 전송용
     )
-
-    private fun handleInvalidCountryCodeException(phoneNumber: String) {
-        Log.e(TAG, "handleInvalidCountryCodeException: +82가 아닌 국가코드 발견!!, $phoneNumber")
-    }
-
-
 
     private fun checkUserIdAvailability() {
         if (_state.value.username.isBlank()) {

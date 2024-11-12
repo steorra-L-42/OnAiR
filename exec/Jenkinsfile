@@ -6,8 +6,9 @@ pipeline {
         MAIN_PATH = 'backend/main'
         STATION_PATH = 'backend/station'
         MEDIA_PATH = 'backend/media'
-        LOG_PATH = 'backend/log'
         DOCKER_REGISTRY = 'parkdonghyeon' // Docker Registry 설정
+        EC2_ID = 'ubuntu'
+        EC2_ADDR = 'wonyoung.on-air.me'
     }
 
     triggers {
@@ -67,7 +68,22 @@ pipeline {
                 }
             }
         }
-        
+        // 스테이션 서버 빌드 및 푸시
+        stage('Build and Push Station Image') {
+            steps {
+                dir("${STATION_PATH}") {
+                    echo "Building Docker image for Media server..."
+                    withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        // Docker Hub 로그인
+                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                        
+                        script {
+                            docker.build("${DOCKER_REGISTRY}/station_image:latest", ".").push()
+                        }
+                    }
+                }
+            }
+        }
 
         // Docker Compose로 배포
         stage('Deploy with Docker Compose') {
@@ -76,14 +92,33 @@ pipeline {
                 script {
                     // env 파일 설정
                     withCredentials([file(credentialsId: 'ENV', variable: 'ENV_FILE_PATH')]) {
-                        // Docker Compose 파일이 있는 디렉토리로 이동
                         sh "cp ${ENV_FILE_PATH} .env"
-                        dir('exec') {
-                            echo "copy env ..."
-                            sh "cp ${ENV_FILE_PATH} .env"
-                            // Docker Stack 배포
-                            sh 'docker stack deploy -c onair-compose.yaml onair'
-                            sh 'docker stack deploy -c nginx-compose.yaml onair'
+                        
+                        // SSH로 EC2에 접속하여 docker-compose 명령어 실행
+                        withCredentials([sshUserPrivateKey(credentialsId: 'MAIN_SSH_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
+                            // EC2로 SSH 접속하여 Docker Compose 실행
+                            sh """
+                                chmod 600 $SSH_KEY_FILE
+                                # .env 파일을 원격 서버의 /tmp로 전송
+                                scp -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ${ENV_FILE_PATH} $EC2_ID@$EC2_ADDR:/tmp/.env
+                            
+                                # 원격 서버에서 파일 이동 및 권한 변경
+                                ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE $EC2_ID@$EC2_ADDR '
+                                    sudo mv /tmp/.env /exec/onair/.env &&
+                                    sudo chmod 644 /exec/onair/.env
+                                '
+                        
+                                # EC2 서버에서 Docker Compose 실행 및 필요없는 리소스 삭제
+                                ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE $EC2_ID@$EC2_ADDR '
+                                    cd /exec/onair &&
+                                    docker-compose -f onair-compose.yaml down &&
+                                    docker-compose -f onair-compose.yaml up -d &&
+
+                                
+                                    docker volume prune -f &&
+                                    docker image prune -f
+                                '
+                            """
                         }
                     }
                 }
