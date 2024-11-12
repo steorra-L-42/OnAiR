@@ -6,8 +6,11 @@ import com.fm404.onair.data.remote.dto.auth.PhoneVerificationRequestDto
 import com.fm404.onair.data.remote.dto.auth.PhoneVerifyRequestDto
 import com.fm404.onair.data.remote.dto.auth.PhoneVerifyResponseDto
 import com.fm404.onair.data.remote.dto.auth.SignupRequestDto
+import com.fm404.onair.data.remote.dto.auth.UpdateNicknameRequestDto
+import com.fm404.onair.data.remote.dto.auth.UserInfoDto
 import com.fm404.onair.data.remote.dto.auth.UserRoleDto
 import com.fm404.onair.data.remote.dto.auth.ValidUsernameResponse
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -16,8 +19,8 @@ interface UserApi {
     suspend fun checkAdminRole(): UserRoleDto
 
     @PublicApi
-    @GET("api/v1/user/valid-username")
-    suspend fun checkUsername(@Query("username") username: String): ValidUsernameResponse
+    @GET("api/v1/user/valid-username/{username}")
+    suspend fun checkUsername(@Path("username") username: String): ValidUsernameResponse
 
     @PublicApi
     @POST("api/v1/user/signup")
@@ -34,4 +37,17 @@ interface UserApi {
     @PublicApi
     @POST("api/v1/user/phone-verification")
     suspend fun verifyPhoneNumber(@Body request: PhoneVerifyRequestDto): PhoneVerifyResponseDto
+
+    @GET("api/v1/user/logout")
+    suspend fun logout(): Response<Unit>
+
+    @GET("api/v1/user")
+    suspend fun getUserInfo(): UserInfoDto
+
+    @PATCH("api/v1/user/nickname")
+    suspend fun updateNickname(@Body request: UpdateNicknameRequestDto)
+
+    @Multipart
+    @PATCH("api/v1/user/profile-image")
+    suspend fun updateProfileImage(@Part file: MultipartBody.Part): Response<Unit>
 }
