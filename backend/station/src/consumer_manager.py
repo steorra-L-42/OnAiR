@@ -1,8 +1,8 @@
 import logging
 import threading
 
-from src.content_provider import handle_weather, handle_news, handle_story
-from src.kafka_consumer_wrapper import KafkaConsumerWrapper, process_channel_creation, add_channel_info_to_story
+from content_provider import handle_weather, handle_news, handle_story
+from kafka_consumer_wrapper import KafkaConsumerWrapper, process_channel_creation, add_channel_info_to_story
 
 # 현재 실행 중인 모든 Consumer 인스턴스를 저장할 딕셔너리
 consumers = {}
