@@ -5,10 +5,10 @@ from datetime import datetime
 from threading import Thread
 
 from content_provider import ContentProvider
-from src.dj import DJ
-from src.dynamic_schedule_manager import DynamicScheduleManager
-from src.music_downloader import download_from_keyword
-from src.play_back_queue import PlaybackQueue
+from dj import DJ
+from dynamic_schedule_manager import DynamicScheduleManager
+from music_downloader import download_from_keyword
+from play_back_queue import PlaybackQueue
 
 
 class Channel:
