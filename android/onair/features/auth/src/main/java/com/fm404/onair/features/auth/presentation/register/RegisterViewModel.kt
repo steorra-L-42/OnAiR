@@ -281,39 +281,47 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        if (_state.value.verificationAttempts >= _state.value.maxVerificationAttempts) {
-            _state.value = _state.value.copy(
-                error = "인증 시도 횟수를 초과했습니다. 다시 시도해주세요.",
-                isVerificationCodeSent = false
-            )
-            verificationTimer?.cancel()
-            return
-        }
+        // TEMP CODE
+        _state.value = _state.value.copy(
+            isLoading = false,
+            isPhoneVerified = true,
+            error = null
+        )
+        verificationTimer?.cancel()
 
-        viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-
-            userRepository.verifyPhoneNumber(
-                _state.value.phoneNumber,
-                _state.value.verificationCode
-            ).onSuccess { isVerified ->
-                if (isVerified) {
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        isPhoneVerified = true,
-                        error = null
-                    )
-                    verificationTimer?.cancel()
-                } else {
-                    handleVerificationFailure()
-                }
-            }.onFailure { exception ->
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
-                )
-            }
-        }
+//        if (_state.value.verificationAttempts >= _state.value.maxVerificationAttempts) {
+//            _state.value = _state.value.copy(
+//                error = "인증 시도 횟수를 초과했습니다. 다시 시도해주세요.",
+//                isVerificationCodeSent = false
+//            )
+//            verificationTimer?.cancel()
+//            return
+//        }
+//
+//        viewModelScope.launch {
+//            _state.value = _state.value.copy(isLoading = true)
+//
+//            userRepository.verifyPhoneNumber(
+//                _state.value.phoneNumber,
+//                _state.value.verificationCode
+//            ).onSuccess { isVerified ->
+//                if (isVerified) {
+//                    _state.value = _state.value.copy(
+//                        isLoading = false,
+//                        isPhoneVerified = true,
+//                        error = null
+//                    )
+//                    verificationTimer?.cancel()
+//                } else {
+//                    handleVerificationFailure()
+//                }
+//            }.onFailure { exception ->
+//                _state.value = _state.value.copy(
+//                    isLoading = false,
+//                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
+//                )
+//            }
+//        }
     }
 
     private fun handleVerificationFailure() {
@@ -356,10 +364,10 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun validateVerificationCode(): Boolean {
-        if (_state.value.verificationCode.length != 6) {
-            _state.value = _state.value.copy(error = "인증번호 6자리를 입력해주세요.")
-            return false
-        }
+//        if (_state.value.verificationCode.length != 6) {
+//            _state.value = _state.value.copy(error = "인증번호 6자리를 입력해주세요.")
+//            return false
+//        }
         return true
     }
 
