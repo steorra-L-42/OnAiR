@@ -35,10 +35,7 @@ async def lifespan(app: FastAPI):
   global channels
 
   log.info("서버 초기화 루틴 시작")
-  basic_channel = add_channel(BASIC_CHANNEL_NAME)
-  basic_channel['update_task'] = asyncio.create_task(update_m3u8(basic_channel))
-  basic_channel['listen'] = listen_directory(basic_channel)
-  log.info(f"서버 초기화 끝(채널 추가 완료) [{BASIC_CHANNEL_NAME}]")
+  add_channel(BASIC_CHANNEL_NAME)
 
   yield
   log.info("서버 종료 루틴 시작")
