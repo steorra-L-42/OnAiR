@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
   global channels
   log.info("서버 초기화 루틴 시작")
   add_channel(BASIC_CHANNEL_NAME)
-  consumer_thread = create_audio_listener_consumer()
+  consumer = create_audio_listener_consumer()
 
   yield
   log.info("서버 종료 루틴 시작")
@@ -42,8 +42,10 @@ async def lifespan(app: FastAPI):
     channel['listen'].stop()
     channel['listen'].join()
   del channels
-  consumer_thread.close()
+  consumer.stop_event.set()
+  consumer.close()
   log.info("서버 종료")
+
 app.router.lifespan_context = lifespan
 
 
