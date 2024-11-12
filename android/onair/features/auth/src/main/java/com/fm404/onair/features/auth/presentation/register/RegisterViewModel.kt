@@ -127,26 +127,25 @@ class RegisterViewModel @Inject constructor(
         return length in 2..24 && nickname.matches(nicknameRegex)
     }
 
+    private fun getCleanPhoneNumber(phoneNumber: String): String{
+        return phoneNumber.replace("[^0-9]".toRegex(), "")
+    }
+
+    private fun isValidPhoneNumber(retrievedPhoneNumber: String): Boolean {
+        val phoneNumber = getCleanPhoneNumber(retrievedPhoneNumber)
+        return phoneNumber.startsWith("010") || phoneNumber.startsWith("8210")
+    }
+
     fun retrievePhoneNumber(context: Context) {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
         try {
             val phoneNumber = telephonyManager?.line1Number
             if (!phoneNumber.isNullOrBlank()) {
-                // 전화번호 형식 검증 및 변환
-                when {
-                    // +82로 시작하는 경우
-                    phoneNumber.startsWith("+82") -> {
-                        val formattedNumber = formatPhoneNumber(phoneNumber)
-                        updatePhoneNumberState(formattedNumber)
-                    }
-                    // 010으로 시작하는 경우
-                    phoneNumber.startsWith("010") -> {
-                        val formattedNumber = formatPhoneNumber(phoneNumber)
-                        updatePhoneNumberState(formattedNumber)
-                    }
-                    else -> {
-                        handleInvalidPhoneNumberFormat(phoneNumber)
-                    }
+                if (isValidPhoneNumber(phoneNumber)) {
+                    val formattedNumber = formatPhoneNumber(phoneNumber)
+                    updatePhoneNumberState(formattedNumber)
+                } else {
+                    handleInvalidPhoneNumberFormat(phoneNumber)
                 }
             } else {
                 _state.value = _state.value.copy(
@@ -163,7 +162,7 @@ class RegisterViewModel @Inject constructor(
 
     private fun formatPhoneNumber(phoneNumber: String): PhoneNumberFormat {
         // 모든 특수문자 제거 및 숫자만 추출
-        val cleaned = phoneNumber.replace("[^0-9]".toRegex(), "")
+        val cleaned = getCleanPhoneNumber(phoneNumber)
 
         // +82로 시작하는 경우 처리
         val nationalNumber = if (cleaned.startsWith("82")) {

@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.fm404.onair.core.designsystem.theme.OnairBackground
 
 @Composable
 fun AudioVisualizer(amplitudes: FloatArray, modifier: Modifier = Modifier) {
@@ -18,7 +19,8 @@ fun AudioVisualizer(amplitudes: FloatArray, modifier: Modifier = Modifier) {
         modifier = modifier
             .width(140.dp)
             .height(40.dp)
-            .background(Color.White)
+            .background(OnairBackground)
+//            .background(Color.White)
     ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
@@ -31,7 +33,8 @@ fun AudioVisualizer(amplitudes: FloatArray, modifier: Modifier = Modifier) {
             val x = index * spacingBetweenLines + spacingBetweenLines / 2 - lineWidth / 2
 
             drawRoundRect(
-                color = Color.Black,
+//                color = Color.Black,
+                color = Color.White,
                 topLeft = Offset(x, canvasHeight / 2 - scaledAmplitude / 2),
                 size = Size(lineWidth, scaledAmplitude),
                 cornerRadius = CornerRadius(cornerRadius, cornerRadius)
