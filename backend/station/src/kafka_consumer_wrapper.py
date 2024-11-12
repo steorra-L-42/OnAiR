@@ -6,8 +6,8 @@ from confluent_kafka import Consumer
 from confluent_kafka.admin import AdminClient, NewTopic
 
 import config
-from src import instance
-from src.instance import channel_manager
+import instance
+from instance import channel_manager
 
 dlt_queue = deque()  # DLT 전송을 위한 큐 생성
 
