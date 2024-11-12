@@ -1,14 +1,15 @@
 # 외부 패키지
 import os
+import asyncio
 
 # 내부 패키지
-from segment_queue import SegmentQueue
-from segmenter import write_m3u8
-from dir_utils import dir_setup
-
 from logger import log
-from segmenter import generate_segment
 from config import SEGMENT_LIST_SIZE
+
+from segment_queue import SegmentQueue
+from segmenter import generate_segment, write_m3u8, update_m3u8
+from dir_utils import dir_setup
+from audio_listener import listen_directory
 
 ######################  공유 변수 초기화  ######################
 channels = {}
@@ -31,6 +32,9 @@ def add_channel(channel_name):
           os.path.join(playlist_path, file),
           last_index
       )
+  if last_index == 0:
+    log.info(f'초기 음성 파일 부재, 기본 채널 생성 취소 [{channel_name}]')
+    return
 
   # 세그먼트 큐 생성
   channels[channel_name] = {
@@ -48,6 +52,9 @@ def add_channel(channel_name):
     os.path.join(channel_path, 'index.m3u8'),
     channel['queue'].dequeue(SEGMENT_LIST_SIZE)
   )
+
+  channel['update_task'] = asyncio.create_task(update_m3u8(channel))
+  channel['listen'] = listen_directory(channel)
 
   # m3u8 업데이트 스레드 동작
   return channels[channel_name]
