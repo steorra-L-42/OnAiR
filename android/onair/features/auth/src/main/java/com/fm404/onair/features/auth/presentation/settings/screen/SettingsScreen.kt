@@ -1,6 +1,10 @@
 package com.fm404.onair.features.auth.presentation.settings.screen
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -9,12 +13,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.fm404.onair.core.designsystem.component.image.NetworkImage
 import com.fm404.onair.features.auth.presentation.settings.SettingsViewModel
 import com.fm404.onair.features.auth.presentation.settings.state.SettingsEvent
 
@@ -25,6 +37,78 @@ fun SettingsScreen(
     navController: NavHostController
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Image picker launcher
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
+    }
+
+    // Profile image view dialog
+    if (state.showImageDialog && state.userInfo?.profilePath != null) {
+        Dialog(
+            onDismissRequest = { viewModel.onEvent(SettingsEvent.OnHideImageDialog) },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .clickable { viewModel.onEvent(SettingsEvent.OnHideImageDialog) }
+            ) {
+                NetworkImage(
+                    imageUrl = state.userInfo?.profilePath,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .align(Alignment.Center),
+                    placeholderContent = {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                )
+            }
+        }
+    }
+
+    // Nickname update dialog
+    if (state.showNicknameDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) },
+            title = { Text("닉네임 변경") },
+            text = {
+                OutlinedTextField(
+                    value = state.newNickname,
+                    onValueChange = { viewModel.onEvent(SettingsEvent.OnNicknameChange(it)) },
+                    label = { Text("닉네임") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.onEvent(SettingsEvent.OnUpdateNickname) }
+                ) {
+                    Text("변경")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) }
+                ) {
+                    Text("취소")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -62,23 +146,93 @@ fun SettingsScreen(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                             .align(Alignment.CenterHorizontally)
+                            // hover 효과
+                            .pointerInput(Unit) {
+                                awaitPointerEventScope {
+                                    while (true) {
+                                        val event = awaitPointerEvent()
+                                        when (event.type) {
+                                            PointerEventType.Enter -> {
+                                                if (state.userInfo?.profilePath != null) {
+                                                    viewModel.onEvent(SettingsEvent.OnShowImageDialog)
+                                                }
+                                            }
+                                            PointerEventType.Exit -> {
+                                                viewModel.onEvent(SettingsEvent.OnHideImageDialog)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .clickable { launcher.launch("image/*") }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
+                        NetworkImage(
+                            imageUrl = state.userInfo?.profilePath,
                             contentDescription = "Profile",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .align(Alignment.Center),
-                            tint = MaterialTheme.colorScheme.primary
+                            modifier = Modifier.matchParentSize(),
+                            contentScale = ContentScale.Crop,
+                            placeholderContent = {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .align(Alignment.Center),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         )
+
+                        // 카메라 아이콘 오버레이
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Color.Black.copy(alpha = 0.3f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Camera,
+                                contentDescription = "Change profile image",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .align(Alignment.Center),
+                                tint = Color.White
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 사용자 이름
+                    // 사용자 정보
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = state.userInfo?.nickname ?: "사용자",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        IconButton(
+                            onClick = { viewModel.onEvent(SettingsEvent.OnShowNicknameDialog) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit nickname",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
                     Text(
-                        text = state.userName.ifEmpty { "사용자" },
-                        style = MaterialTheme.typography.headlineSmall,
+                        text = state.userInfo?.username ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text(
+                        text = state.userInfo?.phoneNumber ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -91,12 +245,6 @@ fun SettingsScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    SettingsMenuItem(
-                        icon = Icons.Default.Edit,
-                        title = "프로필 수정",
-                        onClick = { viewModel.onEvent(SettingsEvent.OnEditProfileClick) }
-                    )
-                    Divider()
                     SettingsMenuItem(
                         icon = Icons.Default.Logout,
                         title = "로그아웃",
@@ -112,11 +260,30 @@ fun SettingsScreen(
             }
 
             state.error?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        state.errorCode?.let { code ->
+                            Text(
+                                text = "Error Code: $code",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
             }
         }
     }
