@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 COPY src .
 
 # empty.mp3 파일 복사
-COPY /backend/media/streaming_channels/channel_1/empty.mp3 /media/streaming_channels/channel_1/empty.mp3
+COPY ./streaming_channels/channel_1/empty.mp3 /media/streaming_channels/channel_1/empty.mp3
 
 # FastAPI 포트 노출
 EXPOSE 8000
