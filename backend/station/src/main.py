@@ -3,7 +3,8 @@ import signal
 import time
 from threading import Thread
 
-from src import consumer_manager, instance
+import consumer_manager
+import instance
 
 
 def handle_shutdown(signum, frame):
