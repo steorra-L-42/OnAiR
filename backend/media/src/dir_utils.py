@@ -12,7 +12,7 @@ def dir_setup(channel_name):
   playlist_path = os.path.join(channel_path, PLAYLIST_DIR)
   hls_path = os.path.join(channel_path, HLS_DIR)
 
-  os.makedirs(channel_name, exist_ok=True)
+  os.makedirs(channel_path, exist_ok=True)
   os.makedirs(playlist_path, exist_ok=True)
   create_or_clear_directory(hls_path)
   return channel_path, playlist_path, hls_path
