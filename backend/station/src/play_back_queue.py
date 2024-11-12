@@ -31,10 +31,16 @@ class PlaybackQueue:
             self.queues[content_type].append(file_path)
             logging.info(f"Added to {content_type} queue: {file_path}")
 
-    def get_next_content(self, content_type):
-        if content_type in self.queues and not self.queues[content_type].empty():
-            return self.queues[content_type].get()
-        return None
+    def stop(self):
+        """모든 큐와 플레이리스트를 비우고 리소스 해제"""
+        logging.info("Stopping PlaybackQueue and clearing all resources...")
 
-    def is_empty(self, content_type):
-        return self.queues[content_type].empty()
+        # 모든 큐 비우기
+        for content_type, queue in self.queues.items():
+            queue.clear()
+            logging.info(f"Cleared {content_type} queue")
+
+        # 플레이리스트 비우기
+        self.playlist.clear()
+        logging.info("Cleared playlist")
+        logging.info("PlaybackQueue resources have been released.")

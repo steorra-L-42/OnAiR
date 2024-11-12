@@ -1,11 +1,13 @@
+import json
 import logging
 
 
 class ChannelManager:
     MAX_CHANNELS = 5
 
-    def __init__(self):
+    def __init__(self, producer):
         self.channels = {}
+        self.producer = producer
 
     def add_channel(self, channel_id, config):
         if len(self.channels) >= self.MAX_CHANNELS:
@@ -27,6 +29,12 @@ class ChannelManager:
 
     def remove_channel(self, channel_id):
         if channel_id in self.channels:
+            # 채널 종료.
             self.channels[channel_id].stop()
+            # channels dictionary에서 삭제.
             del self.channels[channel_id]
-            logging.info(f"Channel {channel_id} removed.")
+            # 카프카 레코드 전송
+            self.producer.send_message("channel_close_topic",
+                                       channel_id.encode("utf-8"),
+                                       json.dumps({}).encode("utf-8"))
+            logging.info(f"Channel {channel_id} removed. {len(self.channels)} channels left")
