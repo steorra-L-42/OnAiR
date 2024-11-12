@@ -1,21 +1,17 @@
+# https://wikidocs.net/238532
+# https://wikidocs.net/233805
 import langchain
-# from langchain.cache import SQLiteCache
-from langchain_community.cache import SQLiteCache
-# from langchain.chat_models import ChatOpenAI
-from langchain_openai import ChatOpenAI
+from langchain.cache import SQLiteCache
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.output_parsers import OutputFixingParser
 from langchain.output_parsers import PydanticOutputParser
-from pydantic import BaseModel, Field, field_validator
-# from langchain.llms import OpenAI
-from langchain_community.llms import OpenAI
+from pydantic import BaseModel, Field, validator
+from langchain.llms import Ollama
 from langchain.prompts import PromptTemplate, FewShotPromptTemplate
 
 langchain.llm_cache = SQLiteCache("llm_cache.db")
 
-chat = ChatOpenAI(
-    model="gpt-4o",
-)
+llm = Ollama(model="llama3:latest")
 
 class Answer(BaseModel):
 
@@ -25,69 +21,40 @@ class Answer(BaseModel):
     feeling: str = Field(description="감정")
     speed: int = Field(description="속도")
 
-    # @validator("intro")
-    # def intro_must_not_be_null(cls, value):
-    #     if value is None:
-    #         raise ValueError("intro must not be null")
-    #     return value
-
-    # @validator("read")
-    # def read_must_not_be_null(cls, value):
-    #     if value is None:
-    #         raise ValueError("read must not be null")
-    #     return value
-
-    # @validator("answer")
-    # def answer_must_not_be_null(cls, value):
-    #     if value is None:
-    #         raise ValueError("answer must not be null")
-    #     return value
-
-    # @validator("feeling")
-    # def feeling_must_not_be_null(cls, value):
-    #     if value is None:
-    #         raise ValueError("feeling must not be null")
-    #     return value
-
-    # @validator("speed")
-    # def speed_must_be_positive(cls, value):
-    #     if value < 0:
-    #         raise ValueError("speed must be positive")
-    #     return value
-
-    @field_validator("intro")
+    @validator("intro")
     def intro_must_not_be_null(cls, value):
         if value is None:
             raise ValueError("intro must not be null")
         return value
 
-    @field_validator("read")
+    @validator("read")
     def read_must_not_be_null(cls, value):
         if value is None:
             raise ValueError("read must not be null")
         return value
 
-    @field_validator("answer")
+    @validator("answer")
     def answer_must_not_be_null(cls, value):
         if value is None:
             raise ValueError("answer must not be null")
         return value
 
-    @field_validator("feeling")
+    @validator("feeling")
     def feeling_must_not_be_null(cls, value):
         if value is None:
             raise ValueError("feeling must not be null")
         return value
 
-    @field_validator("speed")
+    @validator("speed")
     def speed_must_be_positive(cls, value):
-        if value <= 0:
+        if value < 0:
             raise ValueError("speed must be positive")
         return value
 
+
 parser = OutputFixingParser.from_llm(
     parser=PydanticOutputParser(pydantic_object=Answer),
-    llm=chat,
+    llm=llm,
 )
 
 class Example:
@@ -216,18 +183,7 @@ request1 = {
     """
 }
 
-# result = chat([
-#     SystemMessage(content=system_prompt.format(gender=request1["gender"], personality=request1["personality"])),
-#     SystemMessage(content=example_prompt.format(
-#         example_gender=example.gender, example_personality=example.personality, 
-#         example_story=example.story, example_intro=example.intro,
-#         example_read=example.read, example_answer=example.answer, 
-#         example_feeling=example.feeling, example_speed=example.speed)),
-#     HumanMessage(content=human_prompt.format(gender=request1["gender"], personality=request1["personality"], story=request1["story"])),
-#     HumanMessage(content=parser.get_format_instructions())
-# ])
-
-result = chat.invoke([
+result = llm.invoke([
     SystemMessage(content=system_prompt.format(gender=request1["gender"], personality=request1["personality"])),
     SystemMessage(content=example_prompt.format(
         example_gender=example.gender, example_personality=example.personality, 
@@ -238,35 +194,6 @@ result = chat.invoke([
     HumanMessage(content=parser.get_format_instructions())
 ])
 
-# result = chat.invoke([
-#     SystemMessage(content=system_prompt.format(gender=request1["gender"], personality=request1["personality"])),
-#     SystemMessage(content=example_prompt.format(
-#         example_gender=example.gender, example_personality=example.personality, 
-#         example_story=example.story, example_intro=example.intro,
-#         example_read=example.read, example_answer=example.answer, 
-#         example_feeling=example.feeling, example_speed=example.speed)),
-#     HumanMessage(content=human_prompt.format(gender=request1["gender"], personality=request1["personality"], story=request1["story"])),
-#     HumanMessage(content=parser.get_format_instructions())
-# ])
-
-parsed_result = parser.parse(result.content)
-
-print(f"안내 : {parsed_result.intro}")
-print(f"낭독 : {parsed_result.read}")
-print(f"답변 : {parsed_result.answer}")
-print(f"감정 : {parsed_result.feeling}")
-print(f"속도 : {parsed_result.speed}")
-
-# result.content를 json 형태로 저장
-# import json
-# with open("result.json", "w") as f:
-#     json.dump(result.content, f)
-
-# result.content를 json으로 변환
-import json
-json_result = json.dumps(result.content, indent=4, ensure_ascii=False)
-print(json_result)
-
-
-# json parser
-# https://wikidocs.net/233789
+print("result :", result)
+parsed_result = json.loads(result)
+print("parsed_result :", parsed_result)
