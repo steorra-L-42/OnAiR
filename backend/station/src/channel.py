@@ -1,8 +1,6 @@
 import logging
-import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from threading import Thread
 
 from content_provider import ContentProvider
 from dj import DJ
@@ -35,17 +33,6 @@ class Channel:
         # 플레이리스트 다운로드
         self.download_playlist(self.playlist_config)
 
-        # 스케줄 매니저 스레드 실행
-        schedule_thread = Thread(target=self.run_schedule_manager)
-        schedule_thread.daemon = True
-        schedule_thread.start()
-
-    def run_schedule_manager(self):
-        """스케줄 매니저를 주기적으로 실행"""
-        while True:
-            self.schedule_manager.check_and_enqueue()
-            time.sleep(10)  # 10초마다 스케줄 확인
-
     def download_playlist(self, playlist_config):
         """플레이리스트 다운로드 및 추가"""
         with ThreadPoolExecutor(max_workers=4) as executor:
@@ -68,7 +55,27 @@ class Channel:
         logging.info(f"Added '{filepath}' to playlist")
 
     def stop(self):
-        """채널 종료"""
-        logging.info(f"Channel {self.channel_id} is stopping.")
-        self.content_provider.stop()
-        self.dj.stop()
+        """채널 종료 및 모든 관련 리소스 정리"""
+        logging.info(f"Channel {self.channel_id} is stopping...")
+
+        # 1. PlaybackQueue 종료 (먼저 큐를 비우고 중지)
+        if hasattr(self.playback_queue, 'stop'):
+            self.playback_queue.stop()
+            logging.info("PlaybackQueue stopped.")
+
+        # 2. ContentProvider 종료 (큐가 중지된 후에 중지)
+        if hasattr(self.content_provider, 'stop'):
+            self.content_provider.stop()
+            logging.info("ContentProvider stopped.")
+
+        # 3. DJ 종료
+        if hasattr(self.dj, 'stop'):
+            self.dj.stop()
+            logging.info("DJ stopped.")
+
+        # 4. 스케줄러 종료
+        if hasattr(self.schedule_manager, 'stop'):
+            self.schedule_manager.stop()
+            logging.info("Scheduler stopped.")
+
+        logging.info(f"Channel {self.channel_id} has been successfully stopped.")
