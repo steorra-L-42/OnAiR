@@ -3,6 +3,7 @@ import logging
 import threading
 
 import typecast
+from config import max_story_count
 from instance import channel_manager, producer
 from music_downloader import download_from_keyword
 
@@ -34,14 +35,14 @@ def handle_content(msg, content_type):
         return
 
     # TTS로 노래를 다운받고 경로를 반환받음
-    file_path = typecast.get_tts(value, channel_id, content_type)
-    if file_path is None:
+    file_info = typecast.get_tts(value, channel_id, content_type)
+    if file_info is None:
         logging.info(f"No {content_type} file found. Skipping playback.")
         return
 
     with queue_lock:
         channel = channel_manager.channels[channel_id]
-        channel.playback_queue.add_content(content_type, file_path)
+        channel.playback_queue.add_content(content_type, [file_info])
 
     channel.playback_queue.log_queues()
 
@@ -66,9 +67,14 @@ def handle_story(msg):
         logging.info(f"Channel {channel_id} not found. Skipping playback.")
         return
 
+    # story가 5개 이상일 경우 답변 생성 X
+    if len(channel_manager.channels[channel_id].playback_queue.queues["story"]) >= max_story_count:
+        logging.warning(f"Queue for story {channel_id} is full. Skipping.")
+        return
+
     # TTS 파일 생성
-    tts_file_path = process_tts(value, channel_id)
-    if not tts_file_path:
+    tts_file_info = process_tts(value, channel_id)
+    if not tts_file_info:
         return
 
     # storyMusic 값 검증 후 음악 다운로드
@@ -79,10 +85,9 @@ def handle_story(msg):
     # TTS와 음악을 모두 처리했으므로 큐에 추가
     with queue_lock:
         channel = channel_manager.channels[channel_id]
-        channel.playback_queue.add_content("story", tts_file_path)
-        channel.playback_queue.add_content("story", music_file_info)
+        channel.playback_queue.add_content("story", [tts_file_info, music_file_info])
 
-    logging.info(f"Story and music processed successfully. TTS info: {tts_file_path}, Music info: {music_file_info}")
+    logging.info(f"Story and music processed successfully. TTS info: {tts_file_info}, Music info: {music_file_info}")
     channel.playback_queue.log_queues()
 
 

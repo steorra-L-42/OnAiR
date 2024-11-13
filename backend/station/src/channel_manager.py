@@ -1,14 +1,12 @@
 import json
 import logging
-from pathlib import Path
 
 
 class ChannelManager:
     MAX_CHANNELS = 5
 
-    def __init__(self, producer):
+    def __init__(self):
         self.channels = {}
-        self.producer = producer
 
     def add_channel(self, channel_id, config):
         if len(self.channels) >= self.MAX_CHANNELS:
@@ -18,13 +16,14 @@ class ChannelManager:
         if channel_id not in self.channels:
             from channel import Channel
             # 채널 생성
-            self.channels[channel_id] = Channel(channel_id, config)
+            channel = Channel(channel_id, config)
+            self.channels[channel_id] = channel
 
             # 시작
-            self.channels[channel_id].start()
+            channel.start()
 
             # 채널 시작 여부 produce
-            self.produce_channel_start(channel_id)
+            channel.dj.produce_channel_start(channel_id)
             logging.info(f"Channel {channel_id} created.")
             # 방송 시작
             self.channels[channel_id].process_broadcast()
@@ -32,17 +31,6 @@ class ChannelManager:
         else:
             # 채널_id 충돌.
             logging.warning(f"Channel {channel_id} already exists.")
-
-    def produce_channel_start(self, channel_id):
-        project_root = Path(__file__).resolve().parent.parent.parent
-        start_filepath = project_root / "station" / "medias" / "start.mp3"
-        value = json.dumps({
-            "filePath": str(start_filepath),
-            "isStart": True
-        })
-        self.producer.send_message("media_topic",
-                                   channel_id.encode("utf-8"),
-                                   value.encode("utf-8"))
 
     def remove_channel(self, channel_id):
         if channel_id in self.channels:
