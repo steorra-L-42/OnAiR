@@ -52,10 +52,10 @@ class Channel:
                 if file_info:  # 결과가 None이 아닌 경우에만 추가
                     self.add_to_playlist(file_info)
 
-    def add_to_playlist(self, filepath):
+    def add_to_playlist(self, file_info):
         """플레이리스트에 파일 추가"""
-        self.playback_queue.playlist.append(filepath)
-        logging.info(f"Added '{filepath}' to playlist")
+        self.playback_queue.playlist.append([file_info])
+        logging.info(f"Added '{file_info}' to playlist")
 
     def process_broadcast(self):
         """dynamic_schedule_manager의 process_broadcast를 호출"""

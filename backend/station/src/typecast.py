@@ -165,8 +165,6 @@ def download_audio(speak_id, token, channel, content_type):
             status = result.get("status")
 
             if status == "done":
-                print(result
-                      )
                 audio_url = result.get("audio_download_url")
                 if audio_url:
                     logging.info(f"Download URL: {audio_url}")
@@ -211,8 +209,8 @@ def save_audio_file(audio_url, channel_id, content_type):
     if response.status_code == 200:
         with open(output_file, 'wb') as f:
             f.write(response.content)
-        logging.info(f"Audio downloaded successfully as {output_file}")
-        return output_file
+        logging.info(f"Audio downloaded successfully as {str(output_file)}")
+        return str(output_file)
     else:
         logging.error(f"Failed to download audio: {response.status_code}, {response.text}")
         return
