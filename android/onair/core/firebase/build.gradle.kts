@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair.core.common"
+    namespace = "com.fm404.onair.core.firebase"
     compileSdk = 34
 
     defaultConfig {
@@ -24,17 +24,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "17"
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        jvmTarget = "1.8"
     }
 }
 
@@ -43,14 +37,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.compose.bom)
-    implementation(libs.androidx.runtime)
-    api(libs.androidx.navigation.compose)
-    api(libs.androidx.hilt.navigation.compose)
-    api(libs.firebase.messaging.ktx)
-    api(libs.gson)
-    api(libs.retrofit)
-    api(libs.okhttp)
+    implementation(project(":core:common"))
+    implementation(project(":data"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
