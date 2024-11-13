@@ -17,7 +17,7 @@ channels = {}
 
 
 ######################  채널 추가  ######################
-def add_channel(channel_name, initial_file_path):
+def add_channel(channel_name, initial_file_path, loop):
   # 디렉토리 생성
   channel_path, playlist_path, hls_path = dir_setup(channel_name)
   log.info(f"채널을 추가합니다 [{channel_name}] at [{channel_path}]")
@@ -48,5 +48,5 @@ def add_channel(channel_name, initial_file_path):
   )
 
   # m3u8 update task 생성
-  channel['update_task'] = asyncio.create_task(update_m3u8(channel))
+  channel['update_task'] = asyncio.run_coroutine_threadsafe(update_m3u8(channel), loop)
   return channels[channel_name]

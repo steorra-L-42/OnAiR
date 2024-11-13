@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os.path
 # 외부 패키지
@@ -13,12 +14,12 @@ from kafka_consumer_wrapper import KafkaConsumerWrapper
 
 
 ##################  토픽: media_topic에 대한 consumer 생성  ##################
-def create_audio_listener_consumer():
+def create_audio_listener_consumer(loop):
   try:
     log.info(f"Creating consumer for topic: {MEDIA_TOPIC}")
     consumer = KafkaConsumerWrapper(
       topic=MEDIA_TOPIC,
-      on_message_callback=process_input_audio
+      on_message_callback=lambda msg: process_input_audio(msg, loop)
     )
     log.info(f"Consumer for topic {MEDIA_TOPIC} created successfully.")
 
@@ -36,7 +37,7 @@ def create_audio_listener_consumer():
 
 
 ######################  토픽: media_topic 요청 처리  ######################
-def process_input_audio(msg):
+def process_input_audio(msg, loop):
   global channels
   key = msg.key().decode('utf-8')
   value = json.loads(msg.value().decode('utf-8'))
@@ -55,16 +56,17 @@ def process_input_audio(msg):
     return False
 
   if is_start:
-    add_channel(key, new_file_path)
+    add_channel(key, new_file_path, loop)
   else:
     log.info("음악 추가")
     channel = channels[key]
-    channel['queue'].last_index = generate_segment(
-      channel['hls_path'],            # 세그먼트 생성할 경로
-      new_file_path,                  # 세그먼트 생성할 파일
-      channel['queue'].last_index     # index
-    )
-    channel['queue'].init_segments_from_directory(
-      channel['hls_path'],            # 세그먼트를 가져올 경로
-      channel['queue'].last_index-1   # 세그먼트 파일의 인덱스
-    )
+    with channel['queue'].lock:
+      channel['queue'].last_index = generate_segment(
+        channel['hls_path'],            # 세그먼트 생성할 경로
+        new_file_path,                  # 세그먼트 생성할 파일
+        channel['queue'].last_index     # index
+      )
+      channel['queue'].init_segments_from_directory(
+        channel['hls_path'],            # 세그먼트를 가져올 경로
+        channel['queue'].last_index-1   # 세그먼트 파일의 인덱스
+      )
