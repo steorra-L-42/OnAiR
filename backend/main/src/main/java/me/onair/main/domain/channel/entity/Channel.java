@@ -11,13 +11,19 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.user.entity.User;
+import me.onair.main.domain.user.enums.Role;
 
 @Entity
 @Getter
@@ -29,6 +35,12 @@ public class Channel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @Column(name = "uuid", nullable = false)
+    private String uuid;
+
+    @Column(name = "channel_name", nullable = false)
+    private String channelName;
 
     @Column(name = "is_default", nullable = false)
     private Boolean isDefault = false;
@@ -44,15 +56,10 @@ public class Channel {
 
     @Column(name = "thumbnail", nullable = false)
     private String thumbnail;
-    //private String thumbnail = "/path/to/default/thumbnail";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    @OneToOne
-    @JoinColumn(name = "audio_feature_id")
-    private AudioFeature audioFeature;
 
     @OneToOne
     @JoinColumn(name = "dj_id")
@@ -65,10 +72,6 @@ public class Channel {
         this.dj = dj;
     }
 
-    public void changeAudioFeature(AudioFeature audioFeature) {
-        this.audioFeature = audioFeature;
-    }
-
     public void changeUser(User user) {
         if (this.user != null) {
             this.user.getChannels().remove(this);
@@ -79,5 +82,38 @@ public class Channel {
 
     public void changeThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    @Builder
+    private Channel(String uuid, String channelName, Boolean isDefault, String thumbnail,
+        LocalDateTime start, LocalDateTime end, Boolean isEnded) {
+        this.uuid = uuid;
+        this.channelName = channelName;
+        this.isDefault = isDefault;
+        this.thumbnail = thumbnail;
+        this.start = start;
+        this.end = end;
+        this.isEnded = isEnded;
+    }
+
+    public static Channel createChannel(CreateNewChannelRequest request, User user) {
+        UUID uuid = UUID.randomUUID();
+        byte[] uuidBytes = uuid.toString().getBytes(StandardCharsets.UTF_8);
+        String uuidString = Base64.getUrlEncoder().withoutPadding().encodeToString(uuidBytes);
+
+        boolean isDefault = (user.getRole() == Role.ROLE_ADMIN);
+        LocalDateTime end = isDefault ? LocalDateTime.now().plusDays(1) : LocalDateTime.now().plusHours(2);
+
+        Channel channel = Channel.builder()
+            .uuid(uuidString)
+            .channelName(request.getChannelName())
+            .isDefault(isDefault)
+            .thumbnail(request.getThumbnail())
+            .start(LocalDateTime.now())
+            .end(end)
+            .isEnded(false)
+            .build();
+        channel.changeUser(user);
+        return channel;
     }
 }
