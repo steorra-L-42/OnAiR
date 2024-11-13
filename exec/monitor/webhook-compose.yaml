@@ -1,0 +1,10 @@
+services:
+  webhook_server:
+    image: parkdonghyeon/webhook_image:latest
+    networks:
+      - monitoring
+    container_name: webhook_server
+
+networks:
+  monitoring:
+    external: true

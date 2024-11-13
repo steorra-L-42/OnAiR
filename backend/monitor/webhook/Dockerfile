@@ -2,7 +2,7 @@ FROM python:3.12.5
 
 ENV PYTHONENCODING=utf-8
 
-WORKDIR /monitor/webhook
+WORKDIR /webhook
 
 COPY . .
 
