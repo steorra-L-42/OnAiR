@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,24 +15,50 @@ class TokenManager @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) {
     private companion object {
-        val TOKEN_KEY = stringPreferencesKey("auth_token")
+        val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
+        val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
     }
 
-    suspend fun saveToken(token: String) {
+    suspend fun saveAccessToken(token: String) {
         dataStore.edit { preferences ->
-            preferences[TOKEN_KEY] = token
+            preferences[ACCESS_TOKEN_KEY] = token
         }
     }
 
-    fun getToken(): Flow<String?> {
+    suspend fun saveRefreshToken(token: String) {
+        dataStore.edit { preferences ->
+            preferences[REFRESH_TOKEN_KEY] = token
+        }
+    }
+
+    fun getAccessToken(): Flow<String?> {
         return dataStore.data.map { preferences ->
-            preferences[TOKEN_KEY]
+            preferences[ACCESS_TOKEN_KEY]
         }
     }
 
-    suspend fun clearToken() {
-        dataStore.edit { preferences ->
-            preferences.remove(TOKEN_KEY)
+    fun getRefreshToken(): Flow<String?> {
+        return dataStore.data.map { preferences ->
+            preferences[REFRESH_TOKEN_KEY]
         }
+    }
+
+    suspend fun getAccessTokenBlocking(): String? {
+        return getAccessToken().firstOrNull()
+    }
+
+    suspend fun getRefreshTokenBlocking(): String? {
+        return getRefreshToken().firstOrNull()
+    }
+
+    suspend fun clearTokens() {
+        dataStore.edit { preferences ->
+            preferences.remove(ACCESS_TOKEN_KEY)
+            preferences.remove(REFRESH_TOKEN_KEY)
+        }
+    }
+
+    suspend fun hasValidToken(): Boolean {
+        return getAccessTokenBlocking() != null
     }
 }

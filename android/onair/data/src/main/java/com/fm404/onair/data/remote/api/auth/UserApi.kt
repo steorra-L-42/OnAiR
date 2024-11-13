@@ -27,8 +27,12 @@ interface UserApi {
     suspend fun register(@Body request: SignupRequestDto)
 
     @PublicApi
+    @FormUrlEncoded
     @POST("api/v1/user/login")
-    suspend fun login(@Body request: LoginRequestDto): Response<Unit>
+    suspend fun login(
+        @Field("username") username: String,
+        @Field("password") password: String
+    ): Response<Unit>
 
     @PublicApi
     @POST("api/v1/user/phone-verification/verification-code")
@@ -38,7 +42,8 @@ interface UserApi {
     @POST("api/v1/user/phone-verification")
     suspend fun verifyPhoneNumber(@Body request: PhoneVerifyRequestDto): PhoneVerifyResponseDto
 
-    @GET("api/v1/user/logout")
+    @PublicApi
+    @POST("api/v1/user/logout")
     suspend fun logout(): Response<Unit>
 
     @GET("api/v1/user")
@@ -51,7 +56,9 @@ interface UserApi {
     @PATCH("api/v1/user/profile-image")
     suspend fun updateProfileImage(@Part file: MultipartBody.Part): Response<Unit>
 
-    @PublicApi
+    @POST("api/v1/user/reissue")
+    suspend fun reissue(): Response<Unit>
+
     @POST("api/v1/user/fcm-token")
     suspend fun registerToken(@Body fcmToken: String): Response<Unit>
 }
