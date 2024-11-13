@@ -1,5 +1,6 @@
 package com.fm404.onair.core.navigation.impl
 
+import android.util.Log
 import androidx.navigation.NavHostController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import javax.inject.Inject
@@ -18,7 +19,22 @@ class AuthNavigationContractImpl @Inject constructor() : AuthNavigationContract 
     }
 
     override fun navigateToLogin() {
-        navController?.navigate(AuthNavigationContract.ROUTE_LOGIN)
+        if (navController == null) {
+            Log.e("Navigation", "NavController is null in navigateToLogin")
+            return
+        }
+
+        try {
+            navController?.navigate(AuthNavigationContract.ROUTE_LOGIN) {
+                popUpTo(0) { inclusive = true }
+            }
+            Log.d("Navigation", "Successfully navigated to login")
+        } catch (e: Exception) {
+            Log.e("Navigation", "Failed to navigate to login", e)
+        }
+//        navController?.navigate(AuthNavigationContract.ROUTE_LOGIN) {
+//            popUpTo(0) { inclusive = true }
+//        }
     }
 
     override fun navigateToAdmin() {

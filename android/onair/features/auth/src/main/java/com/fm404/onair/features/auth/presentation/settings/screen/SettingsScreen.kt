@@ -1,6 +1,7 @@
 package com.fm404.onair.features.auth.presentation.settings.screen
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -27,6 +28,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.fm404.onair.core.contract.auth.NavControllerHolder
 import com.fm404.onair.core.designsystem.component.image.NetworkImage
 import com.fm404.onair.features.auth.presentation.settings.SettingsViewModel
 import com.fm404.onair.features.auth.presentation.settings.state.SettingsEvent
@@ -37,6 +39,19 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+    // navController 설정 추가
+    LaunchedEffect(Unit) {
+        Log.d("Settings", "Setting NavController in SettingsScreen")
+        (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(navController)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.d("Settings", "Clearing NavController in SettingsScreen")
+            (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(null)
+        }
+    }
+
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 

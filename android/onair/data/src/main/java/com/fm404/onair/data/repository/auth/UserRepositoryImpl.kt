@@ -131,4 +131,20 @@ class UserRepositoryImpl @Inject constructor(
             ).toDomainException()
         }
     }
+
+    override suspend fun registerFCMToken(request: FCMTokenRequest): Result<Unit> = runCatching {
+        val response = userApi.registerToken(request.fcmToken)
+
+        if (response.isSuccessful) {
+            Unit
+        } else {
+            val errorBody = response.errorBody()?.string()
+            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+            throw CustomException(
+                code = errorResponse.code,
+                message = errorResponse.message,
+                httpCode = response.code()
+            ).toDomainException()
+        }
+    }
 }

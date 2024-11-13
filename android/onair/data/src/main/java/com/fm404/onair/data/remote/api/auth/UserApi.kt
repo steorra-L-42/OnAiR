@@ -59,7 +59,6 @@ interface UserApi {
     @POST("api/v1/user/reissue")
     suspend fun reissue(): Response<Unit>
 
-    @PublicApi
     @POST("api/v1/user/fcm-token")
     suspend fun registerToken(@Body fcmToken: String): Response<Unit>
 }

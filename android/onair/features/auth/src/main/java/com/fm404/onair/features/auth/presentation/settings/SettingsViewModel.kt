@@ -1,6 +1,7 @@
 package com.fm404.onair.features.auth.presentation.settings
 
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toFile
 import androidx.lifecycle.viewModelScope
 import com.fm404.onair.core.common.base.BaseViewModel
@@ -19,7 +20,7 @@ import com.fm404.onair.core.common.base.ErrorState
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val authNavigationContract: AuthNavigationContract,
+    val authNavigationContract: AuthNavigationContract,
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val userRepository: UserRepository
 ) : BaseViewModel<SettingsState, SettingsEvent>() {
@@ -90,13 +91,21 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
 
-            userRepository.logout()
-                .onSuccess {
-                    authNavigationContract.navigateToLogin()
-                }
-                .onFailure { exception ->
-                    handleError(exception)
-                }
+            try {
+                userRepository.logout()
+                    .onSuccess {
+                        Log.d("Settings", "로그아웃 성공, 로그인 화면으로 이동 시도")
+                        authNavigationContract.navigateToLogin()
+                        Log.d("Settings", "로그인 화면 이동 완료")
+                    }
+                    .onFailure { exception ->
+                        Log.e("Settings", "로그아웃 실패", exception)
+                        handleError(exception)
+                    }
+            } catch (e: Exception) {
+                Log.e("Settings", "예상치 못한 오류", e)
+                handleError(e)
+            }
         }
     }
 

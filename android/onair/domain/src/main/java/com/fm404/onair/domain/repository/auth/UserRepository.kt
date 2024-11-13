@@ -1,5 +1,6 @@
 package com.fm404.onair.domain.repository.auth
 
+import com.fm404.onair.domain.model.auth.FCMTokenRequest
 import com.fm404.onair.domain.model.auth.LoginRequest
 import com.fm404.onair.domain.model.auth.LoginResult
 import com.fm404.onair.domain.model.auth.RegisterRequest
@@ -18,4 +19,5 @@ interface UserRepository {
     suspend fun getUserInfo(): Result<UserInfo>
     suspend fun updateNickname(nickname: String): Result<Unit>
     suspend fun updateProfileImage(imageFile: File): Result<Unit>
+    suspend fun registerFCMToken(request: FCMTokenRequest): Result<Unit>
 }

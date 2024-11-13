@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
+import com.fm404.onair.core.contract.auth.FCMServiceContract
 import com.fm404.onair.core.contract.auth.NavControllerHolder
 import com.fm404.onair.domain.usecase.auth.LoginUseCase
+import com.fm404.onair.domain.usecase.auth.RegisterFCMTokenUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +19,9 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val navigationContract: AuthNavigationContract
+    private val registerFCMTokenUseCase: RegisterFCMTokenUseCase,
+    private val navigationContract: AuthNavigationContract,
+    private val fcmServiceContract: FCMServiceContract
 ) : ViewModel() {
     private val _state = MutableStateFlow(LoginState())
     val state = _state.asStateFlow()
@@ -64,11 +68,25 @@ class LoginViewModel @Inject constructor(
                 username = currentState.username,
                 password = currentState.password
             ).onSuccess {
-                _state.value = currentState.copy(
-                    isLoading = false,
-                    error = null
-                )
-                navigationContract.navigateToBroadcastList()
+                // 로그인 성공 시 FCM 토큰 등록
+                fcmServiceContract.getToken { token ->
+                    viewModelScope.launch {
+                        registerFCMTokenUseCase(token)
+                            .onSuccess {
+                                _state.value = currentState.copy(
+                                    isLoading = false,
+                                    error = null
+                                )
+                                navigationContract.navigateToBroadcastList()
+                            }
+                            .onFailure { exception ->
+                                _state.value = currentState.copy(
+                                    isLoading = false,
+                                    error = exception.message ?: "FCM 토큰 등록에 실패했습니다."
+                                )
+                            }
+                    }
+                }
             }.onFailure { exception ->
                 _state.value = currentState.copy(
                     isLoading = false,

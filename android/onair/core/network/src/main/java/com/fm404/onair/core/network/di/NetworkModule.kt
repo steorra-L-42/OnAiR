@@ -17,6 +17,8 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.*
 import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.CookieManager
+import java.net.CookiePolicy
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -81,6 +83,9 @@ object NetworkModule {
         tokenReissueInterceptor: TokenReissueInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
+            .cookieJar(JavaNetCookieJar(CookieManager().apply {
+                setCookiePolicy(CookiePolicy.ACCEPT_ALL)
+            }))
             .addInterceptor(loggingInterceptor)
             .addInterceptor(authInterceptor)
             .addInterceptor(errorHandlingInterceptor)
