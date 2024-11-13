@@ -83,8 +83,8 @@ pipeline {
             }
         }
 
-        // 웹훅 서버 빌드 및 푸시
-        stage('Build and Push Webhook Image') {
+        // 웹훅 서버 빌드 및 배포
+        stage('Build and Deploy Webhook Image') {
             steps {
                 dir("${WEBHOOK_PATH}") {
                     echo "Building Docker image for Webhook server..."
@@ -93,7 +93,14 @@ pipeline {
                         sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
                         
                         script {
-                            docker.build("${DOCKER_REGISTRY}/webhook_image:latest", ".").push()
+                            docker.build("${DOCKER_REGISTRY}/webhook_image:latest", ".")
+                            sh """
+                                if [ \$(docker ps -q -f name=webhook_container) ]; then
+                                    docker stop webhook_container
+                                    docker rm webhook_container
+                                fi
+                                docker run -d --name webhook_server ${DOCKER_REGISTRY}/webhook_image
+                            """
                         }
                     }
                 }
@@ -105,16 +112,6 @@ pipeline {
             steps {
                 echo "Deploying all services using Docker Compose..."
                 script {
-                    // 웹훅 서버 배포
-                    sh """ 
-                        cd /exec/log
-                        docker-compose -f webhook-compose.yaml down &&
-                        
-                        docker volume prune -f &&
-                        docker image prune -f &&
-
-                        docker-compose -f webhook-compose.yaml up -d
-                    """
 
                     // env 파일 설정
                     withCredentials([file(credentialsId: 'ENV', variable: 'ENV_FILE_PATH')]) {

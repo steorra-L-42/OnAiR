@@ -3,16 +3,16 @@
 '''
 
 import os
-from flask import Flask, request
+from fastapi import FastAPI, Request, HTTPException
 
 
-app = Flask(__name__)
+app = FastAPI()
 
 @app.post("/alert")
 async def alert():
-    data = request.json
+    data = Request.json
     if not data:
-        return '',400
+        raise HTTPException(status_code=400, detail="Invalid request payload")
     
     if data.get("alerts"):
         alert_name = data["alerts"][0]["labels"]["alertname"]
@@ -24,9 +24,12 @@ async def alert():
         elif alert_name == "LowAvailableMemory_Main":
             pass
 
+    return {"status": "success"}
+
 def clear_cache():
     os.system("sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches")
 
 
 if __name__=='__main__':
-    app.run(host='0.0.0.0', port=5000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
