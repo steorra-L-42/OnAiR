@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import me.onair.main.domain.fcm.entity.FcmToken;
 import me.onair.main.domain.fcm.repository.FcmRepository;
 import me.onair.main.domain.jwt.enums.TokenType;
 import me.onair.main.domain.jwt.repository.RefreshRepository;
@@ -91,7 +92,11 @@ public class CustomLogoutFilter extends GenericFilterBean {
         // FCM Token 삭제
         userRepository.findById(jwtUtil.getUserId(refreshToken))
                 .ifPresent(user -> {
-                    Long fcmTokenId = user.getFcmToken().getId();
+                    FcmToken fcmToken = user.getFcmToken();
+                    if (fcmToken == null) {
+                        return;
+                    }
+                    Long fcmTokenId = fcmToken.getId();
                     user.deleteFcmToken();
                     userRepository.save(user);
                     fcmRepository.deleteById(fcmTokenId);
