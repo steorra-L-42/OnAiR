@@ -1,11 +1,9 @@
 import os
+from dotenv import load_dotenv, find_dotenv
 
-from dotenv import load_dotenv
-load_dotenv()
-
-# Streaming: F:\SSAFY\2학기\3. 자율\기타\test
-# Playlist : F:\SSAFY\2학기\3. 자율\기타\test\channel_1\playlist
-# hls      : F:\SSAFY\2학기\3. 자율\기타\test\channel_1\hls
+dotenv_path = find_dotenv()
+if os.path.exists(dotenv_path):
+  load_dotenv(dotenv_path)
 
 # 채널 디렉토리 관련
 STREAMING_CHANNELS = os.environ.get("STREAMING_CHANNELS")
@@ -20,11 +18,14 @@ SEGMENT_UPDATE_SIZE = 1
 
 SEGMENT_FILE_INDEX_START=8
 SEGMENT_FILE_INDEX_END=12
-
 SEGMENT_FILE_NUMBER_START=12
 SEGMENT_FILE_NUMBER_END=17
 
-
+# 카프카
+BOOTSTRAP_SERVERS=os.environ.get('BOOTSTRAP_SERVERS')
+MEDIA_CONSUMER_GROUP_ID=os.environ.get('MEDIA_CONSUMER_GROUP_ID')
+AUTO_OFFSET_RESET=os.environ.get('AUTO_OFFSET_RESET')
+MEDIA_TOPIC='media_topic'
 
 # 기본 채널 변수
 BASIC_CHANNEL_NAME = 'channel_1'

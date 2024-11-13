@@ -2,11 +2,8 @@ import json
 import logging
 import threading
 
-from confluent_kafka import Producer
-
-import config
 import typecast
-from instance import channel_manager
+from instance import channel_manager, producer
 from music_downloader import download_from_keyword
 
 # Lock 객체를 사용하여 동기화
@@ -129,15 +126,9 @@ class ContentProvider:
     def __init__(self, channel, playback_queue):
         self.channel = channel
         self.playback_queue = playback_queue
-        self.producer = Producer({
-            'bootstrap.servers': config.bootstrap_server,
-            'acks': 'all'
-        })
 
     def request_contents(self, content_type):
         """contents_request_topic으로 요청 전송"""
-        topic = 'contents_request_topic'
-        key = self.channel.channel_id
         value = {
             "channelInfo": {
                 "isDefault": self.channel.is_default,
@@ -148,17 +139,10 @@ class ContentProvider:
             "contentType": content_type
         }
         message_value = json.dumps(value)
-
-        try:
-            self.producer.produce(
-                topic=topic,
-                key=key,
-                value=message_value.encode('utf-8')
-            )
-            self.producer.flush()
-            logging.info(f"Sent request to {topic}: {message_value}")
-        except Exception as e:
-            logging.error(f"Failed to send request to {topic}: {e}")
+        producer.send_message('contents_request_topic',
+                              key=self.channel.channel_id.encode('utf-8'),
+                              value=message_value.encode('utf-8'))
 
     def stop(self):
+        """ContentProvider 종료"""
         logging.info(f"Stopping ContentProvider for channel {self.channel.channel_id}")
