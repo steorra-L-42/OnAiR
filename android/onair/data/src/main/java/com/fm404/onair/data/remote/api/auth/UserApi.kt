@@ -50,4 +50,8 @@ interface UserApi {
     @Multipart
     @PATCH("api/v1/user/profile-image")
     suspend fun updateProfileImage(@Part file: MultipartBody.Part): Response<Unit>
+
+    @PublicApi
+    @POST("api/v1/user/fcm-token")
+    suspend fun registerToken(@Body fcmToken: String): Response<Unit>
 }
