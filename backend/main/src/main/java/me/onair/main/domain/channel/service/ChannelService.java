@@ -61,7 +61,7 @@ public class ChannelService {
         CreateNewChannelKafka kafkaMessage = CreateNewChannelKafka.of(channel, dj, trackList);
         kafkaProducer.sendMessageToKafka(
             Topics.CHANNEL_INFO,
-            channel.getChannelName(),
+            channel.getUuid(),
             kafkaMessage.toJson()
         );
         return CreateNewChannelResponse.from(channel);

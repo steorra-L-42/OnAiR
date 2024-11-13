@@ -11,9 +11,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,6 +36,9 @@ public class Channel {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "uuid", nullable = false)
+    private String uuid;
+
     @Column(name = "channel_name", nullable = false)
     private String channelName;
 
@@ -50,7 +56,6 @@ public class Channel {
 
     @Column(name = "thumbnail", nullable = false)
     private String thumbnail;
-    //private String thumbnail = "/path/to/default/thumbnail";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -80,9 +85,9 @@ public class Channel {
     }
 
     @Builder
-    private Channel(String channelName, Boolean isDefault, String thumbnail,
+    private Channel(String uuid, String channelName, Boolean isDefault, String thumbnail,
         LocalDateTime start, LocalDateTime end, Boolean isEnded) {
-
+        this.uuid = uuid;
         this.channelName = channelName;
         this.isDefault = isDefault;
         this.thumbnail = thumbnail;
@@ -92,9 +97,15 @@ public class Channel {
     }
 
     public static Channel createChannel(CreateNewChannelRequest request, User user) {
+        UUID uuid = UUID.randomUUID();
+        byte[] uuidBytes = uuid.toString().getBytes(StandardCharsets.UTF_8);
+        String uuidString = Base64.getUrlEncoder().withoutPadding().encodeToString(uuidBytes);
+
         boolean isDefault = (user.getRole() == Role.ROLE_ADMIN);
         LocalDateTime end = isDefault ? LocalDateTime.now().plusDays(1) : LocalDateTime.now().plusHours(2);
+
         Channel channel = Channel.builder()
+            .uuid(uuidString)
             .channelName(request.getChannelName())
             .isDefault(isDefault)
             .thumbnail(request.getThumbnail())
