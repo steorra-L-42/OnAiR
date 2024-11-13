@@ -45,9 +45,9 @@ class Channel:
 
             # 비동기적으로 반환된 경로들을 playlist에 추가
             for future in futures:
-                file_path = future.result()  # 작업 결과가 반환되면
-                if file_path:  # 결과가 None이 아닌 경우에만 추가
-                    self.add_to_playlist(file_path)
+                file_info = future.result()  # 작업 결과가 반환되면
+                if file_info:  # 결과가 None이 아닌 경우에만 추가
+                    self.add_to_playlist(file_info)
 
     def add_to_playlist(self, filepath):
         """플레이리스트에 파일 추가"""
