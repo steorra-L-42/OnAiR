@@ -30,10 +30,11 @@ public class KafkaProducerTestController {
 
     @GetMapping("/publish/media-topic")
     public CompletableFuture<String> publishToMediaTopicTest() {
-        String message = "C:\\heodongwon\\3. 자율\\S11P31D204\\backend\\media\\streaming_channels\\channel_1\\playlist\\supersonic.mp3";
+        String message = "{\"filePath\":\"C:/heodongwon/3. 자율/S11P31D204/backend/station/medias/start.mp3\", \"isStart\":\"true\", \"fileTitle\":\"시작\",\"fileAuthor\":\"\",\"fileGenre\":\"시작멘트\",\"fileCover\":\"\"}";
+
         CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
             Topics.MEDIA.getName(),
-            "channel_1",
+            "channel_2",
             message
         );
 

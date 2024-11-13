@@ -42,9 +42,6 @@ def process_input_audio(msg):
   value = json.loads(msg.value().decode('utf-8'))
   new_file_path = value.get('filePath')
   is_start = value.get('isStart')
-
-  log.info(f'key [{key}]')
-  log.info(f'value [{value}]')
   log.info(f'file [{new_file_path}]')
 
   if not os.path.exists(new_file_path):
