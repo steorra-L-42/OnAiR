@@ -45,7 +45,7 @@ class ErrorHandlingInterceptor @Inject constructor() : Interceptor {
 
             // 에러 바디가 없는 경우 기본 에러 응답 생성
             val defaultErrorBody = Gson().toJson(
-                ErrorResponse(code = "888", message = "알 수 없는 오류가 발생했습니다")
+                ErrorResponse(code = "888", message = "알 수 없는 오류가 발생했습니다!!")
             )
             return response.newBuilder()
                 .body(defaultErrorBody.toResponseBody(contentType))

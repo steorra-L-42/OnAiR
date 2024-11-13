@@ -111,10 +111,20 @@ fun RegisterScreen(
                     filteringType = FilteringType.VERIFICATION_CODE
                 )
 
-                Text(
-                    text = "${state.remainingTimeSeconds / 60}:${String.format("%02d", state.remainingTimeSeconds % 60)}",
-                    color = MaterialTheme.colorScheme.error
-                )
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "${state.remainingTimeSeconds / 60}:${String.format("%02d", state.remainingTimeSeconds % 60)}",
+                        color = MaterialTheme.colorScheme.error
+                    )
+
+                    Text(
+                        text = "남은 시도: ${state.maxVerificationAttempts - state.verificationAttempts}회",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
 
                 Button(
                     onClick = { viewModel.onEvent(RegisterEvent.VerifyPhoneNumber) },

@@ -41,10 +41,8 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun login(request: LoginRequest): Result<LoginResult> = runCatching {
         val response = userApi.login(
-            LoginRequestDto(
-                username = request.username,
-                password = request.password
-            )
+            username = request.username,
+            password = request.password
         )
 
         if (response.isSuccessful) {

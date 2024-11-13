@@ -27,8 +27,12 @@ interface UserApi {
     suspend fun register(@Body request: SignupRequestDto)
 
     @PublicApi
+    @FormUrlEncoded
     @POST("api/v1/user/login")
-    suspend fun login(@Body request: LoginRequestDto): Response<Unit>
+    suspend fun login(
+        @Field("username") username: String,
+        @Field("password") password: String
+    ): Response<Unit>
 
     @PublicApi
     @POST("api/v1/user/phone-verification/verification-code")

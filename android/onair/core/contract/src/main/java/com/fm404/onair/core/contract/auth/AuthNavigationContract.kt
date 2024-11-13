@@ -22,6 +22,6 @@ interface AuthNavigationContract : NavControllerHolder {
         const val ROUTE_SETTINGS = "settings"
         const val GRAPH_AUTH = "auth_graph"
         const val ROUTE_HOME = "home"
-        const val ROUTE_BROADCAST_LIST = "broadcast/broadcast_list"
+        const val ROUTE_BROADCAST_LIST = "broadcast_list"
     }
 }
