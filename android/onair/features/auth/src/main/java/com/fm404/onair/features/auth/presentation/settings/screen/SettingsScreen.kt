@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -39,12 +40,13 @@ fun SettingsScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // Image picker launcher
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
-    }
+    // 프로필 이미지 변경은 아직 지원하지 않음ㅅ
+//    // Image picker launcher
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.GetContent()
+//    ) { uri: Uri? ->
+//        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
+//    }
 
     // Profile image view dialog
     if (state.showImageDialog && state.userInfo?.profilePath != null) {
@@ -140,36 +142,34 @@ fun SettingsScreen(
                         .padding(16.dp)
                 ) {
                     // 프로필 이미지
+                    var isPressed by remember { mutableStateOf(false) }
+
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                             .align(Alignment.CenterHorizontally)
-                            // hover 효과
-                            .pointerInput(Unit) {
-                                awaitPointerEventScope {
-                                    while (true) {
-                                        val event = awaitPointerEvent()
-                                        when (event.type) {
-                                            PointerEventType.Enter -> {
-                                                if (state.userInfo?.profilePath != null) {
-                                                    viewModel.onEvent(SettingsEvent.OnShowImageDialog)
-                                                }
-                                            }
-                                            PointerEventType.Exit -> {
-                                                viewModel.onEvent(SettingsEvent.OnHideImageDialog)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .clickable { launcher.launch("image/*") }
                     ) {
+                        var isPressed by remember { mutableStateOf(false) }
+
                         NetworkImage(
                             imageUrl = state.userInfo?.profilePath,
                             contentDescription = "Profile",
-                            modifier = Modifier.matchParentSize(),
+                            modifier = Modifier
+                                .matchParentSize()
+                                .scale(if (isPressed) 1.5f else 1f)
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        while (true) {
+                                            val event = awaitPointerEvent()
+                                            when (event.type) {
+                                                PointerEventType.Press -> isPressed = true
+                                                PointerEventType.Release -> isPressed = false
+                                            }
+                                        }
+                                    }
+                                },
                             contentScale = ContentScale.Crop,
                             placeholderContent = {
                                 Icon(
@@ -183,21 +183,22 @@ fun SettingsScreen(
                             }
                         )
 
-                        // 카메라 아이콘 오버레이
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(Color.Black.copy(alpha = 0.3f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Camera,
-                                contentDescription = "Change profile image",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .align(Alignment.Center),
-                                tint = Color.White
-                            )
-                        }
+                        // 프로필 이미지 변경은 아직 지원하지 않음
+//                        // 카메라 아이콘 오버레이
+//                        Box(
+//                            modifier = Modifier
+//                                .matchParentSize()
+//                                .background(Color.Black.copy(alpha = 0.3f))
+//                        ) {
+//                            Icon(
+//                                imageVector = Icons.Default.Camera,
+//                                contentDescription = "Change profile image",
+//                                modifier = Modifier
+//                                    .size(24.dp)
+//                                    .align(Alignment.Center),
+//                                tint = Color.White
+//                            )
+//                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))

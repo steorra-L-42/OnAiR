@@ -5,7 +5,6 @@ import androidx.core.net.toFile
 import androidx.lifecycle.viewModelScope
 import com.fm404.onair.core.common.base.BaseViewModel
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
-import com.fm404.onair.core.contract.broadcast.BroadcastNavigationContract
 import com.fm404.onair.domain.exception.DomainException
 import com.fm404.onair.domain.repository.auth.UserRepository
 import com.fm404.onair.domain.usecase.auth.GetUserInfoUseCase
@@ -21,7 +20,6 @@ import com.fm404.onair.core.common.base.ErrorState
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val authNavigationContract: AuthNavigationContract,
-    private val broadcastNavigationContract: BroadcastNavigationContract,
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val userRepository: UserRepository
 ) : BaseViewModel<SettingsState, SettingsEvent>() {
@@ -94,7 +92,7 @@ class SettingsViewModel @Inject constructor(
 
             userRepository.logout()
                 .onSuccess {
-                    broadcastNavigationContract.navigateToBroadcastList()
+                    authNavigationContract.navigateToLogin()
                 }
                 .onFailure { exception ->
                     handleError(exception)
