@@ -3,6 +3,7 @@ import logging
 import threading
 
 import typecast
+from config import max_story_count
 from instance import channel_manager, producer
 from music_downloader import download_from_keyword
 
@@ -64,6 +65,11 @@ def handle_story(msg):
 
     if channel_id not in channel_manager.channels:
         logging.info(f"Channel {channel_id} not found. Skipping playback.")
+        return
+
+    # story가 5개 이상일 경우 답변 생성 X
+    if len(channel_manager.channels[channel_id].playback_queue.queues["story"]) >= max_story_count:
+        logging.warning(f"Queue for story {channel_id} is full. Skipping.")
         return
 
     # TTS 파일 생성
