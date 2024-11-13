@@ -1,9 +1,9 @@
 import logging
 import signal
 import time
-from threading import Thread
 
-from src import consumer_manager, instance
+import consumer_manager
+import instance
 
 
 def handle_shutdown(signum, frame):
@@ -23,8 +23,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, handle_shutdown)
     signal.signal(signal.SIGTERM, handle_shutdown)
 
-    consumer_thread = Thread(target=consumer_manager.create_consumers, daemon=True)
-    consumer_thread.start()
+    consumer_manager.create_consumers()
 
     producer = instance.producer
     channel_manager = instance.channel_manager

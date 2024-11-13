@@ -14,6 +14,7 @@ public enum Topics {
     STORY_WITH_CHANNEL_INFO(NAMES.STORY_WITH_CHANNEL_INFO),
     STORY_REPLY(NAMES.STORY_REPLY),
     CHANNEL_CLOSE(NAMES.CHANNEL_CLOSE),
+    MEDIA(NAMES.MEDIA),
     LOG(NAMES.LOG),
     TEST(NAMES.TEST);
 
@@ -28,6 +29,8 @@ public enum Topics {
         public static final String STORY_WITH_CHANNEL_INFO = "story_with_channel_info_topic";
         public static final String STORY_REPLY = "story_reply_topic";
         public static final String CHANNEL_CLOSE = "channel_close_topic";
+        public static final String MEDIA = "media_topic";
+
         public static final String LOG = "log_topic";
         public static final String TEST = "test_topic";
     }

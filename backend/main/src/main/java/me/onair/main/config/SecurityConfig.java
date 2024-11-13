@@ -91,7 +91,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         // KafKa Publish Test
                         .requestMatchers(
-                                new AntPathRequestMatcher("/kafka/publish/test-topic")
+                                new AntPathRequestMatcher("/kafka/publish/*")
                         ).permitAll()
                         // for actuator
                         .requestMatchers(

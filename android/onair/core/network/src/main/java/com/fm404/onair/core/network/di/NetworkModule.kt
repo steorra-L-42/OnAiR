@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.fm404.onair.BuildConfig
+import com.fm404.onair.core.network.BuildConfig
 import com.fm404.onair.core.network.interceptor.AuthInterceptor
 import com.fm404.onair.core.network.interceptor.ErrorHandlingInterceptor
 import com.fm404.onair.core.network.interceptor.LoggingInterceptor

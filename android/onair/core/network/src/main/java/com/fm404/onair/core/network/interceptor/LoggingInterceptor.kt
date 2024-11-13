@@ -1,7 +1,7 @@
 package com.fm404.onair.core.network.interceptor
 
 import android.util.Log
-import com.fm404.onair.BuildConfig
+import com.fm404.onair.core.network.BuildConfig
 import okhttp3.*
 import javax.inject.Inject
 

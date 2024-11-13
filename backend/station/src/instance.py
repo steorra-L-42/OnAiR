@@ -1,5 +1,5 @@
-from src.channel_manager import ChannelManager
-from src.kafka_producer_wrapper import KafkaProducerWrapper
+from channel_manager import ChannelManager
+from kafka_producer_wrapper import KafkaProducerWrapper
 
-channel_manager = ChannelManager()
 producer = KafkaProducerWrapper()
+channel_manager = ChannelManager(producer)

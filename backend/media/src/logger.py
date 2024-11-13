@@ -34,7 +34,7 @@ class ColoredFormatter(logging.Formatter):
     return super().format(record)
 
 
-log = logging.getLogger('media')
+log = logging.getLogger()
 log.setLevel(logging.INFO)
 
 # 핸들러 및 포매터 설정

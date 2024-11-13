@@ -277,7 +277,7 @@ private fun ValidationTextField(
     val regex = when (filteringType) {
         FilteringType.USERNAME -> "[a-z0-9]".toRegex()
         FilteringType.PASSWORD -> "[A-Za-z\\d!@#%^&*()\\-_=+\\[\\]{}|;:,<.>?]".toRegex()
-        FilteringType.NICKNAME -> "^[ㄱ-ㅎ가-힣a-zA-Z0-9]{0,24}$".toRegex()
+        FilteringType.NICKNAME -> "^[ㄱ-ㅎ가-힣a-zA-Z0-9ㆍᆢ]{0,24}$".toRegex()
         FilteringType.VERIFICATION_CODE -> "\\d".toRegex()
         FilteringType.DEFAULT -> ".*".toRegex()
     }

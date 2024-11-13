@@ -1,6 +1,6 @@
 package com.fm404.onair.core.network.di
 
-import com.fm404.onair.BuildConfig
+import com.fm404.onair.core.network.BuildConfig
 import com.fm404.onair.core.network.interceptor.LoggingInterceptor
 import dagger.*
 import dagger.hilt.InstallIn
