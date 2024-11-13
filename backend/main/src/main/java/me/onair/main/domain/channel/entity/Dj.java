@@ -61,10 +61,10 @@ public class Dj {
 
     public static Dj createDj(CreateNewChannelRequest request, Channel channel) {
         Dj dj = Dj.builder()
-                .ttsEngine(request.getTtsEngine())
-                .personality(request.getPersonality())
-                .newsTopic(request.getNewsTopic())
-                .build();
+            .ttsEngine(request.getTtsEngine())
+            .personality(request.getPersonality())
+            .newsTopic(request.getNewsTopic())
+            .build();
         dj.setChannel(channel);
         return dj;
     }
