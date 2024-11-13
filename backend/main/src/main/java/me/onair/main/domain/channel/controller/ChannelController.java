@@ -1,5 +1,6 @@
 package me.onair.main.domain.channel.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,10 @@ public class ChannelController {
     @PostMapping
     public ResponseEntity<?> createNewChannel(
             @RequestBody @Valid CreateNewChannelRequest request,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        
-        log.info("ChannelController.createNewChannel", request);
+            @AuthenticationPrincipal CustomUserDetails customUserDetails)
+        throws JsonProcessingException {
+
+        log.info("Request to Create a new channel: {}", request.toString());
         CreateNewChannelResponse response = channelService.createNewChannel(request, customUserDetails);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

@@ -58,9 +58,10 @@ public class Track {
 
     public static Track createTrack(CreateNewChannelTrackRequest request, Channel channel) {
         Track track = Track.builder()
-                .title(request.getTitle())
-                .artist(request.getArtist())
-                .build();
+            .title(request.getTitle())
+            .artist(request.getArtist())
+            .cover(request.getCover())
+            .build();
         track.setChannel(channel);
         return track;
     }
