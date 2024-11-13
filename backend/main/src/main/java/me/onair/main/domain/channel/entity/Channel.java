@@ -18,7 +18,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.user.entity.User;
+import me.onair.main.domain.user.enums.Role;
 
 @Entity
 @Getter
@@ -30,6 +32,9 @@ public class Channel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @Column(name = "channel_name", nullable = false)
+    private String channelName;
 
     @Column(name = "is_default", nullable = false)
     private Boolean isDefault = false;
@@ -83,7 +88,10 @@ public class Channel {
     }
 
     @Builder
-    private Channel(Boolean isDefault, String thumbnail, LocalDateTime start, LocalDateTime end, Boolean isEnded) {
+    private Channel(String channelName, Boolean isDefault, String thumbnail,
+        LocalDateTime start, LocalDateTime end, Boolean isEnded) {
+
+        this.channelName = channelName;
         this.isDefault = isDefault;
         this.thumbnail = thumbnail;
         this.start = start;
@@ -91,14 +99,18 @@ public class Channel {
         this.isEnded = isEnded;
     }
 
-    public static Channel createChannel(Boolean isDefault, String thumbnail, LocalDateTime end) {
+    public static Channel createChannel(CreateNewChannelRequest request, User user) {
+        boolean isDefault = (user.getRole() == Role.ROLE_ADMIN);
+        LocalDateTime end = isDefault ? LocalDateTime.now().plusDays(1) : LocalDateTime.now().plusHours(2);
         Channel channel = Channel.builder()
-                .isDefault(isDefault)
-                .thumbnail(thumbnail)
-                .start(LocalDateTime.now())
-                .end(end)
-                .isEnded(false)
-                .build();
+            .channelName(request.getChannelName())
+            .isDefault(isDefault)
+            .thumbnail(request.getThumbnail())
+            .start(LocalDateTime.now())
+            .end(end)
+            .isEnded(false)
+            .build();
+        channel.changeUser(user);
         return channel;
     }
 }
