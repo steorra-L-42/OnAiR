@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.core.network"
     compileSdk = 34
 
     defaultConfig {
