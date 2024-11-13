@@ -72,28 +72,28 @@ def handle_story(msg):
         return
 
     # storyMusic 값 검증 후 음악 다운로드
-    music_file_path = process_music(value, channel_id)
-    if not music_file_path:
+    music_file_info = process_music(value, channel_id)
+    if not music_file_info:
         return
 
     # TTS와 음악을 모두 처리했으므로 큐에 추가
     with queue_lock:
         channel = channel_manager.channels[channel_id]
         channel.playback_queue.add_content("story", tts_file_path)
-        channel.playback_queue.add_content("story", music_file_path)
+        channel.playback_queue.add_content("story", music_file_info)
 
-    logging.info(f"Story and music processed successfully. TTS path: {tts_file_path}, Music path: {music_file_path}")
+    logging.info(f"Story and music processed successfully. TTS info: {tts_file_path}, Music info: {music_file_info}")
     channel.playback_queue.log_queues()
 
 
 def process_tts(value, channel_id):
     """TTS 생성 처리"""
     try:
-        tts_file_path = typecast.get_tts(value, channel_id, "story")
-        if not tts_file_path:
+        tts_file_info = typecast.get_tts(value, channel_id, "story")
+        if not tts_file_info:
             logging.info("No TTS file found. Skipping playback.")
             return None
-        return tts_file_path
+        return tts_file_info
     except Exception as e:
         logging.error(f"Error generating TTS: {e}")
         return None
@@ -111,11 +111,11 @@ def process_music(value, channel_id):
         return None
 
     try:
-        music_file_path = download_from_keyword(music_title, music_artist, channel_id, "story")
-        if not music_file_path:
+        music_file_info = download_from_keyword(music_title, music_artist, channel_id, "story")
+        if not music_file_info:
             logging.info("No music file found. Skipping playback.")
             return None
-        return music_file_path
+        return music_file_info
     except Exception as e:
         logging.error(f"Error downloading music: {e}")
         return None
