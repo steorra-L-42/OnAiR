@@ -7,7 +7,7 @@ from logger import log
 from config import SEGMENT_LIST_SIZE
 
 from segment_queue import SegmentQueue
-from segmenter import generate_segment, write_m3u8, update_m3u8
+from segmenter import generate_segment_from_files, write_m3u8, update_m3u8
 from dir_utils import dir_setup
 
 ######################  공유 변수 초기화  ######################
@@ -17,15 +17,15 @@ channels = {}
 
 
 ######################  채널 추가  ######################
-def add_channel(channel_name, initial_file_path, loop):
+def add_channel(channel_name, file_info_list, loop):
   # 디렉토리 생성
   channel_path, playlist_path, hls_path = dir_setup(channel_name)
   log.info(f"채널을 추가합니다 [{channel_name}] at [{channel_path}]")
   
   # 초기 세그먼트 생성
-  last_index = generate_segment(
+  last_index = generate_segment_from_files(
     hls_path,
-    initial_file_path,
+    file_info_list,
     last_index = 0
   )
 

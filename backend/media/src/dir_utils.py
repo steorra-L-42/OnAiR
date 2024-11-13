@@ -18,8 +18,7 @@ def dir_setup(channel_name):
   create_or_clear_directory(hls_path)
   return channel_path, playlist_path, hls_path
 
-
-######################  채널 추가시 폴더 구성  ######################
+######################  기존 디렉토리가 존재하면 초기화  ######################
 def create_or_clear_directory(path):
   if os.path.exists(path):
     shutil.rmtree(path)
@@ -32,3 +31,20 @@ def clear_hls_path(channel):
     shutil.rmtree(channel['hls_path'])
   if os.path.exists(os.path.join(channel['channel_path'], 'index.m3u8')):
     os.remove(os.path.join(channel["channel_path"], "index.m3u8"))
+
+
+######################  파일 유효성 검사  ######################
+def validate_file(file_path, valid_extension=".mp3"):
+  if not os.path.exists(file_path):
+    log.error(f"파일이 존재하지 않습니다. [{file_path}]")
+    return False
+
+  if not os.path.isfile(file_path):
+    log.error(f"파일이 아닙니다. [{file_path}]")
+    return False
+
+  if not file_path.lower().endswith(valid_extension):
+    log.error(f"잘못된 파일 형식입니다 [{file_path}]")
+    return False
+
+  return True

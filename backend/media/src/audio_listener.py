@@ -9,7 +9,7 @@ from config import MEDIA_TOPIC
 from logger import log
 
 from shared_vars import channels, add_channel
-from segmenter import generate_segment
+from segmenter import generate_segment, generate_segment_from_files
 from kafka_consumer_wrapper import KafkaConsumerWrapper
 
 
@@ -41,32 +41,44 @@ def process_input_audio(msg, loop):
   global channels
   key = msg.key().decode('utf-8')
   value = json.loads(msg.value().decode('utf-8'))
-  new_file_path = value.get('filePath')
-  is_start = value.get('isStart')
-  log.info(f'file [{new_file_path}]')
 
-  if not os.path.exists(new_file_path):
-    log.error(f"파일이 존재하지 않습니다. [{new_file_path}]")
-    return False
-  if not os.path.isfile(new_file_path):
-    log.error(f"파일이 아닙니다. [{new_file_path}]")
-    return False
-  if not new_file_path.lower().endswith('.mp3'):
-    log.error(f"잘못된 파일 형식입니다 [{new_file_path}]")
-    return False
+  # file_info_list = value.get("fileInfo", [])
+  file_info_list = tmp_get_file_info_list(value.get("file_path"))
+  is_start = value.get("isStart", False)
 
   if is_start:
-    add_channel(key, new_file_path, loop)
+    add_channel(
+      channel_name = key,
+      file_info_list = file_info_list,
+      loop=loop
+    )
   else:
-    log.info("음악 추가")
     channel = channels[key]
+    now_index = channel['queue'].last_index
+    
     with channel['queue'].lock:
-      channel['queue'].last_index = generate_segment(
-        channel['hls_path'],            # 세그먼트 생성할 경로
-        new_file_path,                  # 세그먼트 생성할 파일
-        channel['queue'].last_index     # index
+      channel['queue'].last_index = generate_segment_from_files(
+        channel['hls_path'],          # 세그먼트 생성할 경로
+        file_info_list,               # 세그먼트를 생성할 파일
+        now_index                     # 시작 인덱스 번호
       )
       channel['queue'].init_segments_from_directory(
         channel['hls_path'],            # 세그먼트를 가져올 경로
-        channel['queue'].last_index-1   # 세그먼트 파일의 인덱스
+        now_index,                      # 등록할 세그먼트 파일의 인덱스 범위(시작)
+        channel['queue'].last_index     # 등록할 세그먼트 파일의 인덱스 범위(끝)
       )
+
+
+######################  토픽: media_topic 요청 처리  ######################
+def tmp_get_file_info_list(file_path_list):
+  file_info_list = {}
+  file_info_list['fileInfo'] = []
+  for file_path in file_path_list:
+    file_info_list['fileInfo'].append({
+      'filePath': file_path,
+      'fileTitle': '제목',
+      'fileAuthor': '가수',
+      'fileGenre': '장르',
+      'fileCover': 'https://marketplace.canva.com/EAExV2m91mg/1/0/100w/canva-%ED%8C%8C%EB%9E%80%EC%83%89-%EB%B0%A4%ED%95%98%EB%8A%98-%EA%B7%B8%EB%A6%BC%EC%9D%98-%EC%95%A8%EB%B2%94%EC%BB%A4%EB%B2%84-QV0Kn6TPPVw.jpg',
+    })
+  return file_info_list
