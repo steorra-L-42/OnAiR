@@ -7,6 +7,7 @@ from confluent_kafka.admin import AdminClient, NewTopic
 
 import config
 import instance
+from config import max_story_count
 from instance import channel_manager
 
 dlt_queue = deque()  # DLT 전송을 위한 큐 생성
@@ -119,6 +120,10 @@ def add_channel_info_to_story(msg):
 
     # 채널 정보 가져오기
     channel = channel_manager.channels[channel_id]
+
+    if len(channel.playback_queue.queues["story"]) >= max_story_count:
+        logging.warning(f"Queue for story {channel_id} is full. Skipping.")
+        return
 
     # 채널 정보에서 TTS 엔진과 성격(personality) 설정
     tts_engine = channel.tts_engine  # 채널에서 TTS 엔진 정보 가져오기
