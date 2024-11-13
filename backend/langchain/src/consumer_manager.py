@@ -1,8 +1,8 @@
 import logging
 import threading
 
-from src.kafka.kafka_consumer_wrapper import KafkaConsumerWrapper
-import src.instance as instance
+from kafka_consumer_wrapper import KafkaConsumerWrapper
+import instance
 
 # Consumer 생성 및 삭제
 consumers = {}
@@ -20,7 +20,7 @@ def create_consumer(topic, callback):
 
         # 스레드를 사용하여 Consumer 메시지 소비 실행
         consumer_thread = threading.Thread(
-            target=lambda: consumer.consume_messages(),
+            target=lambda: consumer.consume_message(),
             daemon=True
         )
         consumer_thread.start()

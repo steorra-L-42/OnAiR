@@ -3,7 +3,7 @@ import signal
 import time
 
 import instance
-import kafka.consumer_manager as consumer_manager
+import consumer_manager
 
 def handle_shutdown(signum, frame):
     logging.info(f"Received shutdown signal: {signum}. Shutting down...")
