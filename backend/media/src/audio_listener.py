@@ -1,3 +1,4 @@
+import json
 import os.path
 # 외부 패키지
 import threading
@@ -6,7 +7,7 @@ import threading
 from config import MEDIA_TOPIC
 from logger import log
 
-from shared_vars import channels
+from shared_vars import channels, add_channel
 from segmenter import generate_segment
 from kafka_consumer_wrapper import KafkaConsumerWrapper
 
@@ -38,31 +39,35 @@ def create_audio_listener_consumer():
 def process_input_audio(msg):
   global channels
   key = msg.key().decode('utf-8')
-  new_file_path:str = msg.value().decode('utf-8')
-  channel = channels[key]
+  value = json.loads(msg.value().decode('utf-8'))
+  new_file_path = value.get('filePath')
+  is_start = value.get('isStart')
 
   log.info(f'key [{key}]')
-  log.info(f'val [{new_file_path}]')
+  log.info(f'value [{value}]')
+  log.info(f'file [{new_file_path}]')
 
-  if channel == None:
-    log.error(f'잘못된 채널 이름입니다 [{key}]')
-    return
+  if not os.path.exists(new_file_path):
+    log.error(f"파일이 존재하지 않습니다. [{new_file_path}]")
+    return False
   if not os.path.isfile(new_file_path):
-    log.error(f"파일이 존재하지 않거나 잘못된 경로입니다 [{new_file_path}]")
+    log.error(f"파일이 아닙니다. [{new_file_path}]")
     return False
   if not new_file_path.lower().endswith('.mp3'):
     log.error(f"잘못된 파일 형식입니다 [{new_file_path}]")
     return False
 
-  log.info(f'mp3 파일 생성 [{channel["queue"].last_index}]')
-  log.info(f'mp3 파일 생성 [{new_file_path}]')
-
-  channel['queue'].last_index = generate_segment(
-    channel['hls_path'],            # 세그먼트 생성할 경로
-    new_file_path,                  # 세그먼트 생성할 파일
-    channel['queue'].last_index     # index
-  )
-  channel['queue'].init_segments_from_directory(
-    channel['hls_path'],            # 세그먼트를 가져올 경로
-    channel['queue'].last_index-1   # 세그먼트 파일의 인덱스
-  )
+  if is_start:
+    add_channel(key, new_file_path)
+  else:
+    log.info("음악 추가")
+    channel = channels[key]
+    channel['queue'].last_index = generate_segment(
+      channel['hls_path'],            # 세그먼트 생성할 경로
+      new_file_path,                  # 세그먼트 생성할 파일
+      channel['queue'].last_index     # index
+    )
+    channel['queue'].init_segments_from_directory(
+      channel['hls_path'],            # 세그먼트를 가져올 경로
+      channel['queue'].last_index-1   # 세그먼트 파일의 인덱스
+    )

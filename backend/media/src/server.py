@@ -1,4 +1,5 @@
 # 외부 패키지
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, FileResponse
@@ -32,19 +33,22 @@ app.add_middleware(
 async def lifespan(app: FastAPI):
   global channels
   log.info("서버 초기화 루틴 시작")
-  add_channel(BASIC_CHANNEL_NAME)
   consumer = create_audio_listener_consumer()
 
   yield
   log.info("서버 종료 루틴 시작")
   for channel in channels.values():
     channel['queue'].clear()
-    channel['listen'].stop()
-    channel['listen'].join()
+    channel['update_task'].cancel()
+    try:
+      await channel['update_task']
+    except asyncio.CancelledError:
+      log.info(f'채널 제거 완료 [{channel["name"]}]')
+
   del channels
   consumer.stop_event.set()
   consumer.close()
-  log.info("서버 종료")
+  log.info("컨슈머 정지 완료, 서버 종료")
 
 app.router.lifespan_context = lifespan
 
