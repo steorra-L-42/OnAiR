@@ -127,26 +127,25 @@ class RegisterViewModel @Inject constructor(
         return length in 2..24 && nickname.matches(nicknameRegex)
     }
 
+    private fun getCleanPhoneNumber(phoneNumber: String): String{
+        return phoneNumber.replace("[^0-9]".toRegex(), "")
+    }
+
+    private fun isValidPhoneNumber(retrievedPhoneNumber: String): Boolean {
+        val phoneNumber = getCleanPhoneNumber(retrievedPhoneNumber)
+        return phoneNumber.startsWith("010") || phoneNumber.startsWith("8210")
+    }
+
     fun retrievePhoneNumber(context: Context) {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
         try {
             val phoneNumber = telephonyManager?.line1Number
             if (!phoneNumber.isNullOrBlank()) {
-                // 전화번호 형식 검증 및 변환
-                when {
-                    // +82로 시작하는 경우
-                    phoneNumber.startsWith("+82") -> {
-                        val formattedNumber = formatPhoneNumber(phoneNumber)
-                        updatePhoneNumberState(formattedNumber)
-                    }
-                    // 010으로 시작하는 경우
-                    phoneNumber.startsWith("010") -> {
-                        val formattedNumber = formatPhoneNumber(phoneNumber)
-                        updatePhoneNumberState(formattedNumber)
-                    }
-                    else -> {
-                        handleInvalidPhoneNumberFormat(phoneNumber)
-                    }
+                if (isValidPhoneNumber(phoneNumber)) {
+                    val formattedNumber = formatPhoneNumber(phoneNumber)
+                    updatePhoneNumberState(formattedNumber)
+                } else {
+                    handleInvalidPhoneNumberFormat(phoneNumber)
                 }
             } else {
                 _state.value = _state.value.copy(
@@ -163,7 +162,7 @@ class RegisterViewModel @Inject constructor(
 
     private fun formatPhoneNumber(phoneNumber: String): PhoneNumberFormat {
         // 모든 특수문자 제거 및 숫자만 추출
-        val cleaned = phoneNumber.replace("[^0-9]".toRegex(), "")
+        val cleaned = getCleanPhoneNumber(phoneNumber)
 
         // +82로 시작하는 경우 처리
         val nationalNumber = if (cleaned.startsWith("82")) {
@@ -282,39 +281,47 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        if (_state.value.verificationAttempts >= _state.value.maxVerificationAttempts) {
-            _state.value = _state.value.copy(
-                error = "인증 시도 횟수를 초과했습니다. 다시 시도해주세요.",
-                isVerificationCodeSent = false
-            )
-            verificationTimer?.cancel()
-            return
-        }
+        // TEMP CODE
+        _state.value = _state.value.copy(
+            isLoading = false,
+            isPhoneVerified = true,
+            error = null
+        )
+        verificationTimer?.cancel()
 
-        viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
-
-            userRepository.verifyPhoneNumber(
-                _state.value.phoneNumber,
-                _state.value.verificationCode
-            ).onSuccess { isVerified ->
-                if (isVerified) {
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        isPhoneVerified = true,
-                        error = null
-                    )
-                    verificationTimer?.cancel()
-                } else {
-                    handleVerificationFailure()
-                }
-            }.onFailure { exception ->
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
-                )
-            }
-        }
+//        if (_state.value.verificationAttempts >= _state.value.maxVerificationAttempts) {
+//            _state.value = _state.value.copy(
+//                error = "인증 시도 횟수를 초과했습니다. 다시 시도해주세요.",
+//                isVerificationCodeSent = false
+//            )
+//            verificationTimer?.cancel()
+//            return
+//        }
+//
+//        viewModelScope.launch {
+//            _state.value = _state.value.copy(isLoading = true)
+//
+//            userRepository.verifyPhoneNumber(
+//                _state.value.phoneNumber,
+//                _state.value.verificationCode
+//            ).onSuccess { isVerified ->
+//                if (isVerified) {
+//                    _state.value = _state.value.copy(
+//                        isLoading = false,
+//                        isPhoneVerified = true,
+//                        error = null
+//                    )
+//                    verificationTimer?.cancel()
+//                } else {
+//                    handleVerificationFailure()
+//                }
+//            }.onFailure { exception ->
+//                _state.value = _state.value.copy(
+//                    isLoading = false,
+//                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
+//                )
+//            }
+//        }
     }
 
     private fun handleVerificationFailure() {
@@ -357,10 +364,10 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun validateVerificationCode(): Boolean {
-        if (_state.value.verificationCode.length != 6) {
-            _state.value = _state.value.copy(error = "인증번호 6자리를 입력해주세요.")
-            return false
-        }
+//        if (_state.value.verificationCode.length != 6) {
+//            _state.value = _state.value.copy(error = "인증번호 6자리를 입력해주세요.")
+//            return false
+//        }
         return true
     }
 

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.features.statistics"
     compileSdk = 34
 
     defaultConfig {
