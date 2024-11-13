@@ -12,6 +12,7 @@ import me.onair.main.domain.user.error.NotVerifiedPhoneNumberException;
 import me.onair.main.domain.user.error.SMSException;
 import me.onair.main.domain.user.error.UsernameTooShortOrLongException;
 import me.onair.main.domain.user.error.VerificationCodeRequestExceedLimitException;
+import me.onair.main.global.error.CustomException;
 import me.onair.main.global.error.ErrorCode;
 import me.onair.main.global.error.ErrorResponseDto;
 import org.springframework.http.ResponseEntity;
@@ -87,6 +88,12 @@ public class ControllerAdvice {
     public ResponseEntity<ErrorResponseDto> handleNotVerifiedPhoneNumberException(NotVerifiedPhoneNumberException e) {
         log.error("handleNotVerifiedPhoneNumberException", e);
         return getResponse(ErrorCode.NOT_VERIFIED_PHONE_NUMBER);
+    }
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ErrorResponseDto> handleCustomException(CustomException e) {
+        log.error(e.getErrorCode().getMessage());
+        return getResponse(e.getErrorCode());
     }
 
     private ResponseEntity<ErrorResponseDto> getResponse(ErrorCode errorCode) {
