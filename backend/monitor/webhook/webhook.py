@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request, HTTPException
 app = FastAPI()
 
 @app.post("/alert")
-async def alert():
+def alert():
     data = Request.json
     if not data:
         raise HTTPException(status_code=400, detail="Invalid request payload")

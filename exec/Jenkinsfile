@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        BUILD_BRANCH = 'dev'
+        BUILD_BRANCH = 'build/hook'
         LANGCHAIN_PATH = 'backend/langchain'
         MAIN_PATH = 'backend/main'
         STATION_PATH = 'backend/station'
@@ -94,13 +94,6 @@ pipeline {
                         
                         script {
                             docker.build("${DOCKER_REGISTRY}/webhook_image:latest", ".")
-                            sh """
-                                if [ \$(docker ps -q -f name=webhook_container) ]; then
-                                    docker stop webhook_container
-                                    docker rm webhook_container
-                                fi
-                                docker run -d --name webhook_server ${DOCKER_REGISTRY}/webhook_image
-                            """
                         }
                     }
                 }
@@ -112,7 +105,18 @@ pipeline {
             steps {
                 echo "Deploying all services using Docker Compose..."
                 script {
+                    
+                    sh """
+                        if [ \$(docker ps -a -q -f name=webhook_server) ]; then
+                            if [ \$(docker ps -q -f name=webhook_server) ]; then
+                                docker stop webhook_server
+                            fi
+                            docker rm webhook_server
+                        fi &&
 
+                        docker run -d --name webhook_server --network monitoring ${DOCKER_REGISTRY}/webhook_image
+                    """
+                    
                     // env 파일 설정
                     withCredentials([file(credentialsId: 'ENV', variable: 'ENV_FILE_PATH')]) {
                         sh "cp ${ENV_FILE_PATH} .env"
