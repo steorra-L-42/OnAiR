@@ -16,7 +16,7 @@ class OnAirApplication : Application(){
     override fun onCreate() {
         super.onCreate()
 
-        Log.d(TAG, "[모비페이] onCreate: FCM init")
+        Log.d(TAG, "[OnAiR] onCreate: FCM init")
         FirebaseApp.initializeApp(this)
 
         fcmService = FCMService()

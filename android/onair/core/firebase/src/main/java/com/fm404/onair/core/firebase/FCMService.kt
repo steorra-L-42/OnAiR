@@ -101,7 +101,7 @@ class FCMService : FirebaseMessagingService() {
             when (fcmData.type) {
 
                 FCM_TYPE_STORY_CHOSEN -> {
-//                    val intent = Intent("com.kimnlee.mobipay.CLOSE_MENU")
+//                    val intent = Intent("com.fm404.onair.CLOSE_MENU")
 //                    LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
 
                 }
