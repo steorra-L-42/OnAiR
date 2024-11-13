@@ -5,12 +5,14 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.channel.dto.ChannelInfoResponse;
 import me.onair.main.domain.channel.dto.CreateNewChannelKafka;
 import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.channel.dto.CreateNewChannelResponse;
 import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.channel.entity.Dj;
 import me.onair.main.domain.channel.entity.Track;
+import me.onair.main.domain.channel.error.ChannelNotFound;
 import me.onair.main.domain.channel.repository.ChannelRepository;
 import me.onair.main.domain.channel.repository.DjRepository;
 import me.onair.main.domain.channel.repository.TrackRepository;
@@ -18,6 +20,7 @@ import me.onair.main.domain.user.dto.CustomUserDetails;
 import me.onair.main.domain.user.entity.User;
 import me.onair.main.domain.user.error.NotExistUserException;
 import me.onair.main.domain.user.repository.UserRepository;
+import me.onair.main.global.error.ErrorCode;
 import me.onair.main.kafka.enums.Topics;
 import me.onair.main.kafka.producer.KafkaProducer;
 import org.springframework.stereotype.Service;
@@ -65,5 +68,10 @@ public class ChannelService {
             kafkaMessage.toJson()
         );
         return CreateNewChannelResponse.from(channel);
+    }
+
+    public ChannelInfoResponse getChannelInfo(String channelId) {
+        Channel channel = channelRepository.findByUuid(channelId).orElseThrow(() -> new ChannelNotFound(ErrorCode.CHANNEL_NOT_FOUND));
+        return ChannelInfoResponse.from(channel);
     }
 }
