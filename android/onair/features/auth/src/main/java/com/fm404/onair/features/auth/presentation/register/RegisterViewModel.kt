@@ -14,12 +14,14 @@ import kotlinx.coroutines.flow.*
 import android.content.Context
 import android.telephony.TelephonyManager
 import android.util.Log
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
 
 private const val TAG = "RegisterViewModel"
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val navigationContract: AuthNavigationContract
 ) : ViewModel() {
     private val _state = MutableStateFlow(RegisterState())
     val state = _state.asStateFlow()
@@ -273,6 +275,16 @@ class RegisterViewModel @Inject constructor(
                         error = exception.message ?: "인증번호 요청 중 오류가 발생했습니다."
                     )
                 }
+
+//            // 테스트를 위해 항상 성공 응답 처리
+//            _state.value = _state.value.copy(
+//                isLoading = false,
+//                isVerificationCodeSent = true,
+//                remainingTimeSeconds = 180,
+//                verificationAttempts = 0,
+//                verificationCode = "",
+//                error = null
+//            )
         }
     }
 
@@ -281,47 +293,46 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        // TEMP CODE
-        _state.value = _state.value.copy(
-            isLoading = false,
-            isPhoneVerified = true,
-            error = null
-        )
-        verificationTimer?.cancel()
+        if (_state.value.verificationAttempts >= _state.value.maxVerificationAttempts) {
+            _state.value = _state.value.copy(
+                error = "인증 시도 횟수를 초과했습니다. 다시 시도해주세요.",
+                isVerificationCodeSent = false
+            )
+            verificationTimer?.cancel()
+            return
+        }
 
-//        if (_state.value.verificationAttempts >= _state.value.maxVerificationAttempts) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
+
+            userRepository.verifyPhoneNumber(
+                _state.value.phoneNumber,
+                _state.value.verificationCode
+            ).onSuccess { isVerified ->
+                if (isVerified) {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        isPhoneVerified = true,
+                        error = null
+                    )
+                    verificationTimer?.cancel()
+                } else {
+                    handleVerificationFailure()
+                }
+            }.onFailure { exception ->
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
+                )
+            }
+
+//            // 테스트를 위해 항상 성공 처리
 //            _state.value = _state.value.copy(
-//                error = "인증 시도 횟수를 초과했습니다. 다시 시도해주세요.",
-//                isVerificationCodeSent = false
+//                isLoading = false,
+//                isPhoneVerified = true,
+//                error = null
 //            )
-//            verificationTimer?.cancel()
-//            return
-//        }
-//
-//        viewModelScope.launch {
-//            _state.value = _state.value.copy(isLoading = true)
-//
-//            userRepository.verifyPhoneNumber(
-//                _state.value.phoneNumber,
-//                _state.value.verificationCode
-//            ).onSuccess { isVerified ->
-//                if (isVerified) {
-//                    _state.value = _state.value.copy(
-//                        isLoading = false,
-//                        isPhoneVerified = true,
-//                        error = null
-//                    )
-//                    verificationTimer?.cancel()
-//                } else {
-//                    handleVerificationFailure()
-//                }
-//            }.onFailure { exception ->
-//                _state.value = _state.value.copy(
-//                    isLoading = false,
-//                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
-//                )
-//            }
-//        }
+        }
     }
 
     private fun handleVerificationFailure() {
@@ -399,6 +410,7 @@ class RegisterViewModel @Inject constructor(
                             isLoading = false,
                             error = null
                         )
+                        navigationContract.navigateToBroadcastList()
                     }.onFailure { loginException ->
                         _state.value = _state.value.copy(
                             isLoading = false,
