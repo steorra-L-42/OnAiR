@@ -21,20 +21,35 @@ import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.graphics.drawable.IconCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.fm404.onair.core.contract.auth.FCMServiceContract
 import com.fm404.onair.data.remote.api.auth.UserApi
+import com.fm404.onair.domain.model.auth.FCMTokenRequest
+import com.fm404.onair.domain.repository.auth.UserRepository
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val FCM_TYPE_STORY_CHOSEN = "story_chosen"
 
 private const val TAG = "FCMService"
-class FCMService : FirebaseMessagingService() {
+
+@Singleton
+@AndroidEntryPoint
+class FCMService : FirebaseMessagingService(), FCMServiceContract {
+    @Inject
+    lateinit var userRepository: UserRepository
+
 
     private lateinit var mNotificationManager: NotificationManagerCompat
 
@@ -55,7 +70,7 @@ class FCMService : FirebaseMessagingService() {
 
     }
 
-    fun getToken(callback: (String) -> Unit) {
+    override fun getToken(callback: (String) -> Unit) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val token = task.result
@@ -63,7 +78,7 @@ class FCMService : FirebaseMessagingService() {
                 callback(token)
             } else {
                 Log.w(TAG, "Fetching FCM token failed", task.exception)
-                callback("Failed")
+                callback("")
             }
         }
     }
@@ -156,20 +171,15 @@ class FCMService : FirebaseMessagingService() {
     }
 
     private fun sendTokenToServer(token: String) {
-//        val call = backendService?.registerToken(token)
-//        call?.enqueue(object : Callback<Void> {
-//            override fun onResponse(call: Call<Void>, response: Response<Void>) {
-//                if (response.isSuccessful) {
-//                    Log.d(TAG, "onResponse: FCM 토큰 정상 등록됨")
-//                } else {
-//                    Log.d(TAG, "onResponse: FCM 토큰 등록 실패")
-//                }
-//            }
-//
-//            override fun onFailure(call: Call<Void>, t: Throwable) {
-//                Log.d(TAG, "onFailure: FCM 토큰 서버 통신 오류 \n${Log.getStackTraceString(t)}")
-//            }
-//        })
+        CoroutineScope(Dispatchers.IO).launch {
+            userRepository.registerFCMToken(FCMTokenRequest(fcmToken = token))
+                .onSuccess {
+                    Log.d(TAG, "FCM 토큰 정상 등록됨")
+                }
+                .onFailure { exception ->
+                    Log.d(TAG, "FCM 토큰 등록 실패: ${exception.message}")
+                }
+        }
     }
 
     fun sendCarNotification(title: String, content: String) {

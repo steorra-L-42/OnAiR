@@ -1,12 +1,16 @@
 package com.fm404.onair.core.network.interceptor
 
 import com.fm404.onair.core.network.annotation.PublicApi
+import com.fm404.onair.core.network.manager.TokenManager
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import retrofit2.Invocation
 import javax.inject.Inject
 
-class AuthInterceptor @Inject constructor() : Interceptor {
+class AuthInterceptor @Inject constructor(
+    private val tokenManager: TokenManager
+) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
 
@@ -16,31 +20,22 @@ class AuthInterceptor @Inject constructor() : Interceptor {
             ?.any { it is PublicApi }
             ?: false
 
-        val requestBuilder = request.newBuilder().apply {
+        // 새로운 request builder 생성
+        val newRequest = request.newBuilder().apply {
             // 기본 헤더 추가
             addHeader("Content-Type", "application/json")
             addHeader("Accept", "application/json")
 
             // Public API가 아닌 경우에만 토큰 추가
             if (!isPublicApi) {
-                // 토큰 관리 로직이 구현되기 전까지는 예외를 발생시키지 않음
-                // TODO: TokenManager 구현 후 아래 로직으로 변경
-                /*
-                getToken()?.let { token ->
-                    addHeader("Authorization", "Bearer $token")
-                } ?: throw UnauthorizedException("Authentication token is required but not found")
-                */
+                runBlocking {
+                    tokenManager.getAccessTokenBlocking()?.let { token ->
+                        addHeader("Authorization", token)
+                    }
+                }
             }
-        }
+        }.build()
 
-        return chain.proceed(requestBuilder.build())
-    }
-
-    private fun getToken(): String? {
-        // TokenManager나 DataStore에서 토큰 가져오기
-        // TODO: 실제 구현 필요
-        return null
+        return chain.proceed(newRequest)
     }
 }
-
-class UnauthorizedException(message: String) : Exception(message)

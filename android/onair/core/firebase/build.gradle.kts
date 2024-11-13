@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.material)
     implementation(project(":core:common"))
     implementation(project(":data"))
+    implementation(project(":domain"))
+    implementation(project(":core:contract"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
