@@ -20,7 +20,7 @@ ACTOR_EMOTIONS = {
     ],
     "제롬": ["normal-1", "normal-2", "normal-3", "normal-4"],
     "현지": ["normal-1", "normal-2", "normal-3", "normal-4"],
-    "은빈": ["normal-1", "normal-2", "normal-3", "normal-4"]
+    "은빈": ["happy-1", "happy-2", "soft-1", "soft-2", "normal-1", "normal-2"]
 }
 
 # Actor 별로 다른 API 토큰 설정
@@ -135,8 +135,8 @@ def get_tts(value, channel_id, content_type):
     #     speak_v2_url = response_data.get("result", {}).get("speak_v2_url")
     #     if speak_v2_url:
     #         speak_id = speak_v2_url.split('/')[-1]
-    #         audio_path = download_audio(speak_id, token, channel_id, content_type)
-    #         return audio_path
+    #         audio_info = download_audio(speak_id, token, channel_id, content_type)
+    #         return audio_info
     #     else:
     #         logging.error(f"Failed to get speak_v2_url: {response_data}")
     # else:
@@ -144,8 +144,8 @@ def get_tts(value, channel_id, content_type):
 
     ## 테스트용
     speak_id = "67321dc699ff75f1fc28b89a"
-    audio_path = download_audio(speak_id, token, channel_id, content_type)
-    return audio_path
+    audio_info = download_audio(speak_id, token, channel_id, content_type)
+    return audio_info
 
 
 def download_audio(speak_id, token, channel, content_type):
@@ -165,11 +165,15 @@ def download_audio(speak_id, token, channel, content_type):
             status = result.get("status")
 
             if status == "done":
+                print(result
+                      )
                 audio_url = result.get("audio_download_url")
                 if audio_url:
                     logging.info(f"Download URL: {audio_url}")
                     file_path = save_audio_file(audio_url, channel, content_type)
-                    return file_path
+                    length = result.get("duration")
+                    return {"file_path": file_path, "length": length}
+
             elif status == "progress":
                 logging.info("Synthesis in progress. Waiting 5 seconds...")
                 time.sleep(5)
@@ -211,4 +215,4 @@ def save_audio_file(audio_url, channel_id, content_type):
         return output_file
     else:
         logging.error(f"Failed to download audio: {response.status_code}, {response.text}")
-        return None
+        return
