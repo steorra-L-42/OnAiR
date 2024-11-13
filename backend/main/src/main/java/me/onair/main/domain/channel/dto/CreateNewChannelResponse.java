@@ -13,11 +13,12 @@ import me.onair.main.domain.channel.entity.Channel;
 @Getter
 public class CreateNewChannelResponse {
 
+    private String channelUuid;
     private LocalDateTime start;
     private LocalDateTime end;
     private Boolean isDefault;
 
     public static CreateNewChannelResponse from(Channel channel) {
-        return new CreateNewChannelResponse(channel.getStart(), channel.getEnd(), channel.getIsDefault());
+        return new CreateNewChannelResponse(channel.getUuid(), channel.getStart(), channel.getEnd(), channel.getIsDefault());
     }
 }
