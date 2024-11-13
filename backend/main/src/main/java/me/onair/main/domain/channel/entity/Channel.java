@@ -57,10 +57,6 @@ public class Channel {
     private User user;
 
     @OneToOne
-    @JoinColumn(name = "audio_feature_id")
-    private AudioFeature audioFeature;
-
-    @OneToOne
     @JoinColumn(name = "dj_id")
     private Dj dj;
 
@@ -69,10 +65,6 @@ public class Channel {
 
     public void changeDj(Dj dj) {
         this.dj = dj;
-    }
-
-    public void changeAudioFeature(AudioFeature audioFeature) {
-        this.audioFeature = audioFeature;
     }
 
     public void changeUser(User user) {
