@@ -43,30 +43,30 @@ def process_input_audio(msg, loop):
   value = json.loads(msg.value().decode('utf-8'))
 
   # file_info_list = value.get("fileInfo", [])
-  file_info_list = tmp_get_file_info_list(value.get("file_path"))
+  file_info_list = tmp_get_file_info_list(value.get("filePath"))
   is_start = value.get("isStart", False)
 
   if is_start:
     add_channel(
       channel_name = key,
-      file_info_list = file_info_list,
+      file_info_list = file_info_list.get("fileInfo"),
       loop=loop
     )
   else:
     channel = channels[key]
     now_index = channel['queue'].last_index
-    
+
     with channel['queue'].lock:
       channel['queue'].last_index = generate_segment_from_files(
-        channel['hls_path'],          # 세그먼트 생성할 경로
-        file_info_list,               # 세그먼트를 생성할 파일
-        now_index                     # 시작 인덱스 번호
+        channel['hls_path'],            # 세그먼트 생성할 경로
+        file_info_list.get("fileInfo"), # 세그먼트를 생성할 파일
+        now_index                       # 시작 인덱스 번호
       )
-      channel['queue'].init_segments_from_directory(
-        channel['hls_path'],            # 세그먼트를 가져올 경로
-        now_index,                      # 등록할 세그먼트 파일의 인덱스 범위(시작)
-        channel['queue'].last_index     # 등록할 세그먼트 파일의 인덱스 범위(끝)
-      )
+    channel['queue'].init_segments_from_directory(
+      channel['hls_path'],            # 세그먼트를 가져올 경로
+      now_index,                      # 등록할 세그먼트 파일의 인덱스 범위(시작)
+      channel['queue'].last_index     # 등록할 세그먼트 파일의 인덱스 범위(끝)
+    )
 
 
 ######################  토픽: media_topic 요청 처리  ######################

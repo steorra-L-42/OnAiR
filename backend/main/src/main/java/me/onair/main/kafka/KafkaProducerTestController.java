@@ -30,7 +30,27 @@ public class KafkaProducerTestController {
 
     @GetMapping("/publish/media-topic")
     public CompletableFuture<String> publishToMediaTopicTest() {
-        String message = "{\"filePath\":\"C:/heodongwon/3. 자율/S11P31D204/backend/station/medias/start.mp3\", \"isStart\":\"true\", \"fileTitle\":\"시작\",\"fileAuthor\":\"\",\"fileGenre\":\"시작멘트\",\"fileCover\":\"\"}";
+        String message = "{ \"filePath\": [ \"C:/tmp/start.mp3\", \"C:/tmp/supersonic.mp3\" ], \"isStart\": true }";
+
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
+            Topics.MEDIA.getName(),
+            "channel_2",
+            message
+        );
+
+        return future.thenApply(result -> {
+            log.info("레코드 전송 성공 = [{}] with offset=[{}]", message, result.getRecordMetadata().offset());
+            return "success";
+        }).exceptionally(ex -> {
+            log.error("레코드 보낼 수 없음=[{}] due to : {}", message, ex.getMessage());
+            return "fail";
+        });
+    }
+
+
+    @GetMapping("/publish/media-topic2")
+    public CompletableFuture<String> publishToMediaTopicTest2() {
+        String message = "{ \"filePath\": [ \"C:/tmp/ETA.mp3\", \"C:/tmp/up.mp3\" ], \"isStart\": false }";
 
         CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
             Topics.MEDIA.getName(),

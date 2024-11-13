@@ -44,11 +44,11 @@ def generate_segment(hls_path, file_info, last_index):
   ]
 
   process = subprocess.Popen(
-      ffmpeg_command,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      universal_newlines=True,
-      encoding='utf-8'
+    ffmpeg_command,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    universal_newlines=True,
+    encoding='utf-8'
   )
 
   stdout, stderr = process.communicate()
@@ -137,18 +137,18 @@ def get_audio_duration(channel, segment_name):
   segment_path = os.path.join(channel['hls_path'], segment_name)
   try:
     result = subprocess.run(
-        [
-          'ffprobe',
-          '-v', 'error',
-          '-show_entries', 'format=duration',
-          '-of', 'default=noprint_wrappers=1:nokey=1',
-          segment_path
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-        text=True,
-        encoding='utf-8'
+      [
+        'ffprobe',
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        segment_path
+      ],
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      universal_newlines=True,
+      text=True,
+      encoding='utf-8'
     )
     return float(result.stdout.strip())
   except Exception as e:
