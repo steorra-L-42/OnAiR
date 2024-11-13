@@ -1,6 +1,7 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from threading import Thread, current_thread, Event
 
 from content_provider import ContentProvider
 from dj import DJ
@@ -12,6 +13,8 @@ from play_back_queue import PlaybackQueue
 class Channel:
     def __init__(self, channel_id, config):
         # 필드 정의
+        self.broadcast_thread = None
+        self.stop_event = Event()
         self.channel_id = channel_id
         self.start_time = datetime.now()
         self.is_default = config.get("isDefault")
@@ -54,6 +57,12 @@ class Channel:
         self.playback_queue.playlist.append(filepath)
         logging.info(f"Added '{filepath}' to playlist")
 
+    def process_broadcast(self):
+        """dynamic_schedule_manager의 process_broadcast를 호출"""
+        self.broadcast_thread = Thread(target=self.schedule_manager.process_broadcast,
+                                       daemon=True)
+        self.broadcast_thread.start()
+
     def stop(self):
         """채널 종료 및 모든 관련 리소스 정리"""
         logging.info(f"Channel {self.channel_id} is stopping...")
@@ -77,5 +86,11 @@ class Channel:
         if hasattr(self.schedule_manager, 'stop'):
             self.schedule_manager.stop()
             logging.info("Scheduler stopped.")
+
+        # 5. 방송 스레드 종료
+        self.stop_event.set()
+        if self.broadcast_thread and self.broadcast_thread is not current_thread():
+            self.broadcast_thread.join()
+            logging.info("Broadcast_thread stopped.")
 
         logging.info(f"Channel {self.channel_id} has been successfully stopped.")

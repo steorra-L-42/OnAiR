@@ -27,7 +27,7 @@ class ChannelManager:
             self.produce_channel_start(channel_id)
             logging.info(f"Channel {channel_id} created.")
             # 방송 시작
-            self.channels[channel_id].schedule_manager.process_broadcast()
+            self.channels[channel_id].process_broadcast()
 
         else:
             # 채널_id 충돌.
