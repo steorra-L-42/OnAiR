@@ -20,6 +20,7 @@ import com.fm404.onair.core.designsystem.theme.OnAirTheme
 import com.fm404.onair.core.navigation.component.BottomNavBar
 import com.fm404.onair.core.navigation.graph.MainNavGraph
 import com.fm404.onair.core.navigation.model.NavRoute
+import com.fm404.onair.core.network.manager.TokenManager
 import com.fm404.onair.presentation.main.screen.home.HomeScreenHolder
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -47,6 +48,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var broadcastNavigationContract: BroadcastNavigationContract
 
+    @Inject
+    lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -60,7 +64,8 @@ class MainActivity : ComponentActivity() {
                     statisticsScreen = statisticsScreen,
                     statisticsNavigationContract = statisticsNavigationContract,
                     broadcastScreen = broadcastScreen,
-                    broadcastNavigationContract = broadcastNavigationContract
+                    broadcastNavigationContract = broadcastNavigationContract,
+                    tokenManager = tokenManager
                 )
             }
         }
@@ -76,9 +81,19 @@ private fun MainScreen(
     statisticsScreen: StatisticsScreen,
     statisticsNavigationContract: StatisticsNavigationContract,
     broadcastScreen: BroadcastScreen,
-    broadcastNavigationContract: BroadcastNavigationContract
+    broadcastNavigationContract: BroadcastNavigationContract,
+    tokenManager: TokenManager
 ) {
     val navController = rememberNavController()
+    var startDestination by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        startDestination = if (tokenManager.hasValidToken()) {
+            NavRoute.MainSection.Home.route
+        } else {
+            AuthNavigationContract.GRAPH_AUTH
+        }
+    }
 
     LaunchedEffect(navController) {
         authNavigationContract.setNavController(navController)
@@ -86,22 +101,29 @@ private fun MainScreen(
         broadcastNavigationContract.setNavController(navController)
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            BottomNavBar(
-                navController = navController
-            )
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            MainNavGraph(
-                navController = navController,
-                homeScreen = homeScreen,
-                authScreen = authScreen,
-                statisticsScreen = statisticsScreen,
-                broadcastScreen = broadcastScreen
-            )
+    // startDestination이 설정된 후에만 NavHost를 표시
+    if (startDestination.isNotEmpty()) {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            bottomBar = {
+                // 로그인 화면일 때는 BottomBar를 숨김
+                if (startDestination != AuthNavigationContract.GRAPH_AUTH) {
+                    BottomNavBar(
+                        navController = navController
+                    )
+                }
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                MainNavGraph(
+                    navController = navController,
+                    startDestination = startDestination,
+                    homeScreen = homeScreen,
+                    authScreen = authScreen,
+                    statisticsScreen = statisticsScreen,
+                    broadcastScreen = broadcastScreen
+                )
+            }
         }
     }
 }
