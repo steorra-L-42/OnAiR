@@ -86,8 +86,8 @@ object NetworkModule {
             .cookieJar(JavaNetCookieJar(CookieManager().apply {
                 setCookiePolicy(CookiePolicy.ACCEPT_ALL)
             }))
-            .addInterceptor(loggingInterceptor)
             .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor)
             .addInterceptor(errorHandlingInterceptor)
             .addInterceptor(tokenReissueInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)

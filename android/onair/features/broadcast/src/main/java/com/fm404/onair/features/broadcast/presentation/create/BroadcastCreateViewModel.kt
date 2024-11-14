@@ -2,6 +2,7 @@ package com.fm404.onair.features.broadcast.presentation.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fm404.onair.core.contract.broadcast.BroadcastNavigationContract
 import com.fm404.onair.domain.usecase.broadcast.broadcast.CreateChannelUseCase
 import com.fm404.onair.features.broadcast.presentation.create.state.BroadcastCreateEvent
 import com.fm404.onair.features.broadcast.presentation.create.state.BroadcastCreateState
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BroadcastCreateViewModel @Inject constructor(
-    private val createChannelUseCase: CreateChannelUseCase
+    private val createChannelUseCase: CreateChannelUseCase,
+    private val broadcastNavigationContract: BroadcastNavigationContract
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BroadcastCreateState(
@@ -50,9 +52,9 @@ class BroadcastCreateViewModel @Inject constructor(
                 personality = currentState.personality,
                 topic = currentState.topic,
                 playList = currentState.playList
-            ).onSuccess {
+            ).onSuccess { createChannelResult ->
                 _state.update { it.copy(isLoading = false) }
-                // TODO: 성공 처리 (네비게이션)
+                broadcastNavigationContract.navigateToBroadcastDetail(createChannelResult.channelId)
             }.onFailure { exception ->
                 _state.update {
                     it.copy(
