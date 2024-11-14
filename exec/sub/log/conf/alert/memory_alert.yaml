@@ -1,0 +1,22 @@
+groups:
+  - name: memory_alerts
+    rules:
+      # 메인 인스턴스 (node-main) 경고 설정
+      - alert: LowAvailableMemory_Main
+        expr: (node_memory_MemFree_bytes{instance="huchuman.on-air.me:9100"} < 3 * 1024 * 1024 * 1024)
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Main instance has low available memory"
+          description: "Main instance available memory is below 3GB."
+
+      # 추가 인스턴스 (node-sub) 경고 설정
+      - alert: LowAvailableMemory_Sub
+        expr: (node_memory_MemFree_bytes{instance="node-exporter:9100"} < 600 * 1024 * 1024)
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Sub instance has low available memory"
+          description: "Sub instance available memory is below 600MB."
