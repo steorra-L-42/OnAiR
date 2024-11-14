@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.user.entity.User;
 
 @Entity
@@ -29,7 +30,7 @@ public class Story {
     @Column(name = "title", nullable = false, length = 50)
     private String title;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, length = 400)
     private String content;
 
     @Column(name = "reply", columnDefinition = "TEXT")
@@ -42,6 +43,10 @@ public class Story {
     @OneToOne(mappedBy = "story")
     private StoryMusic storyMusic;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
+
     private Story(String title, String content) {
         this.title = title;
         this.content = content;
@@ -52,18 +57,26 @@ public class Story {
     }
 
     public void setUser(User user) {
-        if(this.user != null) {
+        if (this.user != null) {
             this.user.getStories().remove(this);
         }
         this.user = user;
         user.getStories().add(this);
     }
 
-    public void changeStoryMusic(StoryMusic storyMusic){
+    public void setChannel(Channel channel) {
+        if (this.channel != null) {
+            this.channel.getStories().remove(this);
+        }
+        this.channel = channel;
+        channel.getStories().add(this);
+    }
+
+    public void changeStoryMusic(StoryMusic storyMusic) {
         this.storyMusic = storyMusic;
     }
 
-    public void saveReply(String reply){
+    public void saveReply(String reply) {
         this.reply = reply;
     }
 
