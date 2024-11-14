@@ -189,9 +189,9 @@ def download_audio(speak_id, token, channel, content_type):
 
 
 def save_audio_file(audio_url, channel_id, content_type):
-    # 프로젝트 루트 경로를 설정
-    project_root = Path(__file__).resolve().parent.parent.parent  # 프로젝트 루트 경로
-    output_filepath = project_root / "station" / "medias" / channel_id / content_type
+    # medias 경로 설정
+    src_path = Path(__file__).resolve().parent
+    output_filepath = src_path / "medias" / channel_id / content_type
 
     # 디렉토리 생성 (존재하지 않으면)
     output_filepath.mkdir(parents=True, exist_ok=True)

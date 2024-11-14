@@ -11,9 +11,9 @@ class DJ:
         self.playback_queue = playback_queue
 
     def produce_channel_start(self, channel_id):
-        project_root = Path(__file__).resolve().parent.parent.parent
+        src_path = Path(__file__).resolve().parent
 
-        start_filepath = project_root / "station" / "medias" / "start.mp3"
+        start_filepath = src_path / "medias" / "start.mp3"
         value = json.dumps({
             "filePath": str(start_filepath),
             "isStart": True

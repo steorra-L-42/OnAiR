@@ -24,9 +24,9 @@ def download_from_keyword(title, artist, channel_id, content_type):
     # 출력 파일 이름 설정
     safe_filename = "".join(c if c.isalnum() or c in ["-", " "] else "" for c in keyword)
 
-    # medias 디렉토리의 절대 경로 설정 (프로젝트 루트 기준)
-    project_root = Path(__file__).resolve().parent.parent.parent  # backend 디렉토리의 상위
-    output_filepath = project_root / "station" / "medias" / channel_id / content_type
+    # medias 경로 설정
+    src_path = Path(__file__).resolve().parent
+    output_filepath = src_path / "medias" / channel_id / content_type
     output_filename = output_filepath / f"{safe_filename}.mp3"
 
     # 경로가 존재하지 않으면 생성
