@@ -154,7 +154,7 @@ fun BroadcastDetailScreen(
 //                        contentDescription = "Previous"
 //                    )
 //                }
-                IconButton(onClick = { /* TODO: Handle play/pause action */ }) {
+                IconButton(onClick = { viewModel.onEvent(BroadcastDetailEvent.ToggleStreaming) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.play),
                         contentDescription = "Play/Pause"
