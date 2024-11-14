@@ -1,0 +1,69 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - prometheus_data:/prometheus  # 데이터 보존을 위한 볼륨
+      - /exec/log/conf/prometheus.yaml:/etc/prometheus/prometheus.yaml  # Prometheus 설정 파일
+      - /exec/log/conf/alert:/etc/prometheus/alert
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--web.route-prefix=/prometheus/'
+    networks:
+      - nginx
+      - monitoring
+    container_name: prometheus
+    depends_on:
+      - alertmanager
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - grafana_data:/var/lib/grafana  # 데이터 보존을 위한 볼륨
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # 기본 Grafana 관리자 비밀번호 (필요에 따라 변경 가능)
+      - GF_SERVER_ROOT_URL=/grafana
+    networks:
+      - nginx
+      - monitoring
+    container_name: grafana
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.systemd'
+      - '--collector.processes'
+    networks:
+      - nginx
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    volumes:
+      - /exec/log/conf/alertmanager.yaml:/etc/alertmanager/alertmanager.yaml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yaml'
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+      driver: bridge
+      name: monitoring
+  nginx:
+    external: true
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
