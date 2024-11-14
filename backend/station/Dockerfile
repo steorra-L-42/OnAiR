@@ -1,4 +1,4 @@
-FROM python:3.12.5
+FROM python:3.12
 ENV PYTHONENCODING=utf-8
 
 # 작업 디렉토리 설정
