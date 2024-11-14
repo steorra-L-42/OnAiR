@@ -51,6 +51,7 @@ dependencies {
     api(libs.gson)
     api(libs.retrofit)
     api(libs.okhttp)
+    api(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -52,12 +52,13 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.runtime)
     implementation(libs.hilt.android)
-    implementation(project(":core:contract"))
     implementation(libs.androidx.navigation.compose)
-    implementation(project(":domain"))
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(project(":core:media"))
+    implementation(project(":core:common"))
+    implementation(project(":core:contract"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:media"))
+    implementation(project(":domain"))
 
 
     implementation (libs.exoplayer)
