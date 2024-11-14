@@ -118,36 +118,45 @@ class BroadcastDetailViewModel @Inject constructor(
     }
 
     private fun initializePlayer() {
-//        player = ExoPlayer.Builder(getApplication()).build().apply {
-////            val mediaItem = MediaItem.fromUri("http://wonyoung.on-air.me:8000/channel/channel_1/index.m3u8")
-//            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
-//            val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
-//                .createMediaSource(mediaItem)
-//            setMediaSource(mediaSource)
-//            prepare()
-//            play()
-//        }
+        player = ExoPlayer.Builder(getApplication()).build().apply {
+//            val mediaItem = MediaItem.fromUri("http://wonyoung.on-air.me:8000/channel/channel_1/index.m3u8")
+            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+            val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
+                .createMediaSource(mediaItem)
+            setMediaSource(mediaSource)
+            prepare()
+            play()
+        }
 
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
-                10 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
-                15 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
-                1000,  // Minimum buffer before playback starts or resumes
-                5000   // Minimum buffer for stable playback without interruptions
-            )
-            .build()
+//        val loadControl = DefaultLoadControl.Builder()
+//            .setBufferDurationsMs(
+//                10 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
+//                15 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
+//                1000,  // Minimum buffer before playback starts or resumes
+//                5000   // Minimum buffer for stable playback without interruptions
+//            )
+//            .build()
 
-        player = ExoPlayer.Builder(getApplication())
-            .setLoadControl(loadControl)  // Set custom load control here
-            .build()
-            .apply {
-                val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
-                val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
-                    .createMediaSource(mediaItem)
-                setMediaSource(mediaSource)
-                prepare()
-                play()
-            }
+//        val loadControl = DefaultLoadControl.Builder()
+//            .setBufferDurationsMs(
+//                20000,
+//                50000,
+//                1000,
+//                3000
+//            )
+//            .build()
+//
+//        player = ExoPlayer.Builder(getApplication())
+//            .setLoadControl(loadControl)  // Set custom load control here
+//            .build()
+//            .apply {
+//                val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+//                val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
+//                    .createMediaSource(mediaItem)
+//                setMediaSource(mediaSource)
+//                prepare()
+//                play()
+//            }
     }
 
     private fun releasePlayer() {
