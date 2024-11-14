@@ -113,9 +113,6 @@ pipeline {
                         // SSH로 EC2에 접속하여 docker-compose 명령어 실행
                         withCredentials([sshUserPrivateKey(credentialsId: 'MAIN_SSH_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
                             // EC2로 SSH 접속하여 Docker Compose 실행
-                                
-                            sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
-                            
                             
                             sh """
                                 chmod 600 $SSH_KEY_FILE
