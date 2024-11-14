@@ -5,6 +5,7 @@ from pathlib import Path
 from pytubefix import YouTube
 from youtubesearchpython import VideosSearch
 
+from path_util import get_medias_path
 
 def download_from_keyword(title, artist, channel_id, content_type):
     keyword = f"{title} - {artist}"
@@ -25,8 +26,10 @@ def download_from_keyword(title, artist, channel_id, content_type):
     safe_filename = "".join(c if c.isalnum() or c in ["-", " "] else "" for c in keyword)
 
     # medias 경로 설정
-    src_path = Path(__file__).resolve().parent
-    output_filepath = src_path / "medias" / channel_id / content_type
+    current_dir = os.getcwd()
+    medias_path = get_medias_path(current_dir)
+
+    output_filepath = medias_path / channel_id / content_type
     output_filename = output_filepath / f"{safe_filename}.mp3"
 
     # 경로가 존재하지 않으면 생성

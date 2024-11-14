@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 from instance import producer
+from path_util import get_medias_path
 
 
 class DJ:
@@ -11,9 +12,10 @@ class DJ:
         self.playback_queue = playback_queue
 
     def produce_channel_start(self, channel_id):
-        src_path = Path(__file__).resolve().parent
+        current_dir = os.getcwd()
+        medias_path = get_medias_path(current_dir)
 
-        start_filepath = src_path / "medias" / "start.mp3"
+        start_filepath = medias_path / "start.mp3"
         value = json.dumps({
             "filePath": str(start_filepath),
             "isStart": True
