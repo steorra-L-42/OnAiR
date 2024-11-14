@@ -11,6 +11,9 @@ import me.onair.main.kafka.producer.KafkaProducer;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,28 +33,16 @@ public class KafkaProducerTestController {
         return sendMessageToKafka(message);
     }
 
-    @GetMapping("/publish/media-topic")
-    public CompletableFuture<String> publishToMediaTopicTest() {
-        String message = "{ \"filePath\": [ \"C:/tmp/start.mp3\", \"C:/tmp/supersonic.mp3\" ], \"isStart\": true }";
+    @PostMapping("/publish/media-topic/{channelName}")
+    public CompletableFuture<String> publishToMediaTopicTestTest(
+        @PathVariable String channelName, @RequestBody String message) {
+
         return kafkaProducer.sendMessageToKafka(
             Topics.MEDIA,
-            "channel_2",
+            channelName,
             message
         );
     }
-
-
-    @GetMapping("/publish/media-topic2")
-    public CompletableFuture<String> publishToMediaTopicTest2() {
-        String message = "{ \"filePath\": [ \"C:/tmp/ETA.mp3\", \"C:/tmp/up.mp3\" ], \"isStart\": false }";
-        return kafkaProducer.sendMessageToKafka(
-            Topics.MEDIA,
-            "channel_2",
-            message
-        );
-    }
-
-
 
     private String createMessage() {
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
