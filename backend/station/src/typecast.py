@@ -1,13 +1,14 @@
 import json
 import logging
+import os
 import time
 import uuid
 from datetime import datetime
-from pathlib import Path
 
 import requests
 
 import config
+from path_util import get_medias_path
 
 # Actor 별 지원하는 emotion presets 설정
 ACTOR_EMOTIONS = {
@@ -170,7 +171,9 @@ def download_audio(speak_id, token, channel, content_type):
                     logging.info(f"Download URL: {audio_url}")
                     file_path = save_audio_file(audio_url, channel, content_type)
                     length = result.get("duration")
-                    return {"file_path": file_path, "length": length}
+                    return {"file_path": file_path,
+                            "length": length,
+                            "type": content_type}
 
             elif status == "progress":
                 logging.info("Synthesis in progress. Waiting 5 seconds...")
@@ -189,9 +192,11 @@ def download_audio(speak_id, token, channel, content_type):
 
 
 def save_audio_file(audio_url, channel_id, content_type):
-    # 프로젝트 루트 경로를 설정
-    project_root = Path(__file__).resolve().parent.parent.parent  # 프로젝트 루트 경로
-    output_filepath = project_root / "station" / "medias" / channel_id / content_type
+    # medias 경로 설정
+    current_dir = os.getcwd()
+    medias_path = get_medias_path(current_dir)
+
+    output_filepath = medias_path / channel_id / content_type
 
     # 디렉토리 생성 (존재하지 않으면)
     output_filepath.mkdir(parents=True, exist_ok=True)
