@@ -109,9 +109,10 @@ private fun MainScreen(
         Scaffold(
             modifier = modifier.fillMaxSize(),
             bottomBar = {
-                // 현재 route가 login인 경우에만 BottomBar 숨김
+                // 현재 route가 login이나 register인 경우 BottomBar 숨김
                 val currentDestination = currentRoute?.destination?.route
-                if (currentDestination != AuthNavigationContract.ROUTE_LOGIN) {
+                if (currentDestination != AuthNavigationContract.ROUTE_LOGIN &&
+                    currentDestination != AuthNavigationContract.ROUTE_REGISTER) {
                     BottomNavBar(
                         navController = navController
                     )
