@@ -12,12 +12,14 @@ from config import SEGMENT_FILE_INDEX_START, SEGMENT_FILE_INDEX_END, SEGMENT_FIL
 
 ######################  ts 관리 큐  ######################
 class SegmentQueue:
-  def __init__(self, hls_path, last_index):
-    self.queue = deque()
+  def __init__(self, hls_path, metadata:list):
     self.lock = Lock()
+    self.queue = deque()
     self.buffer = deque(maxlen=int(SEGMENT_LIST_SIZE)-1)
-    self.init_segments_from_directory(hls_path, 0, last_index)
-    self.last_index = last_index
+    self.metadata = metadata
+
+    self.init_segments_from_directory(hls_path, 0, len(metadata))
+    self.last_index = len(metadata)
 
   def enqueue(self, index, number):
     with self.lock:
@@ -58,5 +60,20 @@ class SegmentQueue:
   def get_next_index(self):
     return self.last_index
 
+  def get_now_playing(self):
+    return self.metadata[0]
+
+  def add_metadata(self, file_info):
+    self.metadata.append(file_info)
+
+  def add_metadata_all(self, file_info_list):
+    for file_info in file_info_list:
+      self.add_metadata(file_info)
+
+  def get_metadata_from_index_and_column(self, index, column):
+    return self.metadata[index][column]
+
   def clear(self):
     self.queue.clear()
+    self.buffer.clear()
+    self.metadata.clear()
