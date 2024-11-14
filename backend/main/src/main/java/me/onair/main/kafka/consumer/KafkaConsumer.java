@@ -1,14 +1,23 @@
 package me.onair.main.kafka.consumer;
 
+import com.google.gson.Gson;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.story.service.StoryService;
+import me.onair.main.kafka.dto.StoryReplyDto;
 import me.onair.main.kafka.enums.Topics;
+import me.onair.main.kafka.enums.Topics.NAMES;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class KafkaConsumer {
+
+    private final StoryService storyService;
+    private final Gson gson;
 
     // Value 값만 Consume
 //    @KafkaListener(topics = Topics.NAMES.TEST)
@@ -41,5 +50,17 @@ public class KafkaConsumer {
 
         // Kafa Dead Letter Topic 테스트
 //        throw new IllegalArgumentException();
+    }
+
+    @KafkaListener(topics = NAMES.STORY_REPLY)
+    public void consumeStoryReplyTopic(ConsumerRecord<String, String> record) {
+        log.info("[consume message]: key - {}, value - {}", record.key(), record.value());
+
+        String key = record.key();
+        String value = record.value();
+        StoryReplyDto storyReplyDto = gson.fromJson(value, StoryReplyDto.class);
+
+        storyService.addStoryReply(key, storyReplyDto);
+        log.info("Success to add story reply");
     }
 }

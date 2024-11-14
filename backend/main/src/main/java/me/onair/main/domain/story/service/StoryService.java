@@ -1,11 +1,15 @@
 package me.onair.main.domain.story.service;
 
+import static me.onair.main.global.error.ErrorCode.CHANNEL_MISMATCH;
 import static me.onair.main.global.error.ErrorCode.CHANNEL_NOT_FOUND;
 import static me.onair.main.global.error.ErrorCode.ENDED_CHANNEL;
+import static me.onair.main.global.error.ErrorCode.STORY_NOT_FOUND;
+import static me.onair.main.global.error.ErrorCode.STORY_REPLY_ALREADY_EXIST;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.channel.entity.Channel;
+import me.onair.main.domain.channel.error.ChannelMismatchException;
 import me.onair.main.domain.channel.error.ChannelNotFoundException;
 import me.onair.main.domain.channel.error.EndedChannelException;
 import me.onair.main.domain.channel.repository.ChannelRepository;
@@ -14,12 +18,15 @@ import me.onair.main.domain.story.dto.StoryCreateRequest;
 import me.onair.main.domain.story.dto.StoryCreateRequest.Music;
 import me.onair.main.domain.story.entity.Story;
 import me.onair.main.domain.story.entity.StoryMusic;
+import me.onair.main.domain.story.error.StoryNotFoundException;
+import me.onair.main.domain.story.error.StoryReplyAlreadyExistException;
 import me.onair.main.domain.story.repository.StoryMusicRepository;
 import me.onair.main.domain.story.repository.StoryRepository;
 import me.onair.main.domain.user.dto.CustomUserDetails;
 import me.onair.main.domain.user.entity.User;
 import me.onair.main.domain.user.error.NotExistUserException;
 import me.onair.main.domain.user.repository.UserRepository;
+import me.onair.main.kafka.dto.StoryReplyDto;
 import me.onair.main.kafka.enums.Topics;
 import me.onair.main.kafka.producer.KafkaProducer;
 import org.springframework.stereotype.Service;
@@ -121,5 +128,45 @@ public class StoryService {
                 channel.getUuid(),
                 kafkaMessage.toJson()
         );
+    }
+
+    // KafKa Story Reply Consume
+    @Transactional
+    public void addStoryReply(String key, StoryReplyDto storyReplyDto) {
+        log.info("StoryService.addStoryReply: {}", storyReplyDto);
+
+        Channel channel = getChannelByUuid(key); // 채널 검증
+        Story story = getStoryById(storyReplyDto.getStoryId()); // 존재하는 사연인지 검증
+        validateStoryReply(story); // 사연의 답변이 이미 있는지 검증
+        validateStoryChannel(story, channel); // 사연의 채널이 Key값의 채널과 같은지 검증
+
+        story.saveReply(storyReplyDto.getStoryReply()); // 사연의 답변 저장
+    }
+
+    // 채널 find, 검증
+    private Channel getChannelByUuid(String key) {
+        return channelRepository.findByUuid(key)
+                .orElseThrow(() -> new ChannelNotFoundException(CHANNEL_NOT_FOUND));
+    }
+
+    // 사연 find, 검증
+    private Story getStoryById(Long storyId) {
+        return storyRepository.findById(storyId)
+                .orElseThrow(() -> new StoryNotFoundException(STORY_NOT_FOUND));
+    }
+
+    // 사연 답변 검증
+    private void validateStoryReply(Story story) {
+        if (story.getReply() != null) {
+            throw new StoryReplyAlreadyExistException(STORY_REPLY_ALREADY_EXIST);
+        }
+    }
+
+    // key값의 Channel, Story와 연결된 Channel이 같은지 검증
+    private void validateStoryChannel(Story story, Channel channel) {
+        String storyChannelUuid = story.getChannel().getUuid();
+        if (!storyChannelUuid.equals(channel.getUuid())) {
+            throw new ChannelMismatchException(CHANNEL_MISMATCH);
+        }
     }
 }
