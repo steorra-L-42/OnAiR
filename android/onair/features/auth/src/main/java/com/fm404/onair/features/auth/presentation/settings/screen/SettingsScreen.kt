@@ -45,13 +45,6 @@ fun SettingsScreen(
         (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(navController)
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            Log.d("Settings", "Clearing NavController in SettingsScreen")
-            (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(null)
-        }
-    }
-
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
