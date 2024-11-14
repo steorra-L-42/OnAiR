@@ -22,6 +22,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
+import me.onair.main.domain.story.entity.Story;
 import me.onair.main.domain.user.entity.User;
 import me.onair.main.domain.user.enums.Role;
 
@@ -68,25 +69,12 @@ public class Channel {
     @OneToMany(mappedBy = "channel")
     private List<Track> tracks = new ArrayList<>();
 
-    public void changeDj(Dj dj) {
-        this.dj = dj;
-    }
-
-    public void changeUser(User user) {
-        if (this.user != null) {
-            this.user.getChannels().remove(this);
-        }
-        this.user = user;
-        user.getChannels().add(this);
-    }
-
-    public void changeThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
-    }
+    @OneToMany(mappedBy = "channel")
+    private List<Story> stories = new ArrayList<>();
 
     @Builder
     private Channel(String uuid, String channelName, Boolean isDefault, String thumbnail,
-        LocalDateTime start, LocalDateTime end, Boolean isEnded) {
+                    LocalDateTime start, LocalDateTime end, Boolean isEnded) {
         this.uuid = uuid;
         this.channelName = channelName;
         this.isDefault = isDefault;
@@ -105,15 +93,35 @@ public class Channel {
         LocalDateTime end = isDefault ? LocalDateTime.now().plusDays(1) : LocalDateTime.now().plusHours(2);
 
         Channel channel = Channel.builder()
-            .uuid(uuidString)
-            .channelName(request.getChannelName())
-            .isDefault(isDefault)
-            .thumbnail(request.getThumbnail())
-            .start(LocalDateTime.now())
-            .end(end)
-            .isEnded(false)
-            .build();
+                .uuid(uuidString)
+                .channelName(request.getChannelName())
+                .isDefault(isDefault)
+                .thumbnail(request.getThumbnail())
+                .start(LocalDateTime.now())
+                .end(end)
+                .isEnded(false)
+                .build();
         channel.changeUser(user);
         return channel;
+    }
+
+    public void changeDj(Dj dj) {
+        this.dj = dj;
+    }
+
+    public void changeUser(User user) {
+        if (this.user != null) {
+            this.user.getChannels().remove(this);
+        }
+        this.user = user;
+        user.getChannels().add(this);
+    }
+
+    public void changeThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
+    public void endChannel() {
+        this.isEnded = true;
     }
 }
