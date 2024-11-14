@@ -9,7 +9,7 @@ import os
 
 # 내부 패키지
 from audio_listener import create_audio_listener_consumer
-from dir_utils import clear_hls_path
+from file_utils import clear_hls_path
 from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR
 from logger import log
 

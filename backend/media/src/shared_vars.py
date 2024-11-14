@@ -8,7 +8,7 @@ from config import SEGMENT_LIST_SIZE
 
 from segment_queue import SegmentQueue
 from segmenter import generate_segment_from_files, write_m3u8, update_m3u8
-from dir_utils import dir_setup
+from file_utils import dir_setup
 
 ######################  공유 변수 초기화  ######################
 channels = {}

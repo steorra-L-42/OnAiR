@@ -13,8 +13,8 @@ from config import SEGMENT_FILE_INDEX_START, SEGMENT_FILE_INDEX_END, SEGMENT_FIL
 ######################  ts 관리 큐  ######################
 class SegmentQueue:
   def __init__(self, hls_path, last_index):
-    self.queue = deque()
     self.lock = Lock()
+    self.queue = deque()
     self.buffer = deque(maxlen=int(SEGMENT_LIST_SIZE)-1)
     self.init_segments_from_directory(hls_path, 0, last_index)
     self.last_index = last_index

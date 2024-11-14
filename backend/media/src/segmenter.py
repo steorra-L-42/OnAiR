@@ -7,7 +7,7 @@ import aiofiles
 from logger import log
 from config import STREAMING_CHANNELS
 from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
-from dir_utils import validate_file
+from file_utils import validate_file
 
 ######################  여러 파일 -> 세그먼트  ######################
 def generate_segment_from_files(hls_path, file_info_list, last_index):
