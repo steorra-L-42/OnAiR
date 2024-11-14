@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.kafka.enums.Topics;
+import me.onair.main.kafka.producer.KafkaProducer;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class KafkaProducerTestController {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaProducer kafkaProducer;
 
     @GetMapping("/publish/test-topic")
     public CompletableFuture<String> publishToTestTopic() {
@@ -31,40 +33,22 @@ public class KafkaProducerTestController {
     @GetMapping("/publish/media-topic")
     public CompletableFuture<String> publishToMediaTopicTest() {
         String message = "{ \"filePath\": [ \"C:/tmp/start.mp3\", \"C:/tmp/supersonic.mp3\" ], \"isStart\": true }";
-
-        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
-            Topics.MEDIA.getName(),
+        return kafkaProducer.sendMessageToKafka(
+            Topics.MEDIA,
             "channel_2",
             message
         );
-
-        return future.thenApply(result -> {
-            log.info("레코드 전송 성공 = [{}] with offset=[{}]", message, result.getRecordMetadata().offset());
-            return "success";
-        }).exceptionally(ex -> {
-            log.error("레코드 보낼 수 없음=[{}] due to : {}", message, ex.getMessage());
-            return "fail";
-        });
     }
 
 
     @GetMapping("/publish/media-topic2")
     public CompletableFuture<String> publishToMediaTopicTest2() {
         String message = "{ \"filePath\": [ \"C:/tmp/ETA.mp3\", \"C:/tmp/up.mp3\" ], \"isStart\": false }";
-
-        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
-            Topics.MEDIA.getName(),
+        return kafkaProducer.sendMessageToKafka(
+            Topics.MEDIA,
             "channel_2",
             message
         );
-
-        return future.thenApply(result -> {
-            log.info("레코드 전송 성공 = [{}] with offset=[{}]", message, result.getRecordMetadata().offset());
-            return "success";
-        }).exceptionally(ex -> {
-            log.error("레코드 보낼 수 없음=[{}] due to : {}", message, ex.getMessage());
-            return "fail";
-        });
     }
 
 
