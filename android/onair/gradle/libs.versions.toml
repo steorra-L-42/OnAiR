@@ -42,6 +42,7 @@ kotlinxCoroutinesAndroid = "1.9.0"
 coilCompose = "2.7.0"
 okhttpUrlconnection = "5.0.0-alpha.14"
 firebaseMessagingKtx = "24.0.3"
+media3CommonKtx = "1.4.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -92,6 +93,7 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
 okhttp-urlconnection = { group = "com.squareup.okhttp3", name = "okhttp-urlconnection", version.ref = "okhttpUrlconnection" }
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
+androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
