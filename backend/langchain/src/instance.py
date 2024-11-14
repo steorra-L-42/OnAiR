@@ -2,7 +2,6 @@ import logging
 
 from kafka_producer_wrapper import KafkaProducerWrapper
 from dispatcher import Dispatcher
-from scheduler import Scheduler
 
 from domain.story.story_service import StoryService
 from domain.story.story_controller import StoryController
@@ -10,10 +9,14 @@ from domain.weather.weather_service import WeatherService
 from domain.weather.weather_controller import WeatherController
 from domain.news.news_service import NewsService
 from domain.news.news_controller import NewsController
+
+from scheduler import Scheduler
 from domain.weather.weather_crawler import WeatherCrawler
 from domain.news.news_crawler import NewsCrawler
 
 # 인스턴스 생성 주입 및 관리 클래스
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+logging.info("Initializing instance...")
 producer = KafkaProducerWrapper()
 
 story_service = StoryService()

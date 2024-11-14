@@ -9,6 +9,7 @@ class KafkaProducerWrapper:
     def __init__(self):
         self.producer = Producer({"bootstrap.servers": config.bootstrap_server})
         self.lock = threading.Lock()
+        logging.info("ProducerWrapper initialized.")
 
     def send_message(self, topic, key, value, headers=None):
         try:

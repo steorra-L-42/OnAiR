@@ -6,6 +6,7 @@ class Dispatcher:
         self.story_controller = story_controller
         self.weather_controller = weather_controller
         self.news_controller = news_controller
+        logging.info("Dispatcher initialized.")
     
     def consume_story_with_channel_info_topic(self, msg):
         # 메시지 처리
@@ -23,7 +24,7 @@ class Dispatcher:
             logging.error(f"Error processing message: {e}")
             raise e
 
-    def consume_contents_request_topic(msg):
+    def consume_contents_request_topic(self, msg):
         # 메시지 처리
         try:
             value = json.loads(msg.value().decode('utf-8'))
