@@ -57,15 +57,21 @@ def process_input_audio(msg, loop):
     now_index = channel['queue'].last_index
 
     with channel['queue'].lock:
+      # 'queue'에 메타데이터 저장
+      channel['queue'].add_metadata_all(file_info_list.get("fileInfo"))
+      
+      # 세그먼트 파일 생성
       channel['queue'].last_index = generate_segment_from_files(
         channel['hls_path'],            # 세그먼트 생성할 경로
         file_info_list.get("fileInfo"), # 세그먼트를 생성할 파일
         now_index                       # 시작 인덱스 번호
       )
+    
+    # 'queue'에 세그먼트 파일 저장
     channel['queue'].init_segments_from_directory(
-      channel['hls_path'],            # 세그먼트를 가져올 경로
-      now_index,                      # 등록할 세그먼트 파일의 인덱스 범위(시작)
-      channel['queue'].last_index     # 등록할 세그먼트 파일의 인덱스 범위(끝)
+      channel['hls_path'],              # 세그먼트를 가져올 경로
+      now_index,                        # 등록할 세그먼트 파일의 인덱스 범위(시작)
+      channel['queue'].last_index       # 등록할 세그먼트 파일의 인덱스 범위(끝)
     )
 
 

@@ -23,17 +23,19 @@ def add_channel(channel_name, file_info_list, loop):
   log.info(f"채널을 추가합니다 [{channel_name}] at [{channel_path}]")
   
   # 초기 세그먼트 생성
-  last_index = generate_segment_from_files(
+  metadata_list = generate_segment_from_files(
     hls_path,
     file_info_list,
     last_index = 0
   )
+  if(len(metadata_list) == 0):
+    log.info(f"초기 제공 음성 파일이 모두 유효하지 않거나 없습니다. 채널 생성 취소 [{channel_name}]")
 
   # channels 변수에 추가
   # 세그먼트 큐 생성 및 초기화(기본 세그먼트 삽입)
   channels[channel_name] = {
     'name': channel_name,
-    'queue': SegmentQueue(hls_path, last_index), # 방금 만든 세그먼트들 넣기
+    'queue': SegmentQueue(hls_path, metadata_list),  # 세그먼트 폴더 경로랑 몇번까지 있는지 넣으면 알아서 초기화함
     'channel_path': channel_path,
     'hls_path': hls_path,
     'playlist_path': playlist_path
