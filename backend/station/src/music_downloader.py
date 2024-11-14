@@ -2,7 +2,6 @@ import logging
 import os
 from pathlib import Path
 
-from mutagen.mp3 import MP3
 from pytubefix import YouTube
 from youtubesearchpython import VideosSearch
 
@@ -46,13 +45,3 @@ def download_from_keyword(title, artist, channel_id, content_type):
             logging.info("No audio stream available for this video.")
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-
-
-def get_audio_length(file_path):
-    """MP3 파일의 길이를 반환하는 함수 (mutagen 사용)"""
-    try:
-        audio = MP3(file_path)
-        return audio.info.length  # 파일의 길이를 반환
-    except Exception as e:
-        logging.error(f"Error getting audio length: {e}")
-        return None
