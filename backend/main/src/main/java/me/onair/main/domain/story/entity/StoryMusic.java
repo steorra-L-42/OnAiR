@@ -31,21 +31,25 @@ public class StoryMusic {
     @Column(name = "artist", nullable = false, length = 150)
     private String artist;
 
+    @Column(name = "cover_url", nullable = false, columnDefinition = "TEXT")
+    private String coverUrl;
+
     @OneToOne
     @JoinColumn(name = "story_id")
     private Story story;
 
-    private StoryMusic(String title, String artist) {
+    private StoryMusic(String title, String artist, String coverUrl) {
         this.title = title;
         this.artist = artist;
+        this.coverUrl = coverUrl;
     }
 
-    public static StoryMusic of(String title, String artist) {
-        return new StoryMusic(title, artist);
+    public static StoryMusic of(String title, String artist, String coverUrl) {
+        return new StoryMusic(title, artist, coverUrl);
     }
 
     public void setStory(Story story) {
-        if(this.story != null) {
+        if (this.story != null) {
             this.story.changeStoryMusic(null);
         }
         this.story = story;
