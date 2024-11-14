@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.auth.AuthScreen
@@ -87,6 +88,8 @@ private fun MainScreen(
     val navController = rememberNavController()
     var startDestination by remember { mutableStateOf("") }
 
+    val currentRoute by navController.currentBackStackEntryAsState()
+
     LaunchedEffect(Unit) {
         startDestination = if (tokenManager.hasValidToken()) {
             NavRoute.MainSection.Home.route
@@ -106,8 +109,9 @@ private fun MainScreen(
         Scaffold(
             modifier = modifier.fillMaxSize(),
             bottomBar = {
-                // 로그인 화면일 때는 BottomBar를 숨김
-                if (startDestination != AuthNavigationContract.GRAPH_AUTH) {
+                // 현재 route가 login인 경우에만 BottomBar 숨김
+                val currentDestination = currentRoute?.destination?.route
+                if (currentDestination != AuthNavigationContract.ROUTE_LOGIN) {
                     BottomNavBar(
                         navController = navController
                     )
