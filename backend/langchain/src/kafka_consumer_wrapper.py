@@ -4,6 +4,7 @@ from collections import deque
 
 from confluent_kafka import Consumer
 from confluent_kafka.admin import AdminClient, NewTopic
+from threading import Event
 
 import config
 import instance
@@ -14,6 +15,7 @@ class KafkaConsumerWrapper:
     def __init__(self, topic, on_message_callback):
         self.topic = topic
         self.on_message_callback = on_message_callback
+        self.stop_event = Event()
 
         # Kafka consumer settings
         self.consumer = Consumer({
@@ -40,8 +42,7 @@ class KafkaConsumerWrapper:
         self.consumer.subscribe([self.topic])
         logging.info(f"Subscribed to topic '{self.topic}'")
 
-        # TODO : while not self.stop_event.is_set()로 수정
-        while True:
+        while not self.stop_event.is_set():
             msg = None
             try:
                 # poll 단계에서 메시지 소비
