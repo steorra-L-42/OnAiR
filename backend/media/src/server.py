@@ -23,11 +23,11 @@ app = FastAPI()
 
 ######################  CORS 설정  ######################
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+  CORSMiddleware,
+  allow_origins=["*"],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
 )
 
 
@@ -73,7 +73,7 @@ async def get_streams():
   return JSONResponse({
     "status": "success",
     "streams": channels["channel_1"]["queue"].get_all_segments()
-})
+  })
 
 
 ######################  API: .m3u8 파일 조회  ######################
@@ -124,4 +124,4 @@ def add_metadata_to_response_header(headers, channel_name, index):
 
 
 def get_metadata_and_encode_latin1(queue:SegmentQueue, index, column):
-  return queue.get_metadata_from_index_and_column(index, column).encode('utf-8').decode('latin-1')
+  return queue.get_metadata_from_index(index, column).encode('utf-8').decode('latin-1')

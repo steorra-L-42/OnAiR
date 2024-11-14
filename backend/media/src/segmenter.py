@@ -2,35 +2,36 @@ import asyncio
 import os
 import subprocess
 import time
-from collections import deque
+from intervaltree import Interval, IntervalTree
 
 import aiofiles
 
 from logger import log
-from config import STREAMING_CHANNELS
 from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
 from file_utils import validate_file
 
 ######################  여러 파일 -> 세그먼트  ######################
-def generate_segment_from_files(hls_path, file_info_list, last_index):
-  metadata = []
+def generate_segment_from_files(hls_path, file_info_list, start):
+  metadata = IntervalTree()
+  next_start = start
 
   for file_info in file_info_list:
     if not validate_file(file_info.get("filePath")):
       continue
-    metadata.append(file_info)
-    last_index = generate_segment(hls_path, file_info, last_index)
 
-  return metadata
+    start, next_start = generate_segment(hls_path, file_info, next_start)
+    metadata[start: next_start] = file_info
+  return metadata, next_start  # 세그먼트화 한 파일들의 메타데이터와 마지막 index 값 전달
 
 
 ######################  파일 -ffmpeg-> 세그먼트  ######################
-def generate_segment(hls_path, file_info, last_index):
+def generate_segment(hls_path, file_info, start):
   log.info(f'세그먼트 생성 시작 [{file_info.get("fileTitle")}]')
+  dummy_path = f"{hls_path}/dummy.m3u8"
 
   ffmpeg_command = [
     'ffmpeg',
-    '-loglevel', 'info',
+    '-loglevel', 'verbose',
     '-i', file_info.get("filePath"),
     '-c:a', 'aac',
     '-b:a', '128k',
@@ -39,9 +40,10 @@ def generate_segment(hls_path, file_info, last_index):
     '-f', 'hls',
     '-hls_time', str(SEGMENT_DURATION),
     '-hls_list_size', '0',
+    '-hls_flags', 'append_list',
     '-hls_segment_type', 'mpegts',
-    '-hls_segment_filename', os.path.join(hls_path, f'segment_{last_index:04d}%5d.ts'),
-    os.path.join(STREAMING_CHANNELS, "channel_1/dummy.m3u8")
+    '-hls_segment_filename', os.path.join(hls_path, f'segment_%06d.ts'),
+    dummy_path
   ]
 
   process = subprocess.Popen(
@@ -51,14 +53,23 @@ def generate_segment(hls_path, file_info, last_index):
     universal_newlines=True,
     encoding='utf-8'
   )
-
   stdout, stderr = process.communicate()
+
+  try:
+    with open(dummy_path, mode="rb") as f:
+      f.seek(-33, 2)
+      last_line = f.readline().decode('utf-8').strip()
+      log.info(f"읽은 줄 [{last_line}]")
+      end = int(last_line[8:14])
+  except Exception as e:
+    log.error(e)
+
   if process.returncode == 0:
     log.info(f"세그먼트 생성 완료 [{file_info.get("fileTitle")}]")
-    return last_index+1
+    return start, end+1
   else:
     log.error(f"세그먼트 생성 실패 [{file_info.get("fileTitle")}\n{stderr}]")
-    return last_index
+    return start, start
 
 
 
@@ -73,7 +84,7 @@ async def write_m3u8(channel, m3u8_path, segments: list):
     "#EXTM3U\n",
     "#EXT-X-VERSION:3\n",
     f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n",
-    f'#EXT-X-MEDIA-SEQUENCE:{segments[0][0]}{segments[0][1]:05d}\n'
+    f'#EXT-X-MEDIA-SEQUENCE:{segments[0]:06d}\n'
   ]
   m3u8_lines.extend(get_m3u8_seg_list(channel, segments))
 
@@ -86,19 +97,23 @@ async def write_m3u8(channel, m3u8_path, segments: list):
 ###################### m3u8 작성: segment list 가져오기 ######################
 def get_m3u8_seg_list(channel, segments):
   playlist_lines = []
-  previous_index = segments[0][0]
-  for index, number in segments:
-    if previous_index != index:
-      ### 다음 파일 전환, duration 수정
+  previous_index = segments[0]
+  metadata = channel['queue'].metadata
+
+  # 등록할 세그먼트 리스트를 순회하면서 파일을 작성함
+  for segment_index in segments:
+
+    ### 다음 파일 전환시, duration 수정(마지막 세그먼트 길이가 2초 등 정해진 길이라는 보장이 없음)
+    if metadata[segment_index] & metadata[previous_index]:
       duration = get_audio_duration(channel, playlist_lines[-1].strip())
       playlist_lines[-2] = playlist_lines[-2].replace(str(SEGMENT_DURATION), str(duration))
       ### discontinuity 추가
-      playlist_lines.append("#EXT-X-DISCONTINUITY\n")
+      # playlist_lines.append("#EXT-X-DISCONTINUITY\n")
 
     # 세그먼트 리스트 작성
     playlist_lines.append(f"#EXTINF:{SEGMENT_DURATION},\n")
-    playlist_lines.append(f"segment_{index:04d}{number:05d}.ts\n")
-    previous_index = index
+    playlist_lines.append(f"segment_{segment_index:06d}.ts\n")
+    previous_index = segment_index
   return playlist_lines
 
 
@@ -114,7 +129,7 @@ async def update_m3u8(channel):
     start_time = time.perf_counter()
 
     # 저장할 세그먼트 리스트 조회
-    segments = channel['queue'].get_buffer()
+    segments = channel['queue'].get_buffer_list()
     segments.extend(channel['queue'].dequeue(SEGMENT_UPDATE_SIZE))
 
     # index_temp.m3u8 작성
