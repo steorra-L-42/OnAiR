@@ -52,7 +52,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material)
     implementation(libs.androidx.runtime)
-    implementation(libs.coil.compose)
+    implementation(project(":core:common"))
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.ui.tooling)
     testImplementation(libs.junit)
