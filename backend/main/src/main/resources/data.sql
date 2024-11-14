@@ -1,4 +1,4 @@
-INSERT INTO user (fcm_token_id, phone_number, nickname, username, password, role, profile_path)
+INSERT IGNORE INTO user (fcm_token_id, phone_number, nickname, username, password, role, profile_path)
 VALUES (NULL, '01062966409', 'test000', 'test000', '$2a$10$rSZOHWJi1HVyqt2DKwq0CewmxwG7YMqiRDz.62LfZYDyiDWsbtIFS',
         'ROLE_USER',
         'https://i.namu.wiki/i/MD2QdCJ3W0DvXgUHI8u_dUbdo1y5H_jFBx5w0d8XhTPPbjO8kJeHcvVR6_hOsvHGxhhrKqlGkZvqk744wwYtvtWqyfs3OmXrJ-6B5zLP11S7LglORDjvx3BUS57PCAeRNDfKOCRyYH3VDMdENcMmig.webp'),

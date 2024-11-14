@@ -1,12 +1,11 @@
 import asyncio
-import json
 import logging
 from datetime import datetime, timedelta
 from threading import Thread, Event, current_thread
 
 import schedule
 
-from instance import channel_manager, producer
+from instance import channel_manager
 
 
 class DynamicScheduleManager:
@@ -96,26 +95,30 @@ class DynamicScheduleManager:
             # story -> news -> weather -> playlist 순서로 콘텐츠 송출
             for struct_name, struct in [("story", story_queue), ("news", news_queue),
                                         ("weather", weather_queue), ("playlist", playlist)]:
-                file_info = None
+                file_infos = None
 
-                if struct and struct != playlist:
-                    file_info = struct.pop()  # 큐에서 하나 꺼내기
-                    logging.info(f"Processing from {struct_name} queue: {file_info}")
+                if struct_name == "story" and struct:
+                    file_infos = struct.pop()
+                    logging.info(f"Processing from {struct_name} queue: {file_infos}")
+
+                elif struct_name in ["news", "weather"] and struct:
+                    file_infos = struct.pop()  # 큐에서 하나 꺼내기
+                    logging.info(f"Processing from {struct_name} queue: {file_infos}")
 
                 elif struct == playlist and playlist:
-                    file_info = playlist[self.playlist_index]
+                    file_infos = playlist[self.playlist_index]
                     self.playlist_index = (self.playlist_index + 1) % len(playlist)  # 순환 인덱스
-                    logging.info(f"Processing from {struct_name} playlist: {file_info}")
+                    logging.info(f"Processing from {struct_name} playlist: {file_infos}")
 
-                if file_info:
+                if file_infos:
                     # 콘텐츠 송출 (Kafka에 보내기)
-                    self.produce_contents(file_info.get("file_path"))
+                    file_paths = [str(file_info.get("file_path")) for file_info in file_infos]  # file_path 리스트 생성
+                    file_lengths = sum(file_info.get("length") for file_info in file_infos)  # file_lengths 합산
 
-                    # buffering_time 유지를 위해 length만큼 thread sleep
-                    file_length = file_info.get("length")
-                    logging.info(f"Sleeping for File length: {file_length}")
-                    self.async_sleep(file_length)  # 동기 함수에서 비동기 대기 호출
-                    logging.info(f"Done sleeping for File length: {file_length}")
+                    self.dj.produce_contents(file_paths)
+                    logging.info(f"Sleeping for File length: {file_lengths}")
+                    self.async_sleep(file_lengths)
+                    logging.info(f"Done sleeping for File length: {file_lengths}")
 
     def async_sleep(self, duration):
         """동기 함수 내에서 비동기 대기 처리"""
@@ -128,18 +131,8 @@ class DynamicScheduleManager:
     def process_first_music(self, playlist):
         first_music = playlist[self.playlist_index]
         self.playlist_index += 1
-        self.buffering_time = first_music.get("length")
-        self.produce_contents(first_music.get("file_path"))
-
-    def produce_contents(self, file_path):
-        """콘텐츠를 Kafka에 송출"""
-        value = json.dumps({
-            "filePath": str(file_path),
-            "isStart": False
-        }, ensure_ascii=False)
-        producer.send_message("media_topic",
-                              self.channel.channel_id.encode("utf-8"),
-                              value.encode("utf-8"))
+        self.buffering_time = first_music[0].get("length")
+        self.dj.produce_contents(first_music[0].get("file_path"))
 
     def stop(self):
         """스케줄러 종료 및 리소스 정리"""

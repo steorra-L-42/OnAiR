@@ -16,7 +16,7 @@ class SegmentQueue:
     self.queue = deque()
     self.lock = Lock()
     self.buffer = deque(maxlen=int(SEGMENT_LIST_SIZE)-1)
-    self.init_segments_from_directory(hls_path)
+    self.init_segments_from_directory(hls_path, 0, last_index)
     self.last_index = last_index
 
   def enqueue(self, index, number):
@@ -35,13 +35,14 @@ class SegmentQueue:
     self.buffer.extend(starmap(lambda index,number: (index,number), segments))
     return segments
 
-  def init_segments_from_directory(self, hls_path, index=-1):
+  def init_segments_from_directory(self, hls_path, start_index = 0, last_index = 0):
     list = sorted(os.listdir(hls_path))
     for file_name in list:
       file_index = int(file_name[SEGMENT_FILE_INDEX_START:SEGMENT_FILE_INDEX_END])
       file_number = int(file_name[SEGMENT_FILE_NUMBER_START:SEGMENT_FILE_NUMBER_END])
 
-      if index == -1 or index == file_index:
+      index_range = range(start_index, last_index)
+      if file_index in index_range:
         self.enqueue(file_index, file_number)
 
   def get_all_segments(self):
