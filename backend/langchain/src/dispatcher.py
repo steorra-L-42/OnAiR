@@ -17,8 +17,7 @@ class Dispatcher:
             channel_id = msg.key().decode('utf-8')
             logging.info(f"Received story with channel info for {channel_id}")
 
-            # TODO : 구현
-            # controller로 전달
+            self.story_controller.process(channel_id, value)
 
         except Exception as e:
             logging.error(f"Error processing message: {e}")
@@ -33,10 +32,10 @@ class Dispatcher:
             channel_id = msg.key().decode('utf-8')
             logging.info(f"Received contents request for {channel_id}")
 
-            # TODO : 구현
-            # contents type에 따라서 다른 처리를 수행
-            # weather_controller
-            # news_controller
+            if(value['contentType'] == 'weather'):
+                self.weather_controller.process(channel_id, value)
+            elif(value['contentType'] == 'news'):
+                self.news_controller.process(channel_id, value)
 
         except Exception as e:
             logging.error(f"Error processing message: {e}")

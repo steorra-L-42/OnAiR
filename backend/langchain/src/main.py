@@ -21,7 +21,6 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, handle_shutdown)
 
     consumer_manager.create_consumers()
-
     producer = instance.producer
 
     try:
