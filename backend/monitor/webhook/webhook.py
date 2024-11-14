@@ -21,19 +21,24 @@ async def alert(request: Request):
             
             # 서브시스템의 문제 처리
             if alert_name == "LowAvailableMemory_Sub":
-                clear_cache()
+                clear_cache("sub")
             
-            # TODO: 메인 시스템의 문제 처리
+            # 메인 시스템의 문제 처리
             elif alert_name == "LowAvailableMemory_Main":
-                pass
+                clear_cache("main")
 
         return {"status": "success"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
 
-def clear_cache():
-    os.system("sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches")
+def clear_cache(server):
+    if server == "sub":
+        os.system("ssh -i {SUB_SERVER} ubuntu@faker.on-air.me 'sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches'")
+    elif server == "main":
+        os.system("ssh -i {MAIN_SERVER} ubuntu@wonyoung.on-air.me 'sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches'")
+
+    print("정리완료")
 
 if __name__ == "__main__":
     import uvicorn
