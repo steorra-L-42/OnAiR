@@ -31,10 +31,10 @@ public enum ErrorCode {
 
     //채널
     CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "Channel Not Found", "E001"),
+    ENDED_CHANNEL(HttpStatus.BAD_REQUEST, "Ended channel", "E002"),
 
     //기본 에러
     CUSTOM_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Custom Exception", "Z001");
-
 
 
     private final HttpStatus status;
