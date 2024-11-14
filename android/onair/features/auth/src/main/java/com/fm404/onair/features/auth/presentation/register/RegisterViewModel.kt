@@ -14,12 +14,14 @@ import kotlinx.coroutines.flow.*
 import android.content.Context
 import android.telephony.TelephonyManager
 import android.util.Log
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
 
 private const val TAG = "RegisterViewModel"
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val navigationContract: AuthNavigationContract
 ) : ViewModel() {
     private val _state = MutableStateFlow(RegisterState())
     val state = _state.asStateFlow()
@@ -127,26 +129,25 @@ class RegisterViewModel @Inject constructor(
         return length in 2..24 && nickname.matches(nicknameRegex)
     }
 
+    private fun getCleanPhoneNumber(phoneNumber: String): String{
+        return phoneNumber.replace("[^0-9]".toRegex(), "")
+    }
+
+    private fun isValidPhoneNumber(retrievedPhoneNumber: String): Boolean {
+        val phoneNumber = getCleanPhoneNumber(retrievedPhoneNumber)
+        return phoneNumber.startsWith("010") || phoneNumber.startsWith("8210")
+    }
+
     fun retrievePhoneNumber(context: Context) {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
         try {
             val phoneNumber = telephonyManager?.line1Number
             if (!phoneNumber.isNullOrBlank()) {
-                // 전화번호 형식 검증 및 변환
-                when {
-                    // +82로 시작하는 경우
-                    phoneNumber.startsWith("+82") -> {
-                        val formattedNumber = formatPhoneNumber(phoneNumber)
-                        updatePhoneNumberState(formattedNumber)
-                    }
-                    // 010으로 시작하는 경우
-                    phoneNumber.startsWith("010") -> {
-                        val formattedNumber = formatPhoneNumber(phoneNumber)
-                        updatePhoneNumberState(formattedNumber)
-                    }
-                    else -> {
-                        handleInvalidPhoneNumberFormat(phoneNumber)
-                    }
+                if (isValidPhoneNumber(phoneNumber)) {
+                    val formattedNumber = formatPhoneNumber(phoneNumber)
+                    updatePhoneNumberState(formattedNumber)
+                } else {
+                    handleInvalidPhoneNumberFormat(phoneNumber)
                 }
             } else {
                 _state.value = _state.value.copy(
@@ -163,7 +164,7 @@ class RegisterViewModel @Inject constructor(
 
     private fun formatPhoneNumber(phoneNumber: String): PhoneNumberFormat {
         // 모든 특수문자 제거 및 숫자만 추출
-        val cleaned = phoneNumber.replace("[^0-9]".toRegex(), "")
+        val cleaned = getCleanPhoneNumber(phoneNumber)
 
         // +82로 시작하는 경우 처리
         val nationalNumber = if (cleaned.startsWith("82")) {
@@ -274,6 +275,16 @@ class RegisterViewModel @Inject constructor(
                         error = exception.message ?: "인증번호 요청 중 오류가 발생했습니다."
                     )
                 }
+
+//            // 테스트를 위해 항상 성공 응답 처리
+//            _state.value = _state.value.copy(
+//                isLoading = false,
+//                isVerificationCodeSent = true,
+//                remainingTimeSeconds = 180,
+//                verificationAttempts = 0,
+//                verificationCode = "",
+//                error = null
+//            )
         }
     }
 
@@ -314,6 +325,13 @@ class RegisterViewModel @Inject constructor(
                     error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
                 )
             }
+
+//            // 테스트를 위해 항상 성공 처리
+//            _state.value = _state.value.copy(
+//                isLoading = false,
+//                isPhoneVerified = true,
+//                error = null
+//            )
         }
     }
 
@@ -357,10 +375,10 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun validateVerificationCode(): Boolean {
-        if (_state.value.verificationCode.length != 6) {
-            _state.value = _state.value.copy(error = "인증번호 6자리를 입력해주세요.")
-            return false
-        }
+//        if (_state.value.verificationCode.length != 6) {
+//            _state.value = _state.value.copy(error = "인증번호 6자리를 입력해주세요.")
+//            return false
+//        }
         return true
     }
 
@@ -392,6 +410,7 @@ class RegisterViewModel @Inject constructor(
                             isLoading = false,
                             error = null
                         )
+                        navigationContract.navigateToBroadcastList()
                     }.onFailure { loginException ->
                         _state.value = _state.value.copy(
                             isLoading = false,

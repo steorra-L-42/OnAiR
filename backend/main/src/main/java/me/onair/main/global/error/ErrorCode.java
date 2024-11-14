@@ -27,7 +27,15 @@ public enum ErrorCode {
     NOT_EXIST_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Not exist refresh token", "C004"),
     NO_REFRESH_TOKEN_COOKIE(HttpStatus.UNAUTHORIZED, "No refresh token cookie", "C005"),
 
-    SMS_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "SMS Exception", "D001");
+    SMS_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "SMS Exception", "D001"),
+
+    //채널
+    CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "Channel Not Found", "E001"),
+
+    //기본 에러
+    CUSTOM_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Custom Exception", "Z001");
+
+
 
     private final HttpStatus status;
     private final String message;

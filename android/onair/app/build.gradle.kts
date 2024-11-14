@@ -1,8 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("kotlin-kapt")
     alias(libs.plugins.hilt)
+    id("kotlin-kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -54,25 +55,26 @@ android {
 
 dependencies {
     implementation(libs.hilt.android)
-    implementation(project(":core:common"))
-    implementation(project(":features:broadcast"))
-    implementation(project(":core:network"))
-    implementation(project(":domain"))
-    implementation(project(":data"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":features:auth"))
     implementation(libs.compose.bom)
     implementation(libs.androidx.material.icons.extended)
-    implementation(project(":features:statistics"))
-    implementation(project(":features:media"))
-    implementation(project(":core:notification"))
-    implementation(project(":core:navigation"))
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.runtime)
-    implementation(project(":core:contract"))
-    implementation(project(":features:media"))
     kapt(libs.hilt.compiler)
+
+    implementation(project(":core:common"))
+    implementation(project(":core:contract"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:firebase"))
+    implementation(project(":core:navigation"))
+    implementation(project(":core:network"))
+    implementation(project(":core:notification"))
+    implementation(project(":data"))
+    implementation(project(":domain"))
+    implementation(project(":features:auth"))
+    implementation(project(":features:broadcast"))
+    implementation(project(":features:media"))
+    implementation(project(":features:statistics"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -81,6 +83,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation (libs.androidx.core.splashscreen)
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.androidx.junit)

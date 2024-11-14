@@ -32,19 +32,15 @@ def download_from_keyword(title, artist, channel_id, content_type):
     # 경로가 존재하지 않으면 생성
     os.makedirs(output_filepath, exist_ok=True)
 
-    # 이미 파일이 존재하면 다운로드를 건너뜁니다.
-    if output_filename.exists():
-        logging.info(f"File '{output_filename}' already exists, skipping download.")
-        return str(output_filename)
-
     # pytubefix로 YouTube 오디오 다운로드
     try:
         yt = YouTube(video_url)
         audio_stream = yt.streams.filter(only_audio=True).first()
         if audio_stream:
             audio_stream.download(output_path=str(output_filepath), filename=f"{safe_filename}.mp3")
+            length = yt.length
             logging.info(f"Downloaded audio as '{output_filename}'")
-            return str(output_filename)
+            return {"file_path": str(output_filename), "length": length}
         else:
             logging.info("No audio stream available for this video.")
     except Exception as e:

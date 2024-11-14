@@ -1,25 +1,17 @@
 package com.fm404.onair.data.repository.auth
 
+import com.fm404.onair.core.network.exception.CustomException
 import com.fm404.onair.core.network.manager.TokenManager
 import com.fm404.onair.core.network.model.ErrorResponse
 import com.fm404.onair.data.mapper.toDomain
 import com.fm404.onair.data.remote.api.auth.UserApi
-import com.fm404.onair.data.remote.dto.auth.LoginRequestDto
-import com.fm404.onair.data.remote.dto.auth.PhoneVerificationRequestDto
-import com.fm404.onair.data.remote.dto.auth.PhoneVerifyRequestDto
-import com.fm404.onair.data.remote.dto.auth.SignupRequestDto
-import com.fm404.onair.data.remote.dto.auth.UpdateNicknameRequestDto
-import com.fm404.onair.domain.model.auth.LoginRequest
-import com.fm404.onair.domain.model.auth.LoginResult
-import com.fm404.onair.domain.model.auth.RegisterRequest
-import com.fm404.onair.domain.model.auth.UserInfo
-import com.fm404.onair.domain.model.auth.UserRole
+import com.fm404.onair.data.remote.dto.auth.*
+import com.fm404.onair.domain.model.auth.*
 import com.fm404.onair.domain.repository.auth.UserRepository
 import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.create
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.create
 import java.io.File
 import javax.inject.Inject
 
@@ -49,29 +41,30 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun login(request: LoginRequest): Result<LoginResult> = runCatching {
         val response = userApi.login(
-            LoginRequestDto(
-                username = request.username,
-                password = request.password
-            )
+            username = request.username,
+            password = request.password
         )
 
         if (response.isSuccessful) {
-            // access token은 Authorization 헤더에서 가져와서 저장
+            // access token 저장
             response.headers()["Authorization"]?.let { token ->
-                tokenManager.saveToken(token)
+                tokenManager.saveAccessToken(token)
             }
 
-            // refresh token은 쿠키로 자동 저장되므로 별도 처리 불필요
             LoginResult(isSuccess = true)
         } else {
             val errorBody = response.errorBody()?.string()
             val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
-            throw Exception(errorResponse.message)
+            throw CustomException(
+                code = errorResponse.code,
+                message = errorResponse.message,
+                httpCode = response.code()
+            ).toDomainException()
         }
     }
 
     override suspend fun requestVerificationCode(phoneNumber: String): Result<Unit> = runCatching {
-        userApi.requestVerificationCode(PhoneVerificationRequestDto(phoneNumber = phoneNumber))
+//        userApi.requestVerificationCode(PhoneVerificationRequestDto(phoneNumber = phoneNumber))
     }
 
     override suspend fun verifyPhoneNumber(
@@ -90,11 +83,21 @@ class UserRepositoryImpl @Inject constructor(
         val response = userApi.logout()
 
         if (response.isSuccessful) {
-            tokenManager.clearToken()
+            tokenManager.clearTokens()
         } else {
             val errorBody = response.errorBody()?.string()
             val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
-            throw Exception(errorResponse.message)
+
+            // 토큰 관련 에러(C001~C005)의 경우 토큰 제거
+            if (errorResponse.code.startsWith("C")) {
+                tokenManager.clearTokens()
+            }
+
+            throw CustomException(
+                code = errorResponse.code,
+                message = errorResponse.message,
+                httpCode = response.code()
+            ).toDomainException()
         }
     }
 
@@ -108,8 +111,8 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun updateProfileImage(imageFile: File): Result<Unit> = runCatching {
         // Create RequestBody from file
-        val requestBody = RequestBody.create(
-            "image/*".toMediaTypeOrNull(),  // MediaType.parse() 대신 toMediaTypeOrNull() 사용
+        val requestBody = create(
+            "image/*".toMediaTypeOrNull(),
             imageFile
         )
 
@@ -121,7 +124,27 @@ class UserRepositoryImpl @Inject constructor(
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()?.string()
             val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
-            throw Exception(errorResponse.message)
+            throw CustomException(
+                code = errorResponse.code,
+                message = errorResponse.message,
+                httpCode = response.code()
+            ).toDomainException()
+        }
+    }
+
+    override suspend fun registerFCMToken(request: FCMTokenRequest): Result<Unit> = runCatching {
+        val response = userApi.registerToken(request.fcmToken)
+
+        if (response.isSuccessful) {
+            Unit
+        } else {
+            val errorBody = response.errorBody()?.string()
+            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+            throw CustomException(
+                code = errorResponse.code,
+                message = errorResponse.message,
+                httpCode = response.code()
+            ).toDomainException()
         }
     }
 }

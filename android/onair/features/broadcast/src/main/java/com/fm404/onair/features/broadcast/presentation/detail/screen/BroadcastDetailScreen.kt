@@ -20,8 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
-import com.fm404.onair.R
+import com.fm404.onair.features.broadcast.R
 import com.fm404.onair.features.broadcast.presentation.detail.BroadcastDetailViewModel
 import com.fm404.onair.features.broadcast.presentation.detail.state.BroadcastDetailEvent
 
@@ -155,7 +154,7 @@ fun BroadcastDetailScreen(
 //                        contentDescription = "Previous"
 //                    )
 //                }
-                IconButton(onClick = { /* TODO: Handle play/pause action */ }) {
+                IconButton(onClick = { viewModel.onEvent(BroadcastDetailEvent.ToggleStreaming) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.play),
                         contentDescription = "Play/Pause"

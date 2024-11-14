@@ -1,6 +1,8 @@
 package com.fm404.onair.core.navigation.graph
 
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -39,12 +41,20 @@ fun MainNavGraph(
         )
 
         // 메인 섹션 화면들
-        composable(NavRoute.MainSection.Home.route) {
+        composable(
+            NavRoute.MainSection.Home.route,
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+        ) {
             homeScreen(navController)
         }
 
         // 홈 섹션의 하위 화면들
-        composable(NavRoute.HomeSection.AudioVisualizer.route) {
+        composable(
+            NavRoute.HomeSection.AudioVisualizer.route,
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+        ) {
             AudioVisualizerScreen(
                 amplitudes = FloatArray(10) { 5f }
             )

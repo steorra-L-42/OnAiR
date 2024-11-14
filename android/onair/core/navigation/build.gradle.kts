@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.core.navigation"
     compileSdk = 34
 
     defaultConfig {
@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.runtime)
     implementation(project(":core:designsystem"))
     implementation(project(":core:contract"))
+    implementation(project(":core:common"))
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)

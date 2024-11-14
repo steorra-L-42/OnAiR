@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.features.broadcast"
     compileSdk = 34
 
     defaultConfig {
@@ -58,6 +58,9 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(project(":core:media"))
     implementation(project(":core:designsystem"))
+
+
+    implementation (libs.exoplayer)
     kapt(libs.hilt.compiler)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)

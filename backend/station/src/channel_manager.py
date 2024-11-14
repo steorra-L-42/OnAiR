@@ -5,9 +5,8 @@ import logging
 class ChannelManager:
     MAX_CHANNELS = 5
 
-    def __init__(self, producer):
+    def __init__(self):
         self.channels = {}
-        self.producer = producer
 
     def add_channel(self, channel_id, config):
         if len(self.channels) >= self.MAX_CHANNELS:
@@ -17,11 +16,17 @@ class ChannelManager:
         if channel_id not in self.channels:
             from channel import Channel
             # 채널 생성
-            self.channels[channel_id] = Channel(channel_id, config)
+            channel = Channel(channel_id, config)
+            self.channels[channel_id] = channel
 
             # 시작
-            self.channels[channel_id].start()
+            channel.start()
+
+            # 채널 시작 여부 produce
+            channel.dj.produce_channel_start(channel_id)
             logging.info(f"Channel {channel_id} created.")
+            # 방송 시작
+            self.channels[channel_id].process_broadcast()
 
         else:
             # 채널_id 충돌.

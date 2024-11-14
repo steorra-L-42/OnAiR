@@ -1,6 +1,8 @@
 package com.fm404.onair.data.repository.media
 
+import com.fm404.onair.data.mapper.toActiveStream
 import com.fm404.onair.data.remote.api.media.MediaStreamingApi
+import com.fm404.onair.domain.model.media.ActiveStream
 import com.fm404.onair.domain.model.media.MediaStream
 import com.fm404.onair.domain.repository.media.MediaStreamingRepository
 import javax.inject.Inject
@@ -21,6 +23,15 @@ class MediaStreamingRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    override suspend fun getActiveStreams(): Result<List<ActiveStream>> = runCatching {
+        val response = mediaStreamingApi.getActiveStreams()
+        if (response.isSuccessful) {
+            response.body()?.map { it.toActiveStream() } ?: emptyList()
+        } else {
+            throw Exception(response.message())
         }
     }
 }

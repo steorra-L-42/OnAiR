@@ -1,6 +1,7 @@
 package com.fm404.onair.features.auth.presentation.settings.screen
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -13,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -26,6 +28,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.fm404.onair.core.contract.auth.NavControllerHolder
 import com.fm404.onair.core.designsystem.component.image.NetworkImage
 import com.fm404.onair.features.auth.presentation.settings.SettingsViewModel
 import com.fm404.onair.features.auth.presentation.settings.state.SettingsEvent
@@ -36,15 +39,29 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+    // navController 설정 추가
+    LaunchedEffect(Unit) {
+        Log.d("Settings", "Setting NavController in SettingsScreen")
+        (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(navController)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.d("Settings", "Clearing NavController in SettingsScreen")
+            (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(null)
+        }
+    }
+
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // Image picker launcher
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
-    }
+    // 프로필 이미지 변경은 아직 지원하지 않음ㅅ
+//    // Image picker launcher
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.GetContent()
+//    ) { uri: Uri? ->
+//        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
+//    }
 
     // Profile image view dialog
     if (state.showImageDialog && state.userInfo?.profilePath != null) {
@@ -140,36 +157,34 @@ fun SettingsScreen(
                         .padding(16.dp)
                 ) {
                     // 프로필 이미지
+                    var isPressed by remember { mutableStateOf(false) }
+
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                             .align(Alignment.CenterHorizontally)
-                            // hover 효과
-                            .pointerInput(Unit) {
-                                awaitPointerEventScope {
-                                    while (true) {
-                                        val event = awaitPointerEvent()
-                                        when (event.type) {
-                                            PointerEventType.Enter -> {
-                                                if (state.userInfo?.profilePath != null) {
-                                                    viewModel.onEvent(SettingsEvent.OnShowImageDialog)
-                                                }
-                                            }
-                                            PointerEventType.Exit -> {
-                                                viewModel.onEvent(SettingsEvent.OnHideImageDialog)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .clickable { launcher.launch("image/*") }
                     ) {
+                        var isPressed by remember { mutableStateOf(false) }
+
                         NetworkImage(
                             imageUrl = state.userInfo?.profilePath,
                             contentDescription = "Profile",
-                            modifier = Modifier.matchParentSize(),
+                            modifier = Modifier
+                                .matchParentSize()
+                                .scale(if (isPressed) 1.5f else 1f)
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        while (true) {
+                                            val event = awaitPointerEvent()
+                                            when (event.type) {
+                                                PointerEventType.Press -> isPressed = true
+                                                PointerEventType.Release -> isPressed = false
+                                            }
+                                        }
+                                    }
+                                },
                             contentScale = ContentScale.Crop,
                             placeholderContent = {
                                 Icon(
@@ -183,21 +198,22 @@ fun SettingsScreen(
                             }
                         )
 
-                        // 카메라 아이콘 오버레이
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(Color.Black.copy(alpha = 0.3f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Camera,
-                                contentDescription = "Change profile image",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .align(Alignment.Center),
-                                tint = Color.White
-                            )
-                        }
+                        // 프로필 이미지 변경은 아직 지원하지 않음
+//                        // 카메라 아이콘 오버레이
+//                        Box(
+//                            modifier = Modifier
+//                                .matchParentSize()
+//                                .background(Color.Black.copy(alpha = 0.3f))
+//                        ) {
+//                            Icon(
+//                                imageVector = Icons.Default.Camera,
+//                                contentDescription = "Change profile image",
+//                                modifier = Modifier
+//                                    .size(24.dp)
+//                                    .align(Alignment.Center),
+//                                tint = Color.White
+//                            )
+//                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -270,15 +286,13 @@ fun SettingsScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        state.errorCode?.let { code ->
-                            Text(
-                                text = "Error Code: $code",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
                         Text(
-                            text = error,
+                            text = "Error Code: ${error.code}",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = error.message,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyLarge
                         )
