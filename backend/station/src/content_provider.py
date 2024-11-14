@@ -57,38 +57,71 @@ def handle_news(msg):
 
 def handle_story(msg):
     """Kafka 메시지를 받아 사연에 TTS와 음악을 추가하여 처리하는 콜백 함수"""
-    channel_id, value = extract_message_info(msg)
-    if channel_id is None:
-        return
+    try:
+        channel_id, value = extract_message_info(msg)
+        if not is_valid_channel(channel_id):
+            return
 
-    logging.info(f"Received story reply {value}, {channel_id}")
+        logging.info(f"Received story reply {value}, {channel_id}")
+
+        if is_story_queue_full(channel_id):
+            logging.warning(f"Queue for story {channel_id} is full. Skipping.")
+            return
+
+        story_mp3_list = process_story_content(value, channel_id)
+        if not story_mp3_list:
+            return
+
+        add_to_queue(channel_id, story_mp3_list)
+        logging.info(f"Story and music processed successfully.")
+
+    except Exception as e:
+        logging.error(f"Error handling story: {e}")
+
+
+def is_valid_channel(channel_id):
+    """채널 유효성 검사"""
+    if not channel_id:
+        return False
 
     if channel_id not in channel_manager.channels:
         logging.info(f"Channel {channel_id} not found. Skipping playback.")
-        return
+        return False
+    return True
 
-    # story가 5개 이상일 경우 답변 생성 X
-    if len(channel_manager.channels[channel_id].playback_queue.queues["story"]) >= max_story_count:
-        logging.warning(f"Queue for story {channel_id} is full. Skipping.")
-        return
 
-    # TTS 파일 생성
+def is_story_queue_full(channel_id):
+    """스토리 큐가 가득 찼는지 확인"""
+    return len(channel_manager.channels[channel_id].playback_queue.queues["story"]) >= max_story_count
+
+
+def process_story_content(value, channel_id):
+    """스토리와 음악 파일을 처리"""
+    story_mp3_list = []
+
+    # TTS 파일 처리
     tts_file_info = process_tts(value, channel_id)
     if not tts_file_info:
-        return
+        return None
+    story_mp3_list.append(tts_file_info)
 
-    # storyMusic 값 검증 후 음악 다운로드
-    music_file_info = process_music(value, channel_id)
-    if not music_file_info:
-        return
+    # 음악 파일 처리 (신청곡이 있을 경우)
+    story_music = value.get('storyMusic')
+    if story_music:
+        music_file_info = process_music(value, channel_id)
+        if not music_file_info:
+            return None
+        story_mp3_list.append(music_file_info)
 
-    # TTS와 음악을 모두 처리했으므로 큐에 추가
+    return story_mp3_list
+
+
+def add_to_queue(channel_id, story_mp3_list):
+    """큐에 TTS와 음악 파일 추가"""
     with queue_lock:
         channel = channel_manager.channels[channel_id]
-        channel.playback_queue.add_content("story", [tts_file_info, music_file_info])
-
-    logging.info(f"Story and music processed successfully. TTS info: {tts_file_info}, Music info: {music_file_info}")
-    channel.playback_queue.log_queues()
+        channel.playback_queue.add_content("story", story_mp3_list)
+        channel.playback_queue.log_queues()
 
 
 def process_tts(value, channel_id):
@@ -107,6 +140,7 @@ def process_tts(value, channel_id):
 def process_music(value, channel_id):
     """음악 다운로드 처리"""
     story_music = value.get('storyMusic', {})
+
     music_title = story_music.get('playListMusicTitle')
     music_artist = story_music.get('playListMusicArtist')
 
