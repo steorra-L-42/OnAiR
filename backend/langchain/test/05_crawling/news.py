@@ -139,48 +139,91 @@ print(docs)
 ########################### 요약3 ###########################
 # https://wikidocs.net/234020
 
-from langchain.prompts import PromptTemplate
+# from langchain.prompts import PromptTemplate
+# from langchain_openai import ChatOpenAI
+# from langchain.chains.combine_documents import create_stuff_documents_chain
+# from langchain_core.output_parsers import JsonOutputParser
+
+# llm = ChatOpenAI(temperature=0, model_name='gpt-4o-mini')
+
+# parser = JsonOutputParser()
+
+# template = '''
+# # TODO
+# 당신은 뉴스기사를 읽고 기사의 주요내용을 요약해야 합니다.
+# - title : 신문기사의 제목
+# - summary : 주요내용을 요약
+
+# #Format : 
+# {format_instructions}
+# \`\`\`json, \`\`\`등은 붙이지 않습니다.
+
+# #요약할 내용 :
+# {context}
+# '''
+
+# prompt = PromptTemplate(template=template, input_variables=['context'])
+# prompt = prompt.partial(format_instructions=parser.get_format_instructions())
+
+# stuff_chain = create_stuff_documents_chain(llm, prompt)
+# answer = stuff_chain.invoke({'context': docs})
+# print(answer)
+
+# import json
+# # json_data = json.loads(cleaned_answer)
+# json_data = json.loads(answer)
+# print(json_data['title'])
+# print(json_data['summary'])
+
+########################### 요약 4 ###########################
+# https://wikidocs.net/233789
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.output_parsers import JsonOutputParser
+from pydantic import BaseModel, Field
 
 llm = ChatOpenAI(temperature=0, model_name='gpt-4o-mini')
 
-parser = JsonOutputParser()
+class NewsSummary(BaseModel):
+    title: str = Field(description="기사의 제목")
+    summary: str = Field(description="기사의 요약")
 
-template = '''
+
+parser = JsonOutputParser(pydantic_object=NewsSummary)
+
+template = f'''
 # TODO
 당신은 뉴스기사를 읽고 기사의 주요내용을 요약해야 합니다.
 - title : 신문기사의 제목
 - summary : 주요내용을 요약
 
 #Format : 
-{format_instructions}
+{{format_instructions}}
 \`\`\`json, \`\`\`등은 붙이지 않습니다.
 
 #요약할 내용 :
-{context}
+{{context}}
 '''
 
-prompt = PromptTemplate(template=template, input_variables=['text'])
+prompt = PromptTemplate(template=template, input_variables=['context'])
 prompt = prompt.partial(format_instructions=parser.get_format_instructions())
 
-stuff_chain = create_stuff_documents_chain(llm, prompt)
-answer = stuff_chain.invoke({'context': docs})
-cleaned_answer = answer.replace('```json', '').strip()
-cleaned_answer = answer.replace('```', '').strip()
-print(cleaned_answer)
+chain = prompt | llm | parser
 
-import json
-json_data = json.loads(cleaned_answer)
-print(json_data['title'])
-print(json_data['summary'])
+json_data = chain.invoke({'context': docs})
+# print(json_data)
+# print(json_data['title'])
+# print(json_data['summary'])
 
 ########################### SQLite에 저장 ###########################
+import os
 import sqlite3
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(base_dir, 'news.db')
+
 # 결과 SQLite에 저장
-conn = sqlite3.connect('news.db') 
+conn = sqlite3.connect(db_path)
 
 c = conn.cursor()
 
@@ -192,7 +235,9 @@ c.execute('''CREATE TABLE IF NOT EXISTS news (
             )''')
 
 # 데이터 삽입
-c.execute("INSERT INTO news (title, summary) VALUES (?, ?)", (json_data['title'], json_data['summary']))
+title = json_data['title']
+summary = json_data['summary']
+c.execute("INSERT INTO news (title, summary) VALUES (?, ?)", (title, summary))
 
 # 변경사항 저장
 conn.commit()
@@ -203,23 +248,14 @@ conn.close()
 ########################### SQLite에서 불러오기 ###########################
 import sqlite3
 
-# 결과 SQLite에 저장
-conn = sqlite3.connect('news.db') 
+# 결과 SQLite에서 조회
+conn = sqlite3.connect(db_path)
+conn.row_factory = sqlite3.Row # sqlite3.Row 객체를 사용하여 컬럼명으로 조회 가능
 
 c = conn.cursor()
+rows = c.execute("SELECT * FROM news").fetchall()
+for row in rows:
+    print(f"제목 : {row['title']}")
+    print(f"내용 : {row['summary']}")
 
-# 테이블 생성
-c.execute('''CREATE TABLE IF NOT EXISTS news (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT,
-                summary TEXT
-            )''')
-
-# 데이터 삽입
-c.execute("INSERT INTO news (title, summary) VALUES (?, ?)", (json_data['title'], json_data['summary']))
-
-# 변경사항 저장
-conn.commit()
-
-# 연결 종료
 conn.close()

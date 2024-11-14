@@ -19,12 +19,12 @@ class KafkaConsumerWrapper:
 
         # Kafka consumer settings
         self.consumer = Consumer({
-            'bootstrap.servers': config.bootstrap_server,
-            'group.id': config.group_id,
-            'auto.offset.reset': config.auto_offset_reset,
+            'bootstrap.servers': config.BOOTSTRAP_SERVER,
+            'group.id': config.GROUP_ID,
+            'auto.offset.reset': config.AUTO_OFFSET_RESET,
             'api.version.request': False,
         })
-        self.admin_client = AdminClient({'bootstrap.servers': config.bootstrap_server})
+        self.admin_client = AdminClient({'bootstrap.servers': config.BOOTSTRAP_SERVER})
     
     def create_topic_if_not_exists(self, topic_name):
         # 토픽이 존재하지 않으면 생성

@@ -7,7 +7,7 @@ import config
 
 class KafkaProducerWrapper:
     def __init__(self):
-        self.producer = Producer({"bootstrap.servers": config.bootstrap_server})
+        self.producer = Producer({"bootstrap.servers": config.BOOTSTRAP_SERVER})
         self.lock = threading.Lock()
         logging.info("ProducerWrapper initialized.")
 

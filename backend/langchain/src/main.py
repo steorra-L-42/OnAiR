@@ -1,6 +1,7 @@
 import logging
 import signal
 import time
+from config import LOG_LEVEL
 
 import instance
 import consumer_manager
@@ -14,7 +15,7 @@ def handle_shutdown(signum, frame):
     exit(0)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+    logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
 
     # Graceful Shutdown을 위한 신호 처리기 등록
     signal.signal(signal.SIGINT, handle_shutdown)

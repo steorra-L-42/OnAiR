@@ -13,9 +13,10 @@ from domain.news.news_controller import NewsController
 from scheduler import Scheduler
 from domain.weather.weather_crawler import WeatherCrawler
 from domain.news.news_crawler import NewsCrawler
+from config import LOG_LEVEL
 
 # 인스턴스 생성 주입 및 관리 클래스
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
 logging.info("Initializing instance...")
 producer = KafkaProducerWrapper()
 
