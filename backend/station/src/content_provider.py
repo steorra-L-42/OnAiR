@@ -141,16 +141,17 @@ def process_music(value, channel_id):
     """음악 다운로드 처리"""
     story_music = value.get('storyMusic', {})
 
-    music_title = story_music.get('playListMusicTitle')
-    music_artist = story_music.get('playListMusicArtist')
+    music_title = story_music.get('storyMusicTitle')
+    music_artist = story_music.get('storyMusicArtist')
+    music_cover_url = story_music.get('storyMusicCoverUrl')
 
     if not music_title or not music_artist:
         logging.error(
-            "Missing required 'playListMusicTitle' or 'playListMusicArtist' in storyMusic. Skipping music download.")
+            "Missing required 'storyMusicTitle' or 'storyMusicArtist' in storyMusic. Skipping music download.")
         return None
 
     try:
-        music_file_info = download_from_keyword(music_title, music_artist, channel_id, "story")
+        music_file_info = download_from_keyword(music_title, music_artist, music_cover_url, channel_id, "story")
         if not music_file_info:
             logging.info("No music file found. Skipping playback.")
             return None

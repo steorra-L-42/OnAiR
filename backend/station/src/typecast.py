@@ -4,7 +4,6 @@ import os
 import time
 import uuid
 from datetime import datetime
-from pathlib import Path
 
 import requests
 
@@ -172,7 +171,9 @@ def download_audio(speak_id, token, channel, content_type):
                     logging.info(f"Download URL: {audio_url}")
                     file_path = save_audio_file(audio_url, channel, content_type)
                     length = result.get("duration")
-                    return {"file_path": file_path, "length": length}
+                    return {"file_path": file_path,
+                            "length": length,
+                            "type": content_type}
 
             elif status == "progress":
                 logging.info("Synthesis in progress. Waiting 5 seconds...")

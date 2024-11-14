@@ -1,6 +1,6 @@
 import json
 import logging
-from pathlib import Path
+import os
 
 from instance import producer
 from path_util import get_medias_path
@@ -24,11 +24,11 @@ class DJ:
                               channel_id.encode("utf-8"),
                               value.encode("utf-8"))
 
-    def produce_contents(self, file_paths):
+    def produce_contents(self, file_info_list, is_start=False):
         """콘텐츠를 Kafka에 송출"""
         value = json.dumps({
-            "filePath": file_paths,
-            "isStart": False
+            "fileInfo": file_info_list,
+            "isStart": is_start
         }, ensure_ascii=False)
         producer.send_message("media_topic",
                               self.channel.channel_id.encode("utf-8"),

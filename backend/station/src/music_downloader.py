@@ -1,13 +1,13 @@
 import logging
 import os
-from pathlib import Path
 
 from pytubefix import YouTube
 from youtubesearchpython import VideosSearch
 
 from path_util import get_medias_path
 
-def download_from_keyword(title, artist, channel_id, content_type):
+
+def download_from_keyword(title, artist, cover_url, channel_id, content_type):
     keyword = f"{title} - {artist}"
     # 유튜브에서 키워드로 검색하여 가장 상단의 결과를 가져옴
     videos_search = VideosSearch(keyword, limit=1)
@@ -43,7 +43,12 @@ def download_from_keyword(title, artist, channel_id, content_type):
             audio_stream.download(output_path=str(output_filepath), filename=f"{safe_filename}.mp3")
             length = yt.length
             logging.info(f"Downloaded audio as '{output_filename}'")
-            return {"file_path": str(output_filename), "length": length}
+            return {"file_path": str(output_filename),
+                    "length": length,
+                    "type": "music",
+                    "music_title": title,
+                    "music_artist": artist,
+                    "music_cover_url": cover_url}
         else:
             logging.info("No audio stream available for this video.")
     except Exception as e:
