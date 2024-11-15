@@ -89,12 +89,22 @@ public class AddStoryReplyTest {
         String key = channel.getUuid();
         String value = String.format("""
                 {
-                    "storyReply" : "사연답변입니다.",
-                    "storyId" : "%d",
-                    "storyMusic" : {
-                        "playListMusicTitle" : "Beautiful Day1",
-                        "playListMusicArtist" : "U1",
-                        "playListMusicCoverUrl" : "http://example.com/cover1.jpg"
+                    "typecast": {
+                        "text": "합성할 텍스트",
+                        "actor": "세나",
+                        "emotion_tone_preset": "happy-1",
+                        "volume": 100,
+                        "speed_x": 1.0,
+                        "tempo": 1.0,
+                        "pitch": 0,
+                        "last_pitch": 0
+                    },
+                    "fcm_token": "sample_fcm_token",
+                    "story_id": "%d",
+                    "story_music": {
+                        "story_music_title": "Beautiful Day1",
+                        "story_music_artist": "U1",
+                        "story_music_cover_url": "http://example.com/cover1.jpg"
                     }
                 }
                 """, story.getId());
@@ -107,7 +117,7 @@ public class AddStoryReplyTest {
 
         // then: 메시지가 성공적으로 처리되었는지 확인
         Story updatedStory = storyRepository.findById(story.getId()).orElseThrow();
-        assertEquals("사연답변입니다.", updatedStory.getReply());
+        assertEquals("합성할 텍스트", updatedStory.getReply());
     }
 
     @Test
@@ -128,12 +138,22 @@ public class AddStoryReplyTest {
         String key = "이상한UUID";
         String value = String.format("""
                 {
-                    "storyReply" : "사연답변입니다.",
-                    "storyId" : "%d",
-                    "storyMusic" : {
-                        "playListMusicTitle" : "Beautiful Day1",
-                        "playListMusicArtist" : "U1",
-                        "playListMusicCoverUrl" : "http://example.com/cover1.jpg"
+                    "typecast": {
+                        "text": "합성할 텍스트",
+                        "actor": "세나",
+                        "emotion_tone_preset": "happy-1",
+                        "volume": 100,
+                        "speed_x": 1.0,
+                        "tempo": 1.0,
+                        "pitch": 0,
+                        "last_pitch": 0
+                    },
+                    "fcm_token": "sample_fcm_token",
+                    "story_id": "%d",
+                    "story_music": {
+                        "story_music_title": "Beautiful Day1",
+                        "story_music_artist": "U1",
+                        "story_music_cover_url": "http://example.com/cover1.jpg"
                     }
                 }
                 """, story.getId());
@@ -165,12 +185,22 @@ public class AddStoryReplyTest {
         String key = channel.getUuid();
         String value = String.format("""
                 {
-                    "storyReply" : "사연답변입니다.",
-                    "storyId" : "%d",
-                    "storyMusic" : {
-                        "playListMusicTitle" : "Beautiful Day1",
-                        "playListMusicArtist" : "U1",
-                        "playListMusicCoverUrl" : "http://example.com/cover1.jpg"
+                    "typecast": {
+                        "text": "합성할 텍스트",
+                        "actor": "세나",
+                        "emotion_tone_preset": "happy-1",
+                        "volume": 100,
+                        "speed_x": 1.0,
+                        "tempo": 1.0,
+                        "pitch": 0,
+                        "last_pitch": 0
+                    },
+                    "fcm_token": "sample_fcm_token",
+                    "story_id": "%d",
+                    "story_music": {
+                        "story_music_title": "Beautiful Day1",
+                        "story_music_artist": "U1",
+                        "story_music_cover_url": "http://example.com/cover1.jpg"
                     }
                 }
                 """, 123_456_789L);
@@ -203,12 +233,22 @@ public class AddStoryReplyTest {
         String key = channel.getUuid();
         String value = String.format("""
                 {
-                    "storyReply" : "나 새로운 답변이다.",
-                    "storyId" : "%d",
-                    "storyMusic" : {
-                        "playListMusicTitle" : "Beautiful Day1",
-                        "playListMusicArtist" : "U1",
-                        "playListMusicCoverUrl" : "http://example.com/cover1.jpg"
+                    "typecast": {
+                        "text": "합성할 텍스트",
+                        "actor": "세나",
+                        "emotion_tone_preset": "happy-1",
+                        "volume": 100,
+                        "speed_x": 1.0,
+                        "tempo": 1.0,
+                        "pitch": 0,
+                        "last_pitch": 0
+                    },
+                    "fcm_token": "sample_fcm_token",
+                    "story_id": "%d",
+                    "story_music": {
+                        "story_music_title": "Beautiful Day1",
+                        "story_music_artist": "U1",
+                        "story_music_cover_url": "http://example.com/cover1.jpg"
                     }
                 }
                 """, 123_456_789L);
@@ -242,12 +282,22 @@ public class AddStoryReplyTest {
         String key = otherChannel.getUuid();
         String value = String.format("""
                 {
-                    "storyReply" : "나 새로운 답변이다.",
-                    "storyId" : "%d",
-                    "storyMusic" : {
-                        "playListMusicTitle" : "Beautiful Day1",
-                        "playListMusicArtist" : "U1",
-                        "playListMusicCoverUrl" : "http://example.com/cover1.jpg"
+                    "typecast": {
+                        "text": "합성할 텍스트",
+                        "actor": "세나",
+                        "emotion_tone_preset": "happy-1",
+                        "volume": 100,
+                        "speed_x": 1.0,
+                        "tempo": 1.0,
+                        "pitch": 0,
+                        "last_pitch": 0
+                    },
+                    "fcm_token": "sample_fcm_token",
+                    "story_id": "%d",
+                    "story_music": {
+                        "story_music_title": "Beautiful Day1",
+                        "story_music_artist": "U1",
+                        "story_music_cover_url": "http://example.com/cover1.jpg"
                     }
                 }
                 """, 123_456_789L);
