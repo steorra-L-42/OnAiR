@@ -4,6 +4,7 @@ import threading
 
 import typecast
 from config import max_story_count
+from fcm import push_fcm
 from instance import channel_manager, producer
 from music_downloader import download_from_keyword
 
@@ -76,6 +77,7 @@ def handle_story(msg):
         logging.info(f"Story and music processed successfully.")
 
         # todo: FCM 전송하기.
+        push_fcm(channel_id, value);
 
     except Exception as e:
         logging.error(f"Error handling story: {e}")
@@ -141,7 +143,7 @@ def process_tts(value, channel_id):
 
 def process_music(value, channel_id):
     """음악 다운로드 처리"""
-    story_music = value.get('storyMusic', {})
+    story_music = value.get('story_music', {})
 
     music_title = story_music.get('story_music_title')
     music_artist = story_music.get('story_music_artist')

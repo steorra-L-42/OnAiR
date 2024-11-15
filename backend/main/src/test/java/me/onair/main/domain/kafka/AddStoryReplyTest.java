@@ -100,6 +100,7 @@ public class AddStoryReplyTest {
                         "last_pitch": 0
                     },
                     "fcm_token": "sample_fcm_token",
+                    "story_title": "사연 제목",
                     "story_id": "%d",
                     "story_music": {
                         "story_music_title": "Beautiful Day1",
@@ -149,6 +150,7 @@ public class AddStoryReplyTest {
                         "last_pitch": 0
                     },
                     "fcm_token": "sample_fcm_token",
+                    "story_title": "사연 제목",
                     "story_id": "%d",
                     "story_music": {
                         "story_music_title": "Beautiful Day1",
@@ -195,6 +197,7 @@ public class AddStoryReplyTest {
                         "pitch": 0,
                         "last_pitch": 0
                     },
+                    "story_title": "사연 제목",
                     "fcm_token": "sample_fcm_token",
                     "story_id": "%d",
                     "story_music": {
@@ -244,6 +247,7 @@ public class AddStoryReplyTest {
                         "last_pitch": 0
                     },
                     "fcm_token": "sample_fcm_token",
+                    "story_title": "사연 제목",
                     "story_id": "%d",
                     "story_music": {
                         "story_music_title": "Beautiful Day1",
@@ -293,6 +297,7 @@ public class AddStoryReplyTest {
                         "last_pitch": 0
                     },
                     "fcm_token": "sample_fcm_token",
+                    "story_title": "사연 제목",
                     "story_id": "%d",
                     "story_music": {
                         "story_music_title": "Beautiful Day1",

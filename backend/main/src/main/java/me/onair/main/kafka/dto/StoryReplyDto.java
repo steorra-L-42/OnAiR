@@ -8,6 +8,7 @@ import lombok.ToString;
 public class StoryReplyDto {
 
     private TypecastDto typecast;
+    private String storyTitle;
     private String fcmToken;
     private Long storyId;
     private StoryMusicDto storyMusic;

@@ -26,3 +26,6 @@ eunbin_actor_id = os.getenv("EUNBIN_ACTOR_ID")
 
 max_story_count = 5
 max_channels = 5
+
+# firebase
+firebase_credentials = os.getenv("FIREBASE_CREDENTIALS")
