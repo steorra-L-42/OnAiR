@@ -1,16 +1,15 @@
-import asyncio
 import os
 import subprocess
 import time
-from intervaltree import Interval, IntervalTree
+from intervaltree import IntervalTree
 from pathlib import Path
 
-import aiofiles
-
 from logger import log
+from file_util import validate_file
 from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, \
   SEGMENT_UPDATE_SIZE, MEDIA_FILE_PATH, MEDIA_MUSIC_TITLE
-from file_utils import validate_file
+import Stream
+
 
 ######################  여러 파일 -> 세그먼트  ######################
 def generate_segment_from_files(hls_path, file_info_list, start):
@@ -29,6 +28,8 @@ def generate_segment_from_files(hls_path, file_info_list, start):
     metadata[start: next_start] = file_info
     start = next_start
   return metadata, next_start
+
+
 
 
 ######################  파일 -ffmpeg-> 세그먼트  ######################
@@ -84,34 +85,37 @@ def generate_segment(hls_path, file_info):
 
 
 ######################  m3u8 작성  ######################
-def write_m3u8(channel, m3u8_path, segments: list):
+def write_m3u8(stream: Stream, segments:list, m3u8_path):
+  # m3u8 파일 내용 생성
   m3u8_lines = [
     "#EXTM3U\n",
     "#EXT-X-VERSION:3\n",
     f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n",
     f'#EXT-X-MEDIA-SEQUENCE:{segments[0]:06d}\n'
   ]
+  m3u8_lines.extend(get_m3u8_seg_list(stream, segments))
 
-  m3u8_lines.extend(get_m3u8_seg_list(channel, segments))
-
+  # m3u8 파일 작성
   with open(m3u8_path, "w") as f:
     f.writelines(m3u8_lines)
   wait_time = (m3u8_lines[4].strip())[8:-1]
   return float(wait_time)
 
 
+
+
 ###################### m3u8 작성: segment list 가져오기 ######################
-def get_m3u8_seg_list(channel, segments):
+def get_m3u8_seg_list(stream: Stream, segments:list):
   playlist_lines = []
   previous_index = segments[0]
-  metadata = channel['queue'].metadata
 
   # 등록할 세그먼트 리스트를 순회하면서 파일을 작성함
   for segment_index in segments:
 
-    ### 다음 파일 전환시, duration 수정(마지막 세그먼트 길이가 2초 등 정해진 길이라는 보장이 없음)
-    if not (metadata[segment_index] & metadata[previous_index]):
-      duration = get_audio_duration(channel, playlist_lines[-1].strip())
+    ### 다음 파일 전환 검사
+    if not (stream.get_metadata_by_index(segment_index) & stream.get_metadata_by_index(previous_index)):
+      # duration 수정
+      duration = get_audio_duration(stream = stream, segment_name = playlist_lines[-1].strip())
       playlist_lines[-2] = playlist_lines[-2].replace(str(SEGMENT_DURATION), str(duration))
       ### discontinuity 추가
       playlist_lines.append("#EXT-X-DISCONTINUITY\n")
@@ -123,9 +127,11 @@ def get_m3u8_seg_list(channel, segments):
   return playlist_lines
 
 
+
+
 ###################### 세그먼트 리스트 업데이트  ######################
-def update_m3u8(channel, stop_event):
-  channel_path = channel['channel_path']
+def update_m3u8(stream: Stream, stop_event):
+  channel_path = stream.stream_path
   m3u8_path = os.path.join(channel_path, "index.m3u8")
   temp_m3u8_path = os.path.join(channel_path, "index_temp.m3u8")
 
@@ -135,15 +141,15 @@ def update_m3u8(channel, stop_event):
     start_time = time.perf_counter()
 
     # 저장할 세그먼트 리스트 조회
-    segments = channel['queue'].get_buffer_list()
-    segments.extend(channel['queue'].dequeue(SEGMENT_UPDATE_SIZE))
+    segments = stream.get_queue().get_buffer_list()
+    segments.extend(stream.get_queue().dequeue(SEGMENT_UPDATE_SIZE))
 
     # index_temp.m3u8 작성
-    first_seg_length = write_m3u8(channel, temp_m3u8_path, segments)
+    first_seg_length = write_m3u8(stream, segments, temp_m3u8_path)
 
     # 파일 교체
     os.replace(temp_m3u8_path, m3u8_path)
-    log.info(f"[{channel['name']}] 스트리밍 중 - {segments}")
+    log.info(f"[{stream.name}] 스트리밍 중 - {segments}")
 
     # 루프 종료 시간 기록
     end_time = time.perf_counter()
@@ -154,9 +160,11 @@ def update_m3u8(channel, stop_event):
     time.sleep(sleep_time)
 
 
+
+
 ######################  주어진 파일의 길이(초)를 가져오는 함수  ######################
-def get_audio_duration(channel, segment_name):
-  segment_path = os.path.join(channel['hls_path'], segment_name)
+def get_audio_duration(stream: Stream, segment_name):
+  segment_path = os.path.join(stream.hls_path, segment_name)
   try:
     result = subprocess.run(
       [

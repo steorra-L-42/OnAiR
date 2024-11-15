@@ -6,16 +6,16 @@ from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
+from intervaltree import IntervalTree
+
 # 내부 패키지
-from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR, \
+from config import STREAMING_CHANNELS, HLS_DIR, \
   SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START, MEDIA_TYPE, \
   MEDIA_MUSIC_TITLE, MEDIA_MUSIC_ARTIST, MEDIA_MUSIC_COVER
-from logger import log
-from shared_vars import channels, channel_setup_executor, channel_data_executor
+from shared_vars import stream_setup_executor, stream_data_executor, stream_manager
 
+from logger import log
 from audio_listener import create_audio_listener_consumer
-from channel_manager import remove_channel
-from file_utils import clear_hls_path
 from segment_queue import SegmentQueue
 
 app = FastAPI()
@@ -34,26 +34,33 @@ app.add_middleware(
 ######################  서버 INIT  ######################
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-  global channels
+  global stream_manager
   log.info("미디어 서버 초기화 루틴 시작")
-  consumer = create_audio_listener_consumer()
+  consumer = create_audio_listener_consumer(stream_manager)
   log.info("미디어 서버 가동")
 
   yield
-  log.info(f"서버 종료 루틴 시작 [{channels}]")
-  for channel in channels.values():
-    remove_channel(channel)
-  del channels
+  log.info(f"서버 종료 루틴 시작")
+  try:
+    stream_manager.remove_stream_all()
+    log.info(f"스트림 정리 완료")
+  except Exception as e:
+    log.error(f"스트림 정리 에러 발생 [{e}]")
 
-  channel_setup_executor.shutdown(True)
-  channel_data_executor.shutdown(True)
-  log.info(f"ThreadPool 해제")
+  try:
+    stream_setup_executor.shutdown(False)
+    stream_data_executor.shutdown(False)
+    log.info(f"ThreadPool 해제 완료")
+  except Exception as e:
+    log.error(f"ThreadPool 해제 에러 발생 [{e}]")
 
-  consumer.stop_event.set()
-  consumer.close()
-  log.info("카프카 컨슈머 종료")
-  log.info("서버 종료")
-
+  try:
+    consumer.stop_event.set()
+    consumer.close()
+    log.info("카프카 컨슈머 종료")
+  except Exception as e:
+    log.info(f"카프카 컨슈머 종료 에러 발생 [{e}]")
+  log.info("서버 종료 완료")
 app.router.lifespan_context = lifespan
 
 
@@ -62,16 +69,16 @@ app.router.lifespan_context = lifespan
 async def get_streams():
   return JSONResponse({
     "status": "success",
-    "streams": list(channels.keys())
+    "streams": list(stream_manager.keys())
   })
 
 
 ######################  API: 채널의 세그먼트 큐 조회  ######################
-@app.get("/api/queue")
-async def get_streams():
+@app.get("/api/queue/{stream_name}")
+async def get_streams(stream_name:str):
   return JSONResponse({
     "status": "success",
-    "streams": channels["channel_1"]["queue"].get_all_segments()
+    "streams": stream_manager.get_stream(stream_name).get_queue().get_all_segments()
   })
 
 
@@ -110,22 +117,21 @@ async def serve_segment(channel_name: str, segment: str):
   response.headers["Cache-Control"] = "no-cache"
   add_metadata_to_response_header(
     headers=      response.headers,        # Response Header
-    channel_name= channel_name,            # 채널 이름
+    stream_name= channel_name,            # 채널 이름
     index =       segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
   )
   return response
 
 
 ######################  세그먼트 파일 조회(메타 데이터 조회)  ######################
-def add_metadata_to_response_header(headers, channel_name, index):
-  channel = channels[channel_name]
-  queue:SegmentQueue = channel['queue']
+def add_metadata_to_response_header(headers, stream_name, index):
+  stream = stream_manager.get_stream(stream_name)
   index_int = int(index)
   try:
-    headers['onair-content-type'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_TYPE))
-    headers['music-title'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_MUSIC_TITLE))
-    headers['music-artist'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_MUSIC_ARTIST))
-    headers['music-cover'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_MUSIC_COVER))
+    headers['onair-content-type'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_TYPE))
+    headers['music-title'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_MUSIC_TITLE))
+    headers['music-artist'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_MUSIC_ARTIST))
+    headers['music-cover'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_MUSIC_COVER))
 
   except Exception as e:
     log.error(f'메타데이터 조회 에러 [{e}]')

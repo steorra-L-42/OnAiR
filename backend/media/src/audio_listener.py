@@ -3,25 +3,25 @@ import json
 import threading
 
 # 내부 패키지
+from shared_vars import stream_setup_executor, stream_data_executor
 from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
-import config
-from logger import log
-from shared_vars import channels, channel_setup_executor, channel_data_executor
+from src import config
+from Stream import Stream
+from StreamManager import StreamManager
 
+from logger import log
 from kafka_consumer_wrapper import KafkaConsumerWrapper
-from channel_manager import add_channel, add_audio
-from src.shared_vars import channels_lock
 
 
 ##################  토픽: media_topic에 대한 consumer 생성  ##################
-def create_audio_listener_consumer():
+def create_audio_listener_consumer(stream_manager):
   try:
-    log.info(f"Creating consumer for topic: {MEDIA_TOPIC}")
+    log.info(f"컨슈머 생성 [{MEDIA_TOPIC}]")
     consumer = KafkaConsumerWrapper(
       topic=MEDIA_TOPIC,
-      on_message_callback=lambda msg: process_input_audio(msg)
+      on_message_callback=lambda msg: process_input_audio(msg, stream_manager)
     )
-    log.info(f"Consumer for topic {MEDIA_TOPIC} created successfully.")
+    log.info(f"컨슈머 생성 완료 [{MEDIA_TOPIC}]")
 
     # 스레드를 사용하여 Consumer 메시지 소비 실행
     consumer_thread = threading.Thread(
@@ -29,7 +29,7 @@ def create_audio_listener_consumer():
       daemon=True
     )
     consumer_thread.start()
-    log.info(f"Consumer thread for topic {MEDIA_TOPIC} started.")
+    log.info(f"컨슈머 스레드 실행 시작 [{MEDIA_TOPIC}]")
     return consumer
 
   except Exception as e:
@@ -37,7 +37,7 @@ def create_audio_listener_consumer():
 
 
 ######################  토픽: media_topic 요청 처리  ######################
-def process_input_audio(msg):
+def process_input_audio(msg, stream_manager:StreamManager):
   global channels
   # Key, Value 파싱
   key = msg.key().decode('utf-8')
@@ -50,13 +50,19 @@ def process_input_audio(msg):
 
   # 새 채널 개설
   if is_start:
-    future = channel_setup_executor.submit(add_channel, key, file_info_list)
-    with channels_lock:
-      channels[key]['channel_thread'] = future
+    if stream_manager.is_exist(stream_name= key):
+      log.error(f"[{key}] 이미 존재하는 채널입니다.")
+      return
+
+    stream = Stream(name = key)
+    stream_manager.add_stream(stream)
+    future = stream_setup_executor.submit(stream.start_streaming, file_info_list)
+    stream.future = future
 
   # 기존 채널에 음성 추가
   else:
-    channel_data_executor.submit(add_audio, key, file_info_list)
+    stream = stream_manager.get_stream(stream_name= key)
+    stream_data_executor.submit(stream.add_audio, file_info_list)
 
 ######################  토픽: media_topic 요청 처리  ######################
 def tmp_get_file_info_list(file_path_list):
