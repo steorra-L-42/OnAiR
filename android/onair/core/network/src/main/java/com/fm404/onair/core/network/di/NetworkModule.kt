@@ -86,8 +86,8 @@ object NetworkModule {
             .cookieJar(JavaNetCookieJar(CookieManager().apply {
                 setCookiePolicy(CookiePolicy.ACCEPT_ALL)
             }))
-            .addInterceptor(loggingInterceptor)
             .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor) // 최종 완성 시 상단으로 올려야함(현재 테스트를 위해 토큰이 제대로 가는지 확인 중)
             .addInterceptor(errorHandlingInterceptor)
             .addInterceptor(tokenReissueInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)

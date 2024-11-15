@@ -19,14 +19,8 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(navController) {
+    LaunchedEffect(Unit) {
         viewModel.setNavController(navController)
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.clearNavController()
-        }
     }
 
     LoginContent(

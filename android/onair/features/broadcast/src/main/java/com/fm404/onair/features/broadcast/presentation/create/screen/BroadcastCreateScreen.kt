@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.fm404.onair.domain.model.broadcast.CreateChannelPlayList
 import com.fm404.onair.features.broadcast.presentation.create.BroadcastCreateViewModel
 import com.fm404.onair.features.broadcast.presentation.create.state.BroadcastCreateEvent
 import com.fm404.onair.features.broadcast.presentation.create.state.BroadcastCreateState
@@ -22,10 +23,13 @@ fun BroadcastCreateScreen(
 
     BroadcastCreateContent(
         state = state,
-        onTitleChange = { viewModel.onEvent(BroadcastCreateEvent.OnTitleChange(it)) },
-        onDescriptionChange = { viewModel.onEvent(BroadcastCreateEvent.OnDescriptionChange(it)) },
+        onTtsEngineChange = { viewModel.onEvent(BroadcastCreateEvent.OnTtsEngineChange(it)) },
+        onPersonalityChange = { viewModel.onEvent(BroadcastCreateEvent.OnPersonalityChange(it)) },
+        onTopicChange = { viewModel.onEvent(BroadcastCreateEvent.OnTopicChange(it)) },
+        onPlayListChange = { viewModel.onEvent(BroadcastCreateEvent.OnPlayListChange(it)) },
         onCreateClick = { viewModel.onEvent(BroadcastCreateEvent.OnCreateClick) },
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        onErrorDismiss = { viewModel.onErrorDismiss() }
     )
 }
 
@@ -33,10 +37,13 @@ fun BroadcastCreateScreen(
 @Composable
 private fun BroadcastCreateContent(
     state: BroadcastCreateState,
-    onTitleChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
+    onTtsEngineChange: (String) -> Unit,
+    onPersonalityChange: (String) -> Unit,
+    onTopicChange: (String) -> Unit,
+    onPlayListChange: (List<CreateChannelPlayList>) -> Unit,
     onCreateClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onErrorDismiss: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -54,24 +61,43 @@ private fun BroadcastCreateContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // TTS 엔진
         OutlinedTextField(
-            value = state.title,
-            onValueChange = onTitleChange,
-            label = { Text("방송 제목") },
+            value = state.ttsEngine,
+            onValueChange = onTtsEngineChange,
+            label = { Text("TTS 엔진") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // 성격
         OutlinedTextField(
-            value = state.description,
-            onValueChange = onDescriptionChange,
-            label = { Text("방송 설명") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            maxLines = 5
+            value = state.personality,
+            onValueChange = onPersonalityChange,
+            label = { Text("성격") },
+            modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 뉴스 주제
+        OutlinedTextField(
+            value = state.topic,
+            onValueChange = onTopicChange,
+            label = { Text("뉴스 주제") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // 플레이리스트 버튼
+        Button(
+            onClick = { /* TODO: 플레이리스트 추가 화면으로 이동 */ },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("플레이리스트 추가")
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -80,7 +106,9 @@ private fun BroadcastCreateContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
-            enabled = state.title.isNotBlank() && !state.isLoading
+            enabled = state.personality.isNotBlank() &&
+                    state.topic.isNotBlank() &&
+                    !state.isLoading
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
@@ -93,14 +121,13 @@ private fun BroadcastCreateContent(
         }
     }
 
-    // Error Dialog
     state.error?.let { error ->
         AlertDialog(
-            onDismissRequest = { /* TODO: Error 상태 초기화 */ },
+            onDismissRequest = onErrorDismiss,
             title = { Text("오류") },
             text = { Text(error) },
             confirmButton = {
-                TextButton(onClick = { /* TODO: Error 상태 초기화 */ }) {
+                TextButton(onClick = onErrorDismiss) {
                     Text("확인")
                 }
             }
