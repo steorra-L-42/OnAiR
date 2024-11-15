@@ -22,7 +22,7 @@ class WeatherService:
         result = {
             "typecast" : {
 	            "text": text,
-                "actor": value['channel_info']['ttsEngine'],
+                "actor": value['channel_info']['tts_engine'],
                 "emotion_tone_preset": emotion_tone_preset,
                 "volume": volume,
                 "speed_x": speed_x,
