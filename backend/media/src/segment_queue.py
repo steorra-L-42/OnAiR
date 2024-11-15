@@ -32,8 +32,8 @@ class SegmentQueue:
     segments = list()
     actual_count = min(count, len(self.queue))
     with self.lock:
-      segments.extend(self.queue[i] for i in range(actual_count))
-      del self.queue[:actual_count]
+      for _ in range(actual_count):
+        segments.append(self.queue.popleft())
 
     self.buffer.extend(index for index in segments)
     return segments
@@ -52,8 +52,8 @@ class SegmentQueue:
     return list(self.buffer)
 
   # 메타데이터 조회(임시)
-  def get_metadata_from_index(self, index):
-    return self.metadata[index]
+  def get_metadata_from_index(self, index, column):
+    return self.metadata[index].get(column)
 
   def clear(self):
     self.queue.clear()

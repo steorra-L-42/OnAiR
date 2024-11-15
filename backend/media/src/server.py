@@ -88,6 +88,18 @@ async def serve_playlist(stream_name: str):
   return response
 
 
+######################  API: .m3u8 파일 조회  ######################
+@app.get("/channel/1")
+async def serve_playlist(stream_name: str):
+  m3u8_path = os.path.join(STREAMING_CHANNELS, "channel_1/index.m3u8")
+  if not os.path.exists(m3u8_path):
+    raise HTTPException(status_code=404, detail="Playlist not found")
+
+  response = FileResponse(m3u8_path)
+  response.headers["Cache-Control"] = "no-cache"
+  return response
+
+
 ######################  API: 세그먼트 파일 조회  ######################
 @app.get("/channel/{channel_name}/{segment}")
 async def serve_segment(channel_name: str, segment: str):
@@ -124,4 +136,5 @@ def add_metadata_to_response_header(headers, channel_name, index):
 
 
 def get_metadata_and_encode_latin1(queue:SegmentQueue, index, column):
-  return queue.get_metadata_from_index(index, column).encode('utf-8').decode('latin-1')
+  return (queue.get_metadata_from_index(index, column)
+          .encode('utf-8').decode('latin-1'))

@@ -76,16 +76,13 @@ def generate_segment(hls_path, file_info, start):
 
 ######################  m3u8 작성  ######################
 async def write_m3u8(channel, m3u8_path, segments: list):
-  if len(segments) == 0:
-    log.info(f"빈 segments 입니다. m3u8 작성 불가 [{channel['name']}]")
-    return
-
   m3u8_lines = [
     "#EXTM3U\n",
     "#EXT-X-VERSION:3\n",
     f"#EXT-X-TARGETDURATION:{SEGMENT_DURATION}\n",
     f'#EXT-X-MEDIA-SEQUENCE:{segments[0]:06d}\n'
   ]
+
   m3u8_lines.extend(get_m3u8_seg_list(channel, segments))
 
   async with aiofiles.open(m3u8_path, "w") as f:
@@ -104,11 +101,11 @@ def get_m3u8_seg_list(channel, segments):
   for segment_index in segments:
 
     ### 다음 파일 전환시, duration 수정(마지막 세그먼트 길이가 2초 등 정해진 길이라는 보장이 없음)
-    if metadata[segment_index] & metadata[previous_index]:
+    if not (metadata[segment_index] & metadata[previous_index]):
       duration = get_audio_duration(channel, playlist_lines[-1].strip())
       playlist_lines[-2] = playlist_lines[-2].replace(str(SEGMENT_DURATION), str(duration))
       ### discontinuity 추가
-      # playlist_lines.append("#EXT-X-DISCONTINUITY\n")
+      playlist_lines.append("#EXT-X-DISCONTINUITY\n")
 
     # 세그먼트 리스트 작성
     playlist_lines.append(f"#EXTINF:{SEGMENT_DURATION},\n")

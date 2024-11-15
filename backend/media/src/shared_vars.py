@@ -30,6 +30,7 @@ def add_channel(channel_name, file_info_list, loop):
   )
   if next_start == 0:
     log.info(f"초기 제공 음성 파일이 모두 유효하지 않거나 없습니다. 채널 생성 취소 [{channel_name}]")
+    return
 
   # channels 변수에 추가
   # 세그먼트 큐 생성 및 초기화(기본 세그먼트 삽입)
