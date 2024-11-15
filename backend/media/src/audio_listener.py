@@ -46,7 +46,10 @@ def process_input_audio(msg, loop):
 
   file_info_list = value.get(MEDIA_FILE_INFO, [])
   is_start = value.get(MEDIA_IS_START)
+  if isinstance(is_start, str):
+    is_start = is_start.lower() == 'true'
 
+  # 새 채널 개설
   if is_start:
     add_channel(
       channel_name   = key,
@@ -54,13 +57,13 @@ def process_input_audio(msg, loop):
       loop           = loop
     )
 
+  # 기존 채널에 음성 추가
   else:
     channel = channels[key]
     start = channel['queue'].get_next_index()
 
     with channel['queue'].lock:
-      # 세그먼트 파일 생성
-      next_start, new_metadata = generate_segment_from_files(
+      new_metadata, next_start = generate_segment_from_files(
         hls_path       = channel['hls_path'],
         file_info_list = file_info_list,
         start          = start

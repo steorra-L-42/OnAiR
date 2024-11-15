@@ -9,7 +9,6 @@ from intervaltree import IntervalTree
 # 내부 패키지
 from logger import log
 from config import SEGMENT_LIST_SIZE
-from config import SEGMENT_FILE_INDEX_START, SEGMENT_FILE_INDEX_END
 
 
 ######################  ts 관리 큐  ######################

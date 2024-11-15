@@ -15,19 +15,24 @@ from file_utils import validate_file
 ######################  여러 파일 -> 세그먼트  ######################
 def generate_segment_from_files(hls_path, file_info_list, start):
   metadata = IntervalTree()
-  next_start = start
 
   for file_info in file_info_list:
     if not validate_file(file_info.get(MEDIA_FILE_PATH)):
       continue
 
-    start, next_start = generate_segment(hls_path, file_info, next_start)
+    # 세그먼트 파일 마지막 인덱스+1 값을 얻어옴(범위 때문에)
+    next_start = generate_segment(hls_path, file_info)
+    if next_start is 0:
+      continue
+
+    # 시작 인덱스 ~ 마지막 인덱스 범위를 key로 metadata 저장
     metadata[start: next_start] = file_info
-  return metadata, next_start  # 세그먼트화 한 파일들의 메타데이터와 마지막 index 값 전달
+    start = next_start
+  return metadata, next_start
 
 
 ######################  파일 -ffmpeg-> 세그먼트  ######################
-def generate_segment(hls_path, file_info, start):
+def generate_segment(hls_path, file_info):
   dummy_path = f"{hls_path}/dummy.m3u8"
   music_title = file_info.get(MEDIA_MUSIC_TITLE)
   channel_name = Path(hls_path).parent.name
@@ -69,11 +74,11 @@ def generate_segment(hls_path, file_info, start):
 
   if process.returncode == 0:
     log.info(f"[{channel_name}] 세그먼트 생성 완료 - '{music_title}'")
-    return start, end+1
+    return end+1
   else:
     log.error(f"[{channel_name}] 세그먼트 생성 실패 - '{music_title}'")
     log.error(e)
-    return start, start
+    return 0
 
 
 
