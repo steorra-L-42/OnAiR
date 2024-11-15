@@ -1,6 +1,5 @@
 import json
 import logging
-from collections import deque
 
 from confluent_kafka import Consumer
 from confluent_kafka.admin import AdminClient, NewTopic
@@ -8,9 +7,8 @@ from confluent_kafka.admin import AdminClient, NewTopic
 import config
 import instance
 from config import max_story_count
+from executor import channel_create_executor
 from instance import channel_manager
-
-dlt_queue = deque()  # DLT 전송을 위한 큐 생성
 
 
 class KafkaConsumerWrapper:
@@ -98,7 +96,7 @@ def process_channel_creation(msg):
         logging.info(f"Received channel creation request for {channel_id}")
 
         # 채널 생성
-        channel_manager.add_channel(channel_id, value)
+        channel_create_executor.submit(channel_manager.add_channel, channel_id, value)
         logging.info(f"Finished to create channel {channel_id}")
 
     except Exception as e:
