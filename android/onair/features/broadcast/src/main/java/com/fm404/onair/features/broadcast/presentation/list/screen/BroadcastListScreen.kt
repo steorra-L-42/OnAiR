@@ -27,6 +27,7 @@ fun BroadcastListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         BroadcastListContent(
             state = state,
+            onBroadcastClick = onBroadcastClick,
             onChannelClick = { channel ->
                 onBroadcastClick(channel.channelId)
             },
@@ -66,6 +67,7 @@ fun BroadcastListScreen(
 @Composable
 private fun BroadcastListContent(
     state: BroadcastListState,
+    onBroadcastClick: (String) -> Unit,
     onChannelClick: (Channel) -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -93,6 +95,12 @@ private fun BroadcastListContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { onBroadcastClick("1") }
+        ) {
+            Text("방송 1로 이동")
+        }
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
