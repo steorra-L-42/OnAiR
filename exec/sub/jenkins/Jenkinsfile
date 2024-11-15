@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        BUILD_BRANCH = 'build/ffmpeg'
+        BUILD_BRANCH = 'dev'
         LANGCHAIN_PATH = 'backend/langchain'
         MAIN_PATH = 'backend/main'
         STATION_PATH = 'backend/station'
@@ -84,16 +84,32 @@ pipeline {
         }
 
         // 웹훅 서버 빌드 및 푸시
-        stage('Build and Push Webhook Image') {
-            steps {
-                dir("${WEBHOOK_PATH}") {
-                    echo "Building Docker image for Webhook server..."
-                    withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        // Docker Hub 로그인
-                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+//        stage('Build and Push Webhook Image') {
+//            steps {
+//                dir("${WEBHOOK_PATH}") {
+//                    echo "Building Docker image for Webhook server..."
+//                    withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+//                        // Docker Hub 로그인
+//                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
                         
+//                        script {
+//                            docker.build("${DOCKER_REGISTRY}/webhook_image:latest", ".").push()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+        // 랭체인 서버 빌드 및 푸시
+        stage('Build and Push Langchain Image') {
+            steps {
+                dir("${LANGCHAIN_PATH}") {
+                    echo "Building Docker image for Langchain server..." 
+                    withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+
                         script {
-                            docker.build("${DOCKER_REGISTRY}/webhook_image:latest", ".").push()
+                            docker.build("${DOCKER_REGISTRY}/langchain_image:latest",".").push()
                         }
                     }
                 }
@@ -136,6 +152,7 @@ pipeline {
                                     docker rmi parkdonghyeon/media_image:latest &&
                                     docker rmi parkdonghyeon/main_image:latest &&
                                     docker rmi parkdonghyeon/station_image:latest &&
+                                    docker rmi parkdonghyeon/langchain_image:latest &&
                                     
                                     docker-compose -f onair-compose.yaml up -d &&
                                     sudo rm .env
