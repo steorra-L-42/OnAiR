@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# FCM Service
+-keep class com.fm404.onair.core.firebase.FCMService { *; }
+-keep class com.fm404.onair.core.firebase.FCMData { *; }
