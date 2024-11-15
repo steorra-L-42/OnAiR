@@ -7,7 +7,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.channel.entity.Dj;
@@ -15,6 +14,7 @@ import me.onair.main.domain.channel.entity.Track;
 import me.onair.main.domain.channel.enums.NewsTopic;
 import me.onair.main.domain.channel.enums.Personality;
 import me.onair.main.domain.channel.enums.TtsEngine;
+import me.onair.main.domain.user.entity.User;
 
 
 @Getter
@@ -23,14 +23,18 @@ import me.onair.main.domain.channel.enums.TtsEngine;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChannelInfoResponse {
 
+  // 개설 유저 정보
+  private String userNickname;
+  private String profilePath;
+
   // 채널
   private String channelName;
   private Boolean isDefault;
-  private LocalDateTime strat;
+  private LocalDateTime start;
   private LocalDateTime end;
   private Boolean isEnded;
   private String thumbnail;
-  private String uuid;
+  private String channelUuid;
 
   // DJ
   private TtsEngine ttsEngine;
@@ -41,23 +45,27 @@ public class ChannelInfoResponse {
   private List<TrackInfoResponse> playList;
 
   public static ChannelInfoResponse from(Channel channel) {
+    User user = channel.getUser();
     Dj dj = channel.getDj();
     List<Track> tracks = channel.getTracks();
 
     return ChannelInfoResponse.builder()
+        .userNickname(user.getNickname())
+        .profilePath(user.getProfilePath())
         .channelName(channel.getChannelName())
         .isDefault(channel.getIsDefault())
-        .strat(channel.getStart())
+        .start(channel.getStart())
         .end(channel.getEnd())
         .isEnded(channel.getIsEnded())
         .thumbnail(channel.getThumbnail())
-        .uuid(channel.getUuid())
+        .channelUuid(channel.getUuid())
         .ttsEngine(dj.getTtsEngine())
         .personality(dj.getPersonality())
         .newsTopic(dj.getNewsTopic())
         .playList(TrackInfoResponse.fromAll(tracks))
         .build();
   }
+
 
   @Getter
   @ToString
