@@ -10,9 +10,8 @@ app = FastAPI()
 @app.post("/alert")
 async def alert(request: Request):
     try:
-        body = await request.body()
-        data = json.loads(body)
-        print(data)
+        data = json.loads(await request.body())
+        
         if not data:
             raise HTTPException(status_code=400, detail="Invalid request payload")
         
@@ -35,18 +34,14 @@ async def alert(request: Request):
 
 def clear_cache(server):
     if server == "sub":
-        with open("/run/secrets/sub_key") as f:
-            SUB_SERVER = f.read()
-
-        os.system(f"ssh -i {SUB_SERVER} ubuntu@faker.on-air.me 'sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches'")
+        SUB_SERVER = "sub_key.pem"
+        os.system(f"ssh -o StrictHostKeyChecking=no -i {SUB_SERVER} ubuntu@ele.on-air.me 'echo 3 | sudo tee /proc/sys/vm/drop_caches'")
 
     elif server == "main":
-        with open("/run/secrets/main_key") as f: 
-            MAIN_SERVER = f.read()
+        MAIN_SERVER = "main_key.pem"
+        os.system(f"ssh -o StrictHostKeyChecking=no -i {MAIN_SERVER} ubuntu@wonyoung.on-air.me 'echo 3 | sudo tee /proc/sys/vm/drop_caches'")
 
-        os.system(f"ssh -i {MAIN_SERVER} ubuntu@wonyoung.on-air.me 'sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches'")
-
-    print("정리완료")
+    print(server, "정리완료")
 
 
 if __name__ == "__main__":

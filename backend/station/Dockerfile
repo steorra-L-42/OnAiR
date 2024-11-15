@@ -14,5 +14,9 @@ RUN pip install -r /station/requirements.txt
 COPY src /station/src
 
 WORKDIR src
+# 볼륨 설정용 기본 파일 복사
+COPY ./station/medias/start.mp3 /station/medias/start.mp3
+# 볼륨 설정
+VOLUME ["/station/medias"]
 
 CMD ["python3", "main.py"]

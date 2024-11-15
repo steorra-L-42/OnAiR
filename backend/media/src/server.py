@@ -1,6 +1,7 @@
 # 외부 패키지
 import asyncio
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import HTTPException
@@ -9,23 +10,24 @@ import os
 
 # 내부 패키지
 from audio_listener import create_audio_listener_consumer
-from dir_utils import clear_hls_path
-from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR
+from file_utils import clear_hls_path
+from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR, \
+  SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START
 from logger import log
 
 from shared_vars import add_channel, channels
-
+from segment_queue import SegmentQueue
 
 app = FastAPI()
 
 
 ######################  CORS 설정  ######################
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+  CORSMiddleware,
+  allow_origins=["*"],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
 )
 
 
@@ -71,7 +73,7 @@ async def get_streams():
   return JSONResponse({
     "status": "success",
     "streams": channels["channel_1"]["queue"].get_all_segments()
-})
+  })
 
 
 ######################  API: .m3u8 파일 조회  ######################
@@ -86,13 +88,54 @@ async def serve_playlist(stream_name: str):
   return response
 
 
+######################  API: .m3u8 파일 조회  ######################
+@app.get("/channel/1")
+async def serve_playlist(stream_name: str):
+  m3u8_path = os.path.join(STREAMING_CHANNELS, "channel_1/index.m3u8")
+  if not os.path.exists(m3u8_path):
+    raise HTTPException(status_code=404, detail="Playlist not found")
+
+  response = FileResponse(m3u8_path)
+  response.headers["Cache-Control"] = "no-cache"
+  return response
+
+
 ######################  API: 세그먼트 파일 조회  ######################
-@app.get("/channel/{stream_name}/{segment}")
-async def serve_segment(stream_name: str, segment: str):
-  segment_path = os.path.join(STREAMING_CHANNELS, stream_name, HLS_DIR, segment)
+@app.get("/channel/{channel_name}/{segment}")
+async def serve_segment(channel_name: str, segment: str):
+  segment_path = os.path.join(STREAMING_CHANNELS, channel_name, HLS_DIR, segment)
   if not os.path.exists(segment_path):
     raise HTTPException(status_code=404, detail="Segment not found")
 
   response = FileResponse(segment_path)
   response.headers["Cache-Control"] = "no-cache"
+  add_metadata_to_response_header(
+    headers=      response.headers,        # Response Header
+    channel_name= channel_name,            # 채널 이름
+    index =       segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
+  )
   return response
+
+
+######################  세그먼트 파일 조회(메타 데이터 조회)  ######################
+def add_metadata_to_response_header(headers, channel_name, index):
+  channel = channels[channel_name]
+  queue:SegmentQueue = channel['queue']
+  index_int = int(index)
+  try:
+    headers['onair-content-type'] = get_metadata_and_encode_latin1(queue, index_int, 'fileGenre')
+    headers['music-title'] = get_metadata_and_encode_latin1(queue, index_int, 'fileTitle')
+    headers['music-artist'] = get_metadata_and_encode_latin1(queue, index_int, 'fileAuthor')
+    headers['music-cover'] = get_metadata_and_encode_latin1(queue, index_int, 'fileCover')
+
+  except Exception as e:
+    log.error(f'메타데이터 조회 에러 [{e}]')
+    headers['onair-content-type'] = 'error'
+    headers['music-title'] = 'error'
+    headers['music-artist'] = 'error'
+    headers['music-cover'] = 'error'
+
+
+def get_metadata_and_encode_latin1(queue:SegmentQueue, index, column):
+  return (queue.get_metadata_from_index(index, column)
+          .encode('utf-8').decode('latin-1'))

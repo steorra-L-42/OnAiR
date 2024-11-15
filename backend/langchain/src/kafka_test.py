@@ -1,4 +1,3 @@
-# /home/fkaus4598/miniconda3/envs/langchain/bin/python /mnt/c/Users/SSAFY/Desktop/ssafy/S11P31D204/backend/langchain/src/kafka_test.py
 import instance
 import json
 

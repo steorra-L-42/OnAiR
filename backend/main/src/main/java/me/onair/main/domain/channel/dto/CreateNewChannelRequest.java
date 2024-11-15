@@ -14,7 +14,6 @@ import lombok.ToString;
 import me.onair.main.domain.channel.enums.NewsTopic;
 import me.onair.main.domain.channel.enums.Personality;
 import me.onair.main.domain.channel.enums.TtsEngine;
-import org.springframework.web.multipart.MultipartFile;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -40,7 +39,7 @@ public class CreateNewChannelRequest {
     private String thumbnail;
 
     @NotBlank(message = "channelName is required")
-    @Size(min = 1, max = 150, message = "channelName must be between 1 and 2000 characters")
+    @Size(min = 1, max = 150, message = "channelName must be between 1 and 150 characters")
     private String channelName;
 
     // 플레이리스트

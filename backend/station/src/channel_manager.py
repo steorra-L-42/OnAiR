@@ -1,16 +1,17 @@
 import json
 import logging
 
+from config import max_channels
+
 
 class ChannelManager:
-    MAX_CHANNELS = 5
-
-    def __init__(self):
+    def __init__(self, producer):
         self.channels = {}
+        self.producer = producer
 
     def add_channel(self, channel_id, config):
-        if len(self.channels) >= self.MAX_CHANNELS:
-            logging.warning(f"Cannot create more channels. Maximum limit of {self.MAX_CHANNELS} reached.")
+        if len(self.channels) >= max_channels:
+            logging.warning(f"Cannot create more channels. Maximum limit of {max_channels} reached.")
             return
 
         if channel_id not in self.channels:

@@ -111,11 +111,26 @@ class DynamicScheduleManager:
                     logging.info(f"Processing from {struct_name} playlist: {file_infos}")
 
                 if file_infos:
-                    # 콘텐츠 송출 (Kafka에 보내기)
-                    file_paths = [str(file_info.get("file_path")) for file_info in file_infos]  # file_path 리스트 생성
-                    file_lengths = sum(file_info.get("length") for file_info in file_infos)  # file_lengths 합산
+                    file_info_list = []
+                    file_lengths = 0
+                    for file_info in file_infos:
+                        # 기본 정보
+                        file_info_entry = {
+                            "filePath": file_info.get("file_path"),
+                            "type": file_info.get("type")
+                        }
 
-                    self.dj.produce_contents(file_paths)
+                        # type이 'music'일 경우 추가 정보 설정
+                        if file_info["type"] == "music":
+                            file_info_entry.update({
+                                "musicTitle": file_info.get("music_title"),
+                                "musicArtist": file_info.get("music_artist"),
+                                "musicCoverUrl": file_info.get("music_cover_url")
+                            })
+
+                        file_info_list.append(file_info_entry)
+                        file_lengths += file_info.get("length")
+                    self.dj.produce_contents(file_info_list)
                     logging.info(f"Sleeping for File length: {file_lengths}")
                     self.async_sleep(file_lengths)
                     logging.info(f"Done sleeping for File length: {file_lengths}")
@@ -129,10 +144,15 @@ class DynamicScheduleManager:
         await asyncio.sleep(duration)
 
     def process_first_music(self, playlist):
-        first_music = playlist[self.playlist_index]
+        first_music = playlist[self.playlist_index][0]
         self.playlist_index += 1
-        self.buffering_time = first_music[0].get("length")
-        self.dj.produce_contents(first_music[0].get("file_path"))
+        self.buffering_time = first_music.get("length")
+        self.dj.produce_contents({
+            "filePath": first_music.get("file_path"),
+            "type": "music",
+            "musicTitle": first_music.get("music_title"),
+            "musicArtist": first_music.get("music_artist"),
+            "musicCoverUrl": first_music.get("music_cover_url")})
 
     def stop(self):
         """스케줄러 종료 및 리소스 정리"""

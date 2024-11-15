@@ -1,0 +1,22 @@
+services:
+  nginx:
+    image: nginx:1.27
+    container_name: nginx
+    volumes:
+      - certbot_data:/etc/nginx/certbot  # 인증서 볼륨을 공유하여 모든 노드에서 접근 가능하게 함
+      - /exec/nginx/conf:/etc/nginx/conf.d
+      - /exec/cert/certbot/conf:/etc/letsencrypt
+      - /exec/cert/certbot/www:/var/www/certbot
+    networks:
+      - nginx
+
+    ports:
+      - "443:443" # HTTPS 접근
+
+networks:
+  nginx:
+    external: true
+
+volumes:
+  certbot_data:
+    driver: local
