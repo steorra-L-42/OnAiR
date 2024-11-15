@@ -46,6 +46,7 @@ public class ChannelService {
 
         // 1. 유저 정보 얻기
         User user = userRepository.findById(userDetails.getId()).orElseThrow(NotExistUserException::new);
+        String fcmToken = user.getFcmToken().getValue();
 
         // 2. 채널 저장
         Channel channel = Channel.createChannel(request, user);
@@ -60,7 +61,7 @@ public class ChannelService {
         trackRepository.saveAll(trackList);
 
         // 5. 카프카 전송
-        CreateNewChannelKafka kafkaMessage = CreateNewChannelKafka.of(channel, dj, trackList);
+        CreateNewChannelKafka kafkaMessage = CreateNewChannelKafka.of(channel, dj, trackList, fcmToken);
         kafkaProducer.sendMessageToKafka(
                 Topics.CHANNEL_INFO,
                 channel.getUuid(),
