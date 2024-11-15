@@ -110,9 +110,9 @@ async def serve_segment(channel_name: str, segment: str):
   response = FileResponse(segment_path)
   response.headers["Cache-Control"] = "no-cache"
   add_metadata_to_response_header(
-    response.headers,        # Response Header
-    channel_name,            # 채널 이름
-    segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
+    headers=      response.headers,        # Response Header
+    channel_name= channel_name,            # 채널 이름
+    index =       segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
   )
   return response
 
@@ -120,12 +120,13 @@ async def serve_segment(channel_name: str, segment: str):
 ######################  세그먼트 파일 조회(메타 데이터 조회)  ######################
 def add_metadata_to_response_header(headers, channel_name, index):
   channel = channels[channel_name]
+  queue:SegmentQueue = channel['queue']
   index_int = int(index)
   try:
-    headers['onair-content-type'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileGenre')
-    headers['music-title'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileTitle')
-    headers['music-artist'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileAuthor')
-    headers['music-cover'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileCover')
+    headers['onair-content-type'] = get_metadata_and_encode_latin1(queue, index_int, 'fileGenre')
+    headers['music-title'] = get_metadata_and_encode_latin1(queue, index_int, 'fileTitle')
+    headers['music-artist'] = get_metadata_and_encode_latin1(queue, index_int, 'fileAuthor')
+    headers['music-cover'] = get_metadata_and_encode_latin1(queue, index_int, 'fileCover')
 
   except Exception as e:
     log.error(f'메타데이터 조회 에러 [{e}]')

@@ -18,7 +18,7 @@ class SegmentQueue:
     self.lock = Lock()
     self.queue = deque()    # 세그먼트 관리 큐(제일 중요)
     self.buffer = deque(maxlen=int(SEGMENT_LIST_SIZE)-1)  # 현재 스트리밍 중인 세그먼트 큐
-    self.metadata = metadata    # 세그먼트 파일들의 메타 데이터
+    self.metadata:IntervalTree = metadata    # 세그먼트 파일들의 메타 데이터
     self.next_start = next_start   # 다음 파일 세그먼트의 시작 인덱스
 
     self.init_segments_by_range(start = 0, end = self.next_start)
@@ -53,7 +53,8 @@ class SegmentQueue:
 
   # 메타데이터 조회(임시)
   def get_metadata_from_index(self, index, column):
-    return self.metadata[index].get(column)
+    data = next(iter(self.metadata[index])).data
+    return data[column]
 
   def clear(self):
     self.queue.clear()
