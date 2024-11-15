@@ -2,37 +2,38 @@ import asyncio
 import os
 import subprocess
 import time
+from collections import deque
+
 import aiofiles
 
 from logger import log
 from config import STREAMING_CHANNELS
 from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
-from dir_utils import validate_file
+from file_utils import validate_file
 
 ######################  여러 파일 -> 세그먼트  ######################
 def generate_segment_from_files(hls_path, file_info_list, last_index):
+  metadata = []
+
   for file_info in file_info_list:
     if not validate_file(file_info.get("filePath")):
       continue
+    metadata.append(file_info)
     last_index = generate_segment(hls_path, file_info, last_index)
-  return last_index
+
+  return metadata
 
 
 ######################  파일 -ffmpeg-> 세그먼트  ######################
 def generate_segment(hls_path, file_info, last_index):
   log.info(f'세그먼트 생성 시작 [{file_info.get("fileTitle")}]')
+
   ffmpeg_command = [
     'ffmpeg',
     '-loglevel', 'info',
     '-i', file_info.get("filePath"),
     '-c:a', 'aac',
     '-b:a', '128k',
-
-    # 메타 데이터 설정
-    '-metadata', f'title={file_info.get("fileTitle")}',
-    '-metadata', f'author={file_info.get("fileAuthor")}',
-    '-metadata', f'comment={file_info.get("fileCover")}',
-    '-metadata', f'genre={file_info.get("fileGenre")}',
 
     # HLS 세그먼트 옵션
     '-f', 'hls',
@@ -54,9 +55,12 @@ def generate_segment(hls_path, file_info, last_index):
   stdout, stderr = process.communicate()
   if process.returncode == 0:
     log.info(f"세그먼트 생성 완료 [{file_info.get("fileTitle")}]")
+    return last_index+1
   else:
     log.error(f"세그먼트 생성 실패 [{file_info.get("fileTitle")}\n{stderr}]")
-  return (last_index+1)
+    return last_index
+
+
 
 
 ######################  m3u8 작성  ######################

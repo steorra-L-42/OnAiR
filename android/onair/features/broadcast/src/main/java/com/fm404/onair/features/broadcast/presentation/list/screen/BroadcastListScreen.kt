@@ -1,6 +1,7 @@
 package com.fm404.onair.features.broadcast.presentation.list.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
@@ -10,7 +11,9 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.fm404.onair.domain.model.broadcast.Channel
 import com.fm404.onair.features.broadcast.presentation.list.BroadcastListViewModel
+import com.fm404.onair.features.broadcast.presentation.list.screen.component.ChannelItem
 import com.fm404.onair.features.broadcast.presentation.list.state.BroadcastListState
 
 @Composable
@@ -24,7 +27,9 @@ fun BroadcastListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         BroadcastListContent(
             state = state,
-            onBroadcastClick = onBroadcastClick,
+            onChannelClick = { channel ->
+                onBroadcastClick(channel.channelId)
+            },
             onNotificationClick = viewModel::onNotificationClick
         )
 
@@ -39,13 +44,29 @@ fun BroadcastListScreen(
                 contentDescription = "방송 만들기"
             )
         }
+
+        if (state.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+
+        state.error?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(16.dp)
+            )
+        }
     }
 }
 
 @Composable
 private fun BroadcastListContent(
     state: BroadcastListState,
-    onBroadcastClick: (String) -> Unit,
+    onChannelClick: (Channel) -> Unit,
     onNotificationClick: () -> Unit
 ) {
     Column(
@@ -73,11 +94,18 @@ private fun BroadcastListContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 임시 버튼
-        Button(
-            onClick = { onBroadcastClick("1") }
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("방송 1로 이동")
+            items(
+                items = state.channels,
+                key = { it.channelId }
+            ) { channel ->
+                ChannelItem(
+                    channel = channel,
+                    onClick = { onChannelClick(channel) }
+                )
+            }
         }
     }
 }

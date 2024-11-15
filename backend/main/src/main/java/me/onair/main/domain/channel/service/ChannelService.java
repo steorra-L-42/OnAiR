@@ -1,7 +1,6 @@
 package me.onair.main.domain.channel.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,7 @@ import me.onair.main.domain.channel.dto.CreateNewChannelResponse;
 import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.channel.entity.Dj;
 import me.onair.main.domain.channel.entity.Track;
-import me.onair.main.domain.channel.error.ChannelNotFound;
+import me.onair.main.domain.channel.error.ChannelNotFoundException;
 import me.onair.main.domain.channel.repository.ChannelRepository;
 import me.onair.main.domain.channel.repository.DjRepository;
 import me.onair.main.domain.channel.repository.TrackRepository;
@@ -63,15 +62,16 @@ public class ChannelService {
         // 5. 카프카 전송
         CreateNewChannelKafka kafkaMessage = CreateNewChannelKafka.of(channel, dj, trackList);
         kafkaProducer.sendMessageToKafka(
-            Topics.CHANNEL_INFO,
-            channel.getUuid(),
-            kafkaMessage.toJson()
+                Topics.CHANNEL_INFO,
+                channel.getUuid(),
+                kafkaMessage.toJson()
         );
         return CreateNewChannelResponse.from(channel);
     }
 
     public ChannelInfoResponse getChannelInfo(String channelId) {
-        Channel channel = channelRepository.findByUuid(channelId).orElseThrow(() -> new ChannelNotFound(ErrorCode.CHANNEL_NOT_FOUND));
+        Channel channel = channelRepository.findByUuid(channelId)
+                .orElseThrow(() -> new ChannelNotFoundException(ErrorCode.CHANNEL_NOT_FOUND));
         return ChannelInfoResponse.from(channel);
     }
 }
