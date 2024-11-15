@@ -10,13 +10,15 @@ from shared_vars import channels
 from segment_queue import SegmentQueue
 from segmenter import generate_segment_from_files, write_m3u8, update_m3u8
 from file_utils import dir_setup, clear_hls_path
+from src.shared_vars import channels_lock
 
 
 ######################  채널 추가  ######################
 def add_channel(channel_name, file_info_list):
   try:
     channel = init_channel(channel_name,file_info_list)
-    channel['channel_thread_stop_event'] = threading.Event()
+    with channels_lock:
+      channels[channel_name]['channel_thread_stop_event'] = threading.Event()
     update_m3u8(channel = channel, stop_event = channel['channel_thread_stop_event'])
   except Exception as e:
     log.error(f"[{channel['name']}] 스트리밍 오류 발생 - {e}")
@@ -52,23 +54,22 @@ def init_channel(channel_name, file_info_list):
 
   # .m3u8 생성
   write_m3u8(
-    channel=channel,
-    m3u8_path=os.path.join(channel_path, 'index.m3u8'),
-    segments=channel['queue'].dequeue(SEGMENT_LIST_SIZE)
+    channel   = channel,
+    m3u8_path = os.path.join(channel_path, 'index.m3u8'),
+    segments  = channel['queue'].dequeue(SEGMENT_LIST_SIZE)
   )
   log.info(f"[{channel_name}] 스트리밍 시작")
-  return channels[channel_name]
+  return channel
 
 
 ######################  채널 삭제  ######################
-def remove_channel(channel_name:str):
-  global channels
-  channel = channels[channel_name]
+def remove_channel(channel):
+  channel_name = channel['name']
   log.info(f"[{channel_name}] 채널 종료 루틴 시작")
 
   # m3u8 update task 종료
   channel['channel_thread_stop_event'].set()
-  channel['channel_thread'].join()
+  channel['channel_thread'].result()
   log.info(f"[{channel_name}] thread 종료")
 
   # 자원 할당 해제
@@ -88,9 +89,13 @@ def add_audio(channel_name, file_info_list):
     file_info_list = file_info_list,
     start          = start
   )
+  
+  log.info("락 가지기 전")
   with channel['queue'].lock:
+    log.info("락 가지고 있는 중")
     channel['queue'].next_start = next_start
     channel['queue'].metadata = channel['queue'].metadata | new_metadata
 
   # queue에 세그먼트 파일 저장
   channel['queue'].init_segments_by_range(start, next_start)
+  log.info(f"[{channel_name}] 오디오 추가 완료")

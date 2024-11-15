@@ -11,7 +11,7 @@ from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR, \
   SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START, MEDIA_TYPE, \
   MEDIA_MUSIC_TITLE, MEDIA_MUSIC_ARTIST, MEDIA_MUSIC_COVER
 from logger import log
-from shared_vars import channels
+from shared_vars import channels, channel_setup_executor, channel_data_executor
 
 from audio_listener import create_audio_listener_consumer
 from channel_manager import remove_channel
@@ -40,10 +40,15 @@ async def lifespan(app: FastAPI):
   log.info("미디어 서버 가동")
 
   yield
-  log.info("서버 종료 루틴 시작")
+  log.info(f"서버 종료 루틴 시작 [{channels}]")
   for channel in channels.values():
-    remove_channel(channel['name'])
+    remove_channel(channel)
   del channels
+
+  channel_setup_executor.shutdown(True)
+  channel_data_executor.shutdown(True)
+  log.info(f"ThreadPool 해제")
+
   consumer.stop_event.set()
   consumer.close()
   log.info("카프카 컨슈머 종료")

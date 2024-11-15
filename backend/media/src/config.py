@@ -39,3 +39,6 @@ MEDIA_FCM_TOKEN = "fcm_token"
 
 # 기본 채널 변수
 BASIC_CHANNEL_NAME = 'channel_1'
+
+# 스레드 풀
+MAX_WORKERS = 3

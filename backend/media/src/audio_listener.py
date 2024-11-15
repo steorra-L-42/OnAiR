@@ -1,18 +1,16 @@
-import asyncio
-import json
-import os.path
 # 외부 패키지
+import json
 import threading
 
 # 내부 패키지
 from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
 import config
 from logger import log
-from shared_vars import channels
+from shared_vars import channels, channel_setup_executor, channel_data_executor
 
 from kafka_consumer_wrapper import KafkaConsumerWrapper
-from segmenter import generate_segment_from_files
 from channel_manager import add_channel, add_audio
+from src.shared_vars import channels_lock
 
 
 ##################  토픽: media_topic에 대한 consumer 생성  ##################
@@ -52,23 +50,13 @@ def process_input_audio(msg):
 
   # 새 채널 개설
   if is_start:
-    channel_thread = threading.Thread(
-      target=add_channel,
-      args=(key, file_info_list),
-      daemon=True
-    )
-    channels['channel_thread'] = channel_thread
-    channel_thread.start()
+    future = channel_setup_executor.submit(add_channel, key, file_info_list)
+    with channels_lock:
+      channels[key]['channel_thread'] = future
 
   # 기존 채널에 음성 추가
   else:
-    add_audio_thread = threading.Thread(
-      target=add_audio,
-      args=(key, file_info_list),
-      daemon=True
-    )
-    add_audio_thread.start()
-
+    channel_data_executor.submit(add_audio, key, file_info_list)
 
 ######################  토픽: media_topic 요청 처리  ######################
 def tmp_get_file_info_list(file_path_list):
