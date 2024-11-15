@@ -3,27 +3,23 @@ package com.fm404.onair.data.remote.dto.broadcast
 data class CreateChannelRequest(
     val ttsEngine: String,
     val personality: String,
-    val topic: String,
-    val playList: List<PlayListDto>
+    val newsTopic: String,
+    val thumbnail: String,
+    val channelName: String,
+    val trackList: List<PlayListDto>
 )
 
 data class PlayListDto(
-    val playListMusicTitle: String,
-    val playListMusicArtist: String,
-    val playListMusicCoverUrl: String
+    val title: String,
+    val artist: String,
+    val cover: String
 )
 
 data class CreateChannelResponse(
-    val userId: String,
-    val role: String,
-    val tts_engine: String,
-    val personality: String,
-    val topic: String,
-    val playList: List<PlayListDto>,
-    val channelId: String,
-    val isDefault: Boolean,
+    val channelUuid: String,
+    val channelName: String,
     val start: String,
     val end: String,
-    val isEnded: Boolean,
-    val thumbnail: String
+    val isDefault: Boolean,
+    val ttsEngine: String
 )

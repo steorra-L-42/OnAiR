@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.fm404.onair.core.contract.media.MediaPlayerContract
+import com.fm404.onair.domain.usecase.broadcast.broadcast.GetChannelUseCase
 import com.fm404.onair.features.broadcast.impl.CustomHttpDataSourceFactory
 import com.fm404.onair.features.broadcast.presentation.detail.state.BroadcastDetailState
 import com.fm404.onair.features.broadcast.presentation.detail.state.BroadcastDetailEvent
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class BroadcastDetailViewModel @Inject constructor(
     private val mediaPlayerContract: MediaPlayerContract,
     private val customHttpDataSourceFactory: CustomHttpDataSourceFactory,
+    private val getChannelUseCase: GetChannelUseCase,
     savedStateHandle: SavedStateHandle,
     application: Application
 ) : AndroidViewModel(application) {
@@ -37,6 +39,45 @@ class BroadcastDetailViewModel @Inject constructor(
 
     init {
         fetchContentTypeHeaders()
+        // channelId로 채널 정보 로드
+        _state.value.broadcastId.takeIf { it.isNotEmpty() }?.let { channelId ->
+            loadChannelDetail(channelId)
+        }
+    }
+
+    private fun loadChannelDetail(channelId: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            getChannelUseCase(channelId)
+                .onSuccess { channel ->
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isLoading = false,
+                            error = null,
+                            userNickname = channel.userNickname,
+                            profilePath = channel.profilePath,
+                            ttsEngine = channel.ttsEngine,
+                            personality = channel.personality,
+                            topic = channel.newsTopic,
+                            isDefault = channel.isDefault,
+                            start = channel.start,
+                            end = channel.end,
+                            isEnded = channel.isEnded,
+                            thumbnail = channel.thumbnail,
+                            coverImageUrl = channel.thumbnail
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = throwable.message
+                        )
+                    }
+                }
+        }
     }
 
     private fun fetchContentTypeHeaders() {
