@@ -1,7 +1,5 @@
 # 외부 패키지
-import asyncio
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import HTTPException
@@ -9,14 +7,15 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 # 내부 패키지
-from audio_listener import create_audio_listener_consumer
-from file_utils import clear_hls_path
 from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR, \
   SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START, MEDIA_TYPE, \
   MEDIA_MUSIC_TITLE, MEDIA_MUSIC_ARTIST, MEDIA_MUSIC_COVER
 from logger import log
+from shared_vars import channels
 
-from shared_vars import add_channel, channels
+from audio_listener import create_audio_listener_consumer
+from channel_manager import remove_channel
+from file_utils import clear_hls_path
 from segment_queue import SegmentQueue
 
 app = FastAPI()
@@ -36,25 +35,19 @@ app.add_middleware(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   global channels
-  log.info("서버 초기화 루틴 시작")
-  consumer = create_audio_listener_consumer(asyncio.get_event_loop())
+  log.info("미디어 서버 초기화 루틴 시작")
+  consumer = create_audio_listener_consumer()
+  log.info("미디어 서버 가동")
 
   yield
   log.info("서버 종료 루틴 시작")
   for channel in channels.values():
-    clear_hls_path(channel)
-    channel['queue'].clear()
-    channel['update_task'].cancel()
-    try:
-      await channel['update_task'].result()
-      log.info(f'채널 제거 완료 [{channel["name"]}]')
-    except Exception as e:
-      log.info(f'채널 제거 실패 [{channel["name"]}] - {e}')
-
+    remove_channel(channel['name'])
   del channels
   consumer.stop_event.set()
   consumer.close()
-  log.info("컨슈머 정지 완료, 서버 종료")
+  log.info("카프카 컨슈머 종료")
+  log.info("서버 종료")
 
 app.router.lifespan_context = lifespan
 

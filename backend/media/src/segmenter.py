@@ -84,7 +84,7 @@ def generate_segment(hls_path, file_info):
 
 
 ######################  m3u8 작성  ######################
-async def write_m3u8(channel, m3u8_path, segments: list):
+def write_m3u8(channel, m3u8_path, segments: list):
   m3u8_lines = [
     "#EXTM3U\n",
     "#EXT-X-VERSION:3\n",
@@ -94,8 +94,8 @@ async def write_m3u8(channel, m3u8_path, segments: list):
 
   m3u8_lines.extend(get_m3u8_seg_list(channel, segments))
 
-  async with aiofiles.open(m3u8_path, "w") as f:
-    await f.writelines(m3u8_lines)
+  with open(m3u8_path, "w") as f:
+    f.writelines(m3u8_lines)
   wait_time = (m3u8_lines[4].strip())[8:-1]
   return float(wait_time)
 
@@ -124,13 +124,13 @@ def get_m3u8_seg_list(channel, segments):
 
 
 ###################### 세그먼트 리스트 업데이트  ######################
-async def update_m3u8(channel):
+def update_m3u8(channel, stop_event):
   channel_path = channel['channel_path']
   m3u8_path = os.path.join(channel_path, "index.m3u8")
   temp_m3u8_path = os.path.join(channel_path, "index_temp.m3u8")
-  await asyncio.sleep(SEGMENT_UPDATE_INTERVAL-0.1)
 
-  while True:
+  time.sleep(SEGMENT_UPDATE_INTERVAL-0.1)
+  while not stop_event.is_set():
     # 루프 시작 시간 기록
     start_time = time.perf_counter()
 
@@ -139,14 +139,11 @@ async def update_m3u8(channel):
     segments.extend(channel['queue'].dequeue(SEGMENT_UPDATE_SIZE))
 
     # index_temp.m3u8 작성
-    first_seg_length = await write_m3u8(channel, temp_m3u8_path, segments)
+    first_seg_length = write_m3u8(channel, temp_m3u8_path, segments)
 
     # 파일 교체
-    try:
-      os.replace(temp_m3u8_path, m3u8_path)
-      log.info(f"[{channel['name']}] 스트리밍 중 - {segments}")
-    except PermissionError as e:
-      await asyncio.sleep(0.2)  # 잠시 대기 후 재시도
+    os.replace(temp_m3u8_path, m3u8_path)
+    log.info(f"[{channel['name']}] 스트리밍 중 - {segments}")
 
     # 루프 종료 시간 기록
     end_time = time.perf_counter()
@@ -154,7 +151,7 @@ async def update_m3u8(channel):
 
     # 남은 시간 계산하여 대기 (최소 대기 시간은 0으로 설정)
     sleep_time = first_seg_length - execution_time if first_seg_length > execution_time else 0
-    await asyncio.sleep(sleep_time)
+    time.sleep(sleep_time)
 
 
 ######################  주어진 파일의 길이(초)를 가져오는 함수  ######################

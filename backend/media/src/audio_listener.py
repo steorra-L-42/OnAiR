@@ -8,19 +8,20 @@ import threading
 from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
 import config
 from logger import log
+from shared_vars import channels
 
-from shared_vars import channels, add_channel
-from segmenter import generate_segment, generate_segment_from_files
 from kafka_consumer_wrapper import KafkaConsumerWrapper
+from segmenter import generate_segment_from_files
+from channel_manager import add_channel, add_audio
 
 
 ##################  토픽: media_topic에 대한 consumer 생성  ##################
-def create_audio_listener_consumer(loop):
+def create_audio_listener_consumer():
   try:
     log.info(f"Creating consumer for topic: {MEDIA_TOPIC}")
     consumer = KafkaConsumerWrapper(
       topic=MEDIA_TOPIC,
-      on_message_callback=lambda msg: process_input_audio(msg, loop)
+      on_message_callback=lambda msg: process_input_audio(msg)
     )
     log.info(f"Consumer for topic {MEDIA_TOPIC} created successfully.")
 
@@ -38,7 +39,7 @@ def create_audio_listener_consumer(loop):
 
 
 ######################  토픽: media_topic 요청 처리  ######################
-def process_input_audio(msg, loop):
+def process_input_audio(msg):
   global channels
   # Key, Value 파싱
   key = msg.key().decode('utf-8')
@@ -51,28 +52,22 @@ def process_input_audio(msg, loop):
 
   # 새 채널 개설
   if is_start:
-    add_channel(
-      channel_name   = key,
-      file_info_list = file_info_list,
-      loop           = loop
+    channel_thread = threading.Thread(
+      target=add_channel,
+      args=(key, file_info_list),
+      daemon=True
     )
+    channels['channel_thread'] = channel_thread
+    channel_thread.start()
 
   # 기존 채널에 음성 추가
   else:
-    channel = channels[key]
-    start = channel['queue'].get_next_index()
-
-    with channel['queue'].lock:
-      new_metadata, next_start = generate_segment_from_files(
-        hls_path       = channel['hls_path'],
-        file_info_list = file_info_list,
-        start          = start
-      )
-      channel['queue'].next_start = next_start
-      channel['queue'].metadata = channel['queue'].metadata | new_metadata
-
-    # queue에 세그먼트 파일 저장
-    channel['queue'].init_segments_by_range(start, next_start)
+    add_audio_thread = threading.Thread(
+      target=add_audio,
+      args=(key, file_info_list),
+      daemon=True
+    )
+    add_audio_thread.start()
 
 
 ######################  토픽: media_topic 요청 처리  ######################
