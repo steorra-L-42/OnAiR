@@ -11,9 +11,12 @@ class StreamManager:
         self.lock = threading.Lock()
 
     def add_stream(self, stream: Stream):
-        log.info(f"add stream to StreamManager")
         with self.lock:
             self.streams[stream.name] = stream
+
+    def remove_stream(self, stream_name):
+        with self.lock:
+            del self.streams[stream_name]
 
     def get_stream(self, stream_name):
         return self.streams[stream_name]

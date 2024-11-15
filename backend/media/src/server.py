@@ -11,12 +11,11 @@ from intervaltree import IntervalTree
 # 내부 패키지
 from config import STREAMING_CHANNELS, HLS_DIR, \
   SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START, MEDIA_TYPE, \
-  MEDIA_MUSIC_TITLE, MEDIA_MUSIC_ARTIST, MEDIA_MUSIC_COVER
+  MEDIA_MUSIC_TITLE, MEDIA_MUSIC_ARTIST, MEDIA_MUSIC_COVER, CHANNEL_CLOSE_TOPIC, MEDIA_TOPIC
 from shared_vars import stream_setup_executor, stream_data_executor, stream_manager
 
 from logger import log
-from audio_listener import create_audio_listener_consumer
-from segment_queue import SegmentQueue
+from kafka_listener import create_kafka_listener_consumer, process_input_audio, process_close_channel
 
 app = FastAPI()
 
@@ -36,7 +35,9 @@ app.add_middleware(
 async def lifespan(app: FastAPI):
   global stream_manager
   log.info("미디어 서버 초기화 루틴 시작")
-  consumer = create_audio_listener_consumer(stream_manager)
+  media_consumer = create_kafka_listener_consumer(MEDIA_TOPIC, process_input_audio, stream_manager)
+  close_consumer = create_kafka_listener_consumer(CHANNEL_CLOSE_TOPIC, process_close_channel, stream_manager)
+
   log.info("미디어 서버 가동")
 
   yield
@@ -55,8 +56,10 @@ async def lifespan(app: FastAPI):
     log.error(f"ThreadPool 해제 에러 발생 [{e}]")
 
   try:
-    consumer.stop_event.set()
-    consumer.close()
+    media_consumer.stop_event.set()
+    media_consumer.close()
+    close_consumer.stop_event.set()
+    close_consumer.close()
     log.info("카프카 컨슈머 종료")
   except Exception as e:
     log.info(f"카프카 컨슈머 종료 에러 발생 [{e}]")
@@ -110,15 +113,15 @@ async def serve_playlist(stream_name: str):
 @app.get("/channel/{channel_name}/{segment}")
 async def serve_segment(channel_name: str, segment: str):
   segment_path = os.path.join(STREAMING_CHANNELS, channel_name, HLS_DIR, segment)
-  if not os.path.exists(segment_path):
+  if not os.path.exists(segment_path) or not stream_manager.is_exist(channel_name):
     raise HTTPException(status_code=404, detail="Segment not found")
 
   response = FileResponse(segment_path)
   response.headers["Cache-Control"] = "no-cache"
   add_metadata_to_response_header(
-    headers=      response.headers,        # Response Header
-    stream_name= channel_name,            # 채널 이름
-    index =       segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
+    headers      = response.headers,        # Response Header
+    stream_name  = channel_name,            # 채널 이름
+    index        = segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
   )
   return response
 

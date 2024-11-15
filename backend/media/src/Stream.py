@@ -104,3 +104,4 @@ class Stream:
         self.future.result()
         self.metadata.clear()
         self.queue.clear()
+        log.info(f"[{self.name}] 채널 삭제 완료")

@@ -2,6 +2,8 @@
 import json
 import threading
 
+from aiofiles import stderr
+
 # 내부 패키지
 from shared_vars import stream_setup_executor, stream_data_executor
 from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
@@ -13,15 +15,15 @@ from logger import log
 from kafka_consumer_wrapper import KafkaConsumerWrapper
 
 
-##################  토픽: media_topic에 대한 consumer 생성  ##################
-def create_audio_listener_consumer(stream_manager):
+##################  토픽에 대한 consumer 생성  ##################
+def create_kafka_listener_consumer(topic, callback, stream_manager):
   try:
-    log.info(f"컨슈머 생성 [{MEDIA_TOPIC}]")
+    log.info(f"컨슈머 생성 [{topic}]")
     consumer = KafkaConsumerWrapper(
-      topic=MEDIA_TOPIC,
-      on_message_callback=lambda msg: process_input_audio(msg, stream_manager)
+      topic=topic,
+      on_message_callback=lambda msg: callback(msg, stream_manager)
     )
-    log.info(f"컨슈머 생성 완료 [{MEDIA_TOPIC}]")
+    log.info(f"컨슈머 생성 완료 [{topic}]")
 
     # 스레드를 사용하여 Consumer 메시지 소비 실행
     consumer_thread = threading.Thread(
@@ -29,19 +31,19 @@ def create_audio_listener_consumer(stream_manager):
       daemon=True
     )
     consumer_thread.start()
-    log.info(f"컨슈머 스레드 실행 시작 [{MEDIA_TOPIC}]")
+    log.info(f"컨슈머 스레드 실행 시작 [{topic}]")
     return consumer
 
   except Exception as e:
-    log.error(f"Failed to create consumer for topic {MEDIA_TOPIC}: {e}")
+    log.error(f"Failed to create consumer for topic {topic}: {e}")
+
+
 
 
 ######################  토픽: media_topic 요청 처리  ######################
 def process_input_audio(msg, stream_manager:StreamManager):
-  global channels
   # Key, Value 파싱
-  key = msg.key().decode('utf-8')
-  value = json.loads(msg.value().decode('utf-8'))
+  key, value = get_key_and_value_from_msg(msg)
 
   file_info_list = value.get(MEDIA_FILE_INFO, [])
   is_start = value.get(MEDIA_IS_START)
@@ -64,16 +66,26 @@ def process_input_audio(msg, stream_manager:StreamManager):
     stream = stream_manager.get_stream(stream_name= key)
     stream_data_executor.submit(stream.add_audio, file_info_list)
 
-######################  토픽: media_topic 요청 처리  ######################
-def tmp_get_file_info_list(file_path_list):
-  file_info_list = {}
-  file_info_list['fileInfo'] = []
-  for file_path in file_path_list:
-    file_info_list['fileInfo'].append({
-      config.MEDIA_FILE_PATH: file_path,
-      config.MEDIA_MUSIC_TITLE: '제목없음',
-      config.MEDIA_MUSIC_ARTIST: '익명',
-      config.MEDIA_TYPE: '없음',
-      config.MEDIA_MUSIC_COVER: 'https://marketplace.canva.com/EAExV2m91mg/1/0/100w/canva-%ED%8C%8C%EB%9E%80%EC%83%89-%EB%B0%A4%ED%95%98%EB%8A%98-%EA%B7%B8%EB%A6%BC%EC%9D%98-%EC%95%A8%EB%B2%94%EC%BB%A4%EB%B2%84-QV0Kn6TPPVw.jpg',
-    })
-  return file_info_list
+
+
+
+######################  토픽: channel_close_topic 요청 처리  ######################
+def process_close_channel(msg, stream_manager:StreamManager):
+  # Key, Value 파싱
+  stream_name, value = get_key_and_value_from_msg(msg)
+  if not stream_manager.is_exist(stream_name):
+    return
+
+  log.info(f"[{stream_name}] 채널을 삭제합니다.")
+  stream = stream_manager.get_stream(stream_name)
+  stream_manager.remove_stream(stream_name)
+  stream_setup_executor.submit(stream.remove_stream())
+
+
+
+
+######################  토픽: channel_close_topic 요청 처리  ######################
+def get_key_and_value_from_msg(msg):
+  key = msg.key().decode('utf-8')
+  value = json.loads(msg.value().decode('utf-8'))
+  return key, value
