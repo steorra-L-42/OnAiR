@@ -16,6 +16,9 @@ def dir_setup(channel_name):
   os.makedirs(channel_path, exist_ok=True)
   os.makedirs(playlist_path, exist_ok=True)
   create_or_clear_directory(hls_path)
+
+  if os.path.exists(os.path.join(channel_path, 'dummy.m3u8')):
+    os.remove(os.path.join(channel_path, 'dummy.m3u8'))
   return channel_path, playlist_path, hls_path
 
 ######################  기존 디렉토리가 존재하면 초기화  ######################

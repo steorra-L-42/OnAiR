@@ -23,11 +23,11 @@ app = FastAPI()
 
 ######################  CORS 설정  ######################
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+  CORSMiddleware,
+  allow_origins=["*"],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
 )
 
 
@@ -73,13 +73,25 @@ async def get_streams():
   return JSONResponse({
     "status": "success",
     "streams": channels["channel_1"]["queue"].get_all_segments()
-})
+  })
 
 
 ######################  API: .m3u8 파일 조회  ######################
 @app.get("/channel/{stream_name}/index.m3u8")
 async def serve_playlist(stream_name: str):
   m3u8_path = os.path.join(STREAMING_CHANNELS, stream_name, "index.m3u8")
+  if not os.path.exists(m3u8_path):
+    raise HTTPException(status_code=404, detail="Playlist not found")
+
+  response = FileResponse(m3u8_path)
+  response.headers["Cache-Control"] = "no-cache"
+  return response
+
+
+######################  API: .m3u8 파일 조회  ######################
+@app.get("/channel/1")
+async def serve_playlist(stream_name: str):
+  m3u8_path = os.path.join(STREAMING_CHANNELS, "channel_1/index.m3u8")
   if not os.path.exists(m3u8_path):
     raise HTTPException(status_code=404, detail="Playlist not found")
 
@@ -98,9 +110,9 @@ async def serve_segment(channel_name: str, segment: str):
   response = FileResponse(segment_path)
   response.headers["Cache-Control"] = "no-cache"
   add_metadata_to_response_header(
-    response.headers,        # Response Header
-    channel_name,            # 채널 이름
-    segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
+    headers=      response.headers,        # Response Header
+    channel_name= channel_name,            # 채널 이름
+    index =       segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
   )
   return response
 
@@ -108,12 +120,13 @@ async def serve_segment(channel_name: str, segment: str):
 ######################  세그먼트 파일 조회(메타 데이터 조회)  ######################
 def add_metadata_to_response_header(headers, channel_name, index):
   channel = channels[channel_name]
+  queue:SegmentQueue = channel['queue']
   index_int = int(index)
   try:
-    headers['onair-content-type'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileGenre')
-    headers['music-title'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileTitle')
-    headers['music-artist'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileAuthor')
-    headers['music-cover'] = get_metadata_and_encode_latin1(channel['queue'], index_int, 'fileCover')
+    headers['onair-content-type'] = get_metadata_and_encode_latin1(queue, index_int, 'fileGenre')
+    headers['music-title'] = get_metadata_and_encode_latin1(queue, index_int, 'fileTitle')
+    headers['music-artist'] = get_metadata_and_encode_latin1(queue, index_int, 'fileAuthor')
+    headers['music-cover'] = get_metadata_and_encode_latin1(queue, index_int, 'fileCover')
 
   except Exception as e:
     log.error(f'메타데이터 조회 에러 [{e}]')
@@ -124,4 +137,5 @@ def add_metadata_to_response_header(headers, channel_name, index):
 
 
 def get_metadata_and_encode_latin1(queue:SegmentQueue, index, column):
-  return queue.get_metadata_from_index_and_column(index, column).encode('utf-8').decode('latin-1')
+  return (queue.get_metadata_from_index(index, column)
+          .encode('utf-8').decode('latin-1'))
