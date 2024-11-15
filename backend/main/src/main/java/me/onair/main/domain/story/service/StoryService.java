@@ -128,14 +128,14 @@ public class StoryService {
     // KafKa Story Reply Consume
     @Transactional
     public void addStoryReply(String key, StoryReplyDto storyReplyDto) {
-        log.info("StoryService.addStoryReply: {}", storyReplyDto);
+        log.info("StoryService.addStoryReply: {}", storyReplyDto.toString());
 
         Channel channel = getChannelByUuid(key); // 채널 검증
         Story story = getStoryById(storyReplyDto.getStoryId()); // 존재하는 사연인지 검증
         validateStoryReply(story); // 사연의 답변이 이미 있는지 검증
         validateStoryChannel(story, channel); // 사연의 채널이 Key값의 채널과 같은지 검증
 
-        story.saveReply(storyReplyDto.getStoryReply()); // 사연의 답변 저장
+        story.saveReply(storyReplyDto.getTypecast().getText()); // 사연의 답변 저장
     }
 
     // 채널 find, 검증
