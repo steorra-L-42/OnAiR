@@ -25,3 +25,4 @@ hyeonji_actor_id = os.getenv("HYEONJI_ACTOR_ID")
 eunbin_actor_id = os.getenv("EUNBIN_ACTOR_ID")
 
 max_story_count = 5
+max_channels = 5

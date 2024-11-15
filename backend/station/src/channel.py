@@ -12,6 +12,7 @@ from play_back_queue import PlaybackQueue
 
 class Channel:
     def __init__(self, channel_id, config):
+        self.music_download_executor = ThreadPoolExecutor(max_workers=4)
         # 필드 정의
         self.broadcast_thread = None
         self.stop_event = Event()
@@ -27,6 +28,7 @@ class Channel:
         self.content_provider = ContentProvider(self, self.playback_queue)
         self.dj = DJ(self, self.playback_queue)
         self.schedule_manager = DynamicScheduleManager(self, self.content_provider, self.playback_queue, self.dj)
+
         logging.info(f"Channel {channel_id} initialized.")
 
     def start(self):
@@ -38,19 +40,21 @@ class Channel:
 
     def download_playlist(self, playlist_config):
         """플레이리스트 다운로드 및 추가"""
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = []
-            for index, item in enumerate(playlist_config):
-                title = item.get("playListMusicTitle")
-                artist = item.get("playListMusicArtist")
-                if title and artist:
-                    futures.append(executor.submit(download_from_keyword, title, artist, self.channel_id, "playlists"))
+        futures = []
+        for index, item in enumerate(playlist_config):
+            title = item.get("playListMusicTitle")
+            artist = item.get("playListMusicArtist")
+            cover_url = item.get("playListMusicCoverUrl")
 
-            # 비동기적으로 반환된 경로들을 playlist에 추가
-            for future in futures:
-                file_info = future.result()  # 작업 결과가 반환되면
-                if file_info:  # 결과가 None이 아닌 경우에만 추가
-                    self.add_to_playlist(file_info)
+            if title and artist:
+                futures.append(self.music_download_executor.submit(
+                    download_from_keyword, title, artist, cover_url, self.channel_id, "playlists"))
+
+        # 비동기적으로 반환된 경로들을 playlist에 추가
+        for future in futures:
+            file_info = future.result()  # 작업 결과가 반환되면
+            if file_info:  # 결과가 None이 아닌 경우에만 추가
+                self.add_to_playlist(file_info)
 
     def add_to_playlist(self, file_info):
         """플레이리스트에 파일 추가"""
