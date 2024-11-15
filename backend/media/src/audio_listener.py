@@ -6,6 +6,7 @@ import threading
 
 # 내부 패키지
 from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
+import config
 from logger import log
 
 from shared_vars import channels, add_channel
@@ -55,22 +56,20 @@ def process_input_audio(msg, loop):
 
   else:
     channel = channels[key]
-    now_index = channel['queue'].last_index
+    start = channel['queue'].get_next_index()
 
     with channel['queue'].lock:
       # 세그먼트 파일 생성
-      channel['queue'].last_index = generate_segment_from_files(
-        channel['hls_path'],            # 세그먼트 생성할 경로
-        file_info_list.get("fileInfo"), # 세그먼트를 생성할 파일
-        now_index                       # 시작 인덱스 번호
+      next_start, new_metadata = generate_segment_from_files(
+        hls_path       = channel['hls_path'],
+        file_info_list = file_info_list,
+        start          = start
       )
+      channel['queue'].next_start = next_start
+      channel['queue'].metadata = channel['queue'].metadata | new_metadata
 
-    # 'queue'에 세그먼트 파일 저장
-    channel['queue'].init_segments_by_range(
-      channel['hls_path'],              # 세그먼트를 가져올 경로
-      now_index,                        # 등록할 세그먼트 파일의 인덱스 범위(시작)
-      channel['queue'].last_index       # 등록할 세그먼트 파일의 인덱스 범위(끝)
-    )
+    # queue에 세그먼트 파일 저장
+    channel['queue'].init_segments_by_range(start, next_start)
 
 
 ######################  토픽: media_topic 요청 처리  ######################
@@ -79,10 +78,10 @@ def tmp_get_file_info_list(file_path_list):
   file_info_list['fileInfo'] = []
   for file_path in file_path_list:
     file_info_list['fileInfo'].append({
-      'filePath': file_path,
-      'fileTitle': '제목',
-      'fileAuthor': '가수',
-      'fileGenre': '장르',
-      'fileCover': 'https://marketplace.canva.com/EAExV2m91mg/1/0/100w/canva-%ED%8C%8C%EB%9E%80%EC%83%89-%EB%B0%A4%ED%95%98%EB%8A%98-%EA%B7%B8%EB%A6%BC%EC%9D%98-%EC%95%A8%EB%B2%94%EC%BB%A4%EB%B2%84-QV0Kn6TPPVw.jpg',
+      config.MEDIA_FILE_PATH: file_path,
+      config.MEDIA_MUSIC_TITLE: '제목없음',
+      config.MEDIA_MUSIC_ARTIST: '익명',
+      config.MEDIA_TYPE: '없음',
+      config.MEDIA_MUSIC_COVER: 'https://marketplace.canva.com/EAExV2m91mg/1/0/100w/canva-%ED%8C%8C%EB%9E%80%EC%83%89-%EB%B0%A4%ED%95%98%EB%8A%98-%EA%B7%B8%EB%A6%BC%EC%9D%98-%EC%95%A8%EB%B2%94%EC%BB%A4%EB%B2%84-QV0Kn6TPPVw.jpg',
     })
   return file_info_list

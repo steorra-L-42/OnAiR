@@ -56,6 +56,11 @@ class SegmentQueue:
     data = next(iter(self.metadata[index])).data
     return data[column]
 
+  # 다음 인덱스 번호
+  def get_next_index(self):
+    return self.next_start
+
+  # 자원 해제
   def clear(self):
     self.queue.clear()
     self.buffer.clear()
