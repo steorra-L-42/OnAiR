@@ -80,7 +80,7 @@ public class CreateStoryTest {
             CreateNewChannelRequest createNewChannelRequest = createNewChannelRequest();
             Channel channel = channelRepository.save(Channel.createChannel(createNewChannelRequest, user));
 
-            final String url = "/api/v1/story/" + channel.getId();
+            final String url = "/api/v1/story/" + channel.getUuid();
             final String requestBody = """
                     {
                         "title": "사연 제목 제목 제목",
@@ -128,7 +128,7 @@ public class CreateStoryTest {
             CreateNewChannelRequest createNewChannelRequest = createNewChannelRequest();
             Channel channel = channelRepository.save(Channel.createChannel(createNewChannelRequest, user));
 
-            final String url = "/api/v1/story/" + channel.getId();
+            final String url = "/api/v1/story/" + channel.getUuid();
             final String requestBody = """
                     {
                         "title": "사연 제목 제목 제목",
@@ -661,7 +661,7 @@ public class CreateStoryTest {
             channel.endChannel();
             channelRepository.save(channel);
 
-            final String url = "/api/v1/story/" + channel.getId();
+            final String url = "/api/v1/story/" + channel.getUuid();
             final String requestBody = """
                     {
                         "title": "사연 제목 제목 제목",

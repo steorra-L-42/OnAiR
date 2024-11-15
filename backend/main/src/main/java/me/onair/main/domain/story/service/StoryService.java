@@ -44,15 +44,15 @@ public class StoryService {
     private final KafkaProducer kafkaProducer;
 
     @Transactional
-    public void createStory(Long channelId, CustomUserDetails customUserDetails, StoryCreateRequest request) {
+    public void createStory(String channelUuid, CustomUserDetails customUserDetails, StoryCreateRequest request) {
         log.info("StoryService.createStory: {}", request);
 
         // 1. 채널 검증
-        validateChannelId(channelId);
+        validateChannelUuid(channelUuid);
 
         // 2. 사용자 및 채널 조회
         User user = getUserById(customUserDetails.getId());
-        Channel channel = getChannelById(channelId);
+        Channel channel = getChannelByUuid(channelUuid);
 
         // 3. 스토리 생성 및 저장
         Story story = createStoryEntity(request, user, channel);
@@ -65,8 +65,8 @@ public class StoryService {
     }
 
     // 채널 ID 검증
-    private void validateChannelId(Long channelId) {
-        Channel channel = getChannelById(channelId);
+    private void validateChannelUuid(String channelUuid) {
+        Channel channel = getChannelByUuid(channelUuid);
 
         // 방송이 끝난 채널인지 검사
         if (channel.getIsEnded()) {
@@ -78,12 +78,6 @@ public class StoryService {
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(NotExistUserException::new);
-    }
-
-    // 채널 find
-    private Channel getChannelById(Long channelId) {
-        return channelRepository.findById(channelId)
-                .orElseThrow(() -> new ChannelNotFoundException(CHANNEL_NOT_FOUND));
     }
 
     // 스토리 생성
