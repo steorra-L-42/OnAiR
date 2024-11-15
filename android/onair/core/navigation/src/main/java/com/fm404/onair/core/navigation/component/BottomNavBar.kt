@@ -35,7 +35,7 @@ fun BottomNavBar(
 ) {
     val bottomNavItems = listOf(
         BottomNavItem("home", R.string.home, R.drawable.house, R.drawable.headphone),
-        BottomNavItem("playlist", R.string.playlist, R.drawable.house, R.drawable.playlistf),
+//        BottomNavItem("playlist", R.string.playlist, R.drawable.house, R.drawable.playlistf),
         // other items
         BottomNavItem("settings", R.string.show_more , R.drawable.more, R.drawable.moref)
     )
