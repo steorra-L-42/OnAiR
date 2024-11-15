@@ -32,9 +32,9 @@ class Dispatcher:
             channel_id = msg.key().decode('utf-8')
             logging.info(f"Received contents request for {channel_id}")
 
-            if(value['contentType'] == 'weather'):
+            if(value['content_type'] == 'weather'):
                 self.weather_controller.process(channel_id, value)
-            elif(value['contentType'] == 'news'):
+            elif(value['content_type'] == 'news'):
                 self.news_controller.process(channel_id, value)
 
         except Exception as e:
