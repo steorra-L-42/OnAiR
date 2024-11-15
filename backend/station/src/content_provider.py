@@ -75,6 +75,8 @@ def handle_story(msg):
         add_to_queue(channel_id, story_mp3_list)
         logging.info(f"Story and music processed successfully.")
 
+        # todo: FCM 전송하기.
+
     except Exception as e:
         logging.error(f"Error handling story: {e}")
 
@@ -106,7 +108,7 @@ def process_story_content(value, channel_id):
     story_mp3_list.append(tts_file_info)
 
     # 음악 파일 처리 (신청곡이 있을 경우)
-    story_music = value.get('storyMusic')
+    story_music = value.get('story_music')
     if story_music:
         music_file_info = process_music(value, channel_id)
         if not music_file_info:
@@ -141,13 +143,13 @@ def process_music(value, channel_id):
     """음악 다운로드 처리"""
     story_music = value.get('storyMusic', {})
 
-    music_title = story_music.get('storyMusicTitle')
-    music_artist = story_music.get('storyMusicArtist')
-    music_cover_url = story_music.get('storyMusicCoverUrl')
+    music_title = story_music.get('story_music_title')
+    music_artist = story_music.get('story_music_artist')
+    music_cover_url = story_music.get('story_music_cover_url')
 
     if not music_title or not music_artist:
         logging.error(
-            "Missing required 'storyMusicTitle' or 'storyMusicArtist' in storyMusic. Skipping music download.")
+            "Missing required 'story_music_title' or 'story_music_artist' in storyMusic. Skipping music download.")
         return None
 
     try:
