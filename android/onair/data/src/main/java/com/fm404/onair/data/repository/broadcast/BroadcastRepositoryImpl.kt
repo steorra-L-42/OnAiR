@@ -1,9 +1,11 @@
 package com.fm404.onair.data.repository.broadcast
 
+import com.fm404.onair.data.mapper.toBroadcast
 import com.fm404.onair.data.mapper.toChannel
 import com.fm404.onair.data.mapper.toCreateChannelResult
 import com.fm404.onair.data.mapper.toPlayListDto
 import com.fm404.onair.data.remote.api.broadcast.BroadcastApi
+import com.fm404.onair.domain.model.broadcast.Broadcast
 import com.fm404.onair.data.remote.dto.broadcast.CreateChannelRequest
 import com.fm404.onair.domain.model.broadcast.Channel
 import com.fm404.onair.domain.model.broadcast.CreateChannelPlayList
@@ -42,6 +44,15 @@ class BroadcastRepositoryImpl @Inject constructor(
             response.body()?.toCreateChannelResult() ?: throw Exception("Empty response body")
         } else {
             throw Exception("Failed to create channel")
+        }
+    }
+
+    override suspend fun getBroadcastList(): Result<List<Broadcast>> = runCatching {
+        val response = api.getBroadcastList()
+        if (response.isSuccessful) {
+            response.body()?.map { it.toBroadcast() } ?: emptyList()
+        } else {
+            throw Exception(response.message())
         }
     }
 }
