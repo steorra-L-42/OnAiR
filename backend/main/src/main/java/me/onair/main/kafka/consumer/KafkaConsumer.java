@@ -1,6 +1,8 @@
 package me.onair.main.kafka.consumer;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.story.service.StoryService;
@@ -17,7 +19,9 @@ import org.springframework.stereotype.Component;
 public class KafkaConsumer {
 
     private final StoryService storyService;
-    private final Gson gson;
+    private final Gson gson = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create();
 
     // Value 값만 Consume
 //    @KafkaListener(topics = Topics.NAMES.TEST)

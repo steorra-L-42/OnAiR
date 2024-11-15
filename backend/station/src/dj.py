@@ -16,9 +16,15 @@ class DJ:
         medias_path = get_medias_path(current_dir)
 
         start_filepath = medias_path / "start.mp3"
+        file_info_list = [{
+            "file_path": str(start_filepath),
+            "type": "start"
+        }]
+
         value = json.dumps({
-            "filePath": str(start_filepath),
-            "isStart": True
+            "file_info": file_info_list,
+            "is_start": True,
+            "fcm_token": self.channel.fcm_token
         })
         producer.send_message("media_topic",
                               channel_id.encode("utf-8"),
@@ -27,8 +33,8 @@ class DJ:
     def produce_contents(self, file_info_list, is_start=False):
         """콘텐츠를 Kafka에 송출"""
         value = json.dumps({
-            "fileInfo": file_info_list,
-            "isStart": is_start
+            "file_info": file_info_list,
+            "is_start": is_start
         }, ensure_ascii=False)
         producer.send_message("media_topic",
                               self.channel.channel_id.encode("utf-8"),
