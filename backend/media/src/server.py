@@ -12,7 +12,8 @@ import os
 from audio_listener import create_audio_listener_consumer
 from file_utils import clear_hls_path
 from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR, \
-  SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START
+  SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START, MEDIA_TYPE, \
+  MEDIA_MUSIC_TITLE, MEDIA_MUSIC_ARTIST, MEDIA_MUSIC_COVER
 from logger import log
 
 from shared_vars import add_channel, channels
@@ -123,10 +124,10 @@ def add_metadata_to_response_header(headers, channel_name, index):
   queue:SegmentQueue = channel['queue']
   index_int = int(index)
   try:
-    headers['onair-content-type'] = get_metadata_and_encode_latin1(queue, index_int, 'fileGenre')
-    headers['music-title'] = get_metadata_and_encode_latin1(queue, index_int, 'fileTitle')
-    headers['music-artist'] = get_metadata_and_encode_latin1(queue, index_int, 'fileAuthor')
-    headers['music-cover'] = get_metadata_and_encode_latin1(queue, index_int, 'fileCover')
+    headers['onair-content-type'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_TYPE))
+    headers['music-title'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_MUSIC_TITLE))
+    headers['music-artist'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_MUSIC_ARTIST))
+    headers['music-cover'] = encode_latin1(queue.get_metadata_from_index(index_int, MEDIA_MUSIC_COVER))
 
   except Exception as e:
     log.error(f'메타데이터 조회 에러 [{e}]')
@@ -136,6 +137,5 @@ def add_metadata_to_response_header(headers, channel_name, index):
     headers['music-cover'] = 'error'
 
 
-def get_metadata_and_encode_latin1(queue:SegmentQueue, index, column):
-  return (queue.get_metadata_from_index(index, column)
-          .encode('utf-8').decode('latin-1'))
+def encode_latin1(data):
+  return (data.encode('utf-8').decode('latin-1'))
