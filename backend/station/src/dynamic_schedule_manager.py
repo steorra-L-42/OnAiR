@@ -116,16 +116,16 @@ class DynamicScheduleManager:
                     for file_info in file_infos:
                         # 기본 정보
                         file_info_entry = {
-                            "filePath": file_info.get("file_path"),
+                            "file_path": file_info.get("file_path"),
                             "type": file_info.get("type")
                         }
 
                         # type이 'music'일 경우 추가 정보 설정
                         if file_info["type"] == "music":
                             file_info_entry.update({
-                                "musicTitle": file_info.get("music_title"),
-                                "musicArtist": file_info.get("music_artist"),
-                                "musicCoverUrl": file_info.get("music_cover_url")
+                                "music_title": file_info.get("music_title"),
+                                "music_artist": file_info.get("music_artist"),
+                                "music_cover_url": file_info.get("music_cover_url")
                             })
 
                         file_info_list.append(file_info_entry)
@@ -148,11 +148,11 @@ class DynamicScheduleManager:
         self.playlist_index += 1
         self.buffering_time = first_music.get("length")
         self.dj.produce_contents({
-            "filePath": first_music.get("file_path"),
+            "file_path": first_music.get("file_path"),
             "type": "music",
-            "musicTitle": first_music.get("music_title"),
-            "musicArtist": first_music.get("music_artist"),
-            "musicCoverUrl": first_music.get("music_cover_url")})
+            "music_title": first_music.get("music_title"),
+            "music_artist": first_music.get("music_artist"),
+            "music_cover_url": first_music.get("music_cover_url")})
 
     def stop(self):
         """스케줄러 종료 및 리소스 정리"""
