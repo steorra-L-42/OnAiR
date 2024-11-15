@@ -13,6 +13,7 @@ import me.onair.main.domain.channel.error.ChannelMismatchException;
 import me.onair.main.domain.channel.error.ChannelNotFoundException;
 import me.onair.main.domain.channel.error.EndedChannelException;
 import me.onair.main.domain.channel.repository.ChannelRepository;
+import me.onair.main.domain.fcm.entity.FcmToken;
 import me.onair.main.domain.story.dto.CreateNewStoryKafka;
 import me.onair.main.domain.story.dto.StoryCreateRequest;
 import me.onair.main.domain.story.dto.StoryCreateRequest.Music;
@@ -61,7 +62,7 @@ public class StoryService {
         StoryMusic storyMusic = processStoryMusic(request, story);
 
         // 5. KafKa Produce
-        produceRecord(story, storyMusic, channel);
+        produceRecord(user.getFcmToken(), story, storyMusic, channel);
     }
 
     // 채널 ID 검증
@@ -115,8 +116,8 @@ public class StoryService {
     }
 
     // KafKa produce
-    private void produceRecord(Story story, StoryMusic storyMusic, Channel channel) {
-        CreateNewStoryKafka kafkaMessage = CreateNewStoryKafka.of(story, storyMusic);
+    private void produceRecord(FcmToken fcmToken, Story story, StoryMusic storyMusic, Channel channel) {
+        CreateNewStoryKafka kafkaMessage = CreateNewStoryKafka.of(fcmToken.getValue(), story, storyMusic);
         kafkaProducer.sendMessageToKafka(
                 Topics.STORY,
                 channel.getUuid(),
