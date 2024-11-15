@@ -10,6 +10,9 @@ class NewsService:
         logging.info(f"NewsService process value : {value}")
         results = []
 
+        # // 정치, 경제, 사회, 생활/문화, IT/과학, 세계
+        # POLITICS, ECONOMY, SOCIETY, LIFE_CULTURE, IT_SCIENCE, WORLD
+
         # TODO : 뉴스 별로 llm 모델을 이용하여 응답 생성
         for i in range(3):
             text = """트럼프 이너서클: 트럼프 가족의 정치적 영향력. 
@@ -28,7 +31,7 @@ class NewsService:
             result = {
                 "typecast" : {
 	                "text": text,
-                    "actor": value['channel_info']['ttsEngine'],
+                    "actor": value['channel_info']['tts_engine'],
                     "emotion_tone_preset": emotion_tone_preset,
                     "volume": volume,
                     "speed_x": speed_x,

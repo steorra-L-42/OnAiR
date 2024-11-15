@@ -22,13 +22,13 @@ public class StoryController {
 
     private final StoryService storyService;
 
-    @PostMapping("/{channel_id}")
-    public ResponseEntity<?> createStory(@PathVariable("channel_id") Long channelId,
+    @PostMapping("/{channel_uuid}")
+    public ResponseEntity<?> createStory(@PathVariable("channel_uuid") String channelUuid,
                                          @AuthenticationPrincipal CustomUserDetails customUserDetails,
                                          @Valid @RequestBody StoryCreateRequest request) {
-        log.info("StoryController.checkValidChannelId: {}", channelId);
+        log.info("StoryController.checkValidChannelId: {}", channelUuid);
 
-        storyService.createStory(channelId, customUserDetails, request);
+        storyService.createStory(channelUuid, customUserDetails, request);
 
         return ResponseEntity.ok().build();
     }

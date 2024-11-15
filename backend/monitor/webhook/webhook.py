@@ -35,7 +35,7 @@ async def alert(request: Request):
 def clear_cache(server):
     if server == "sub":
         SUB_SERVER = "sub_key.pem"
-        os.system(f"ssh -o StrictHostKeyChecking=no -i {SUB_SERVER} ubuntu@faker.on-air.me 'echo 3 | sudo tee /proc/sys/vm/drop_caches'")
+        os.system(f"ssh -o StrictHostKeyChecking=no -i {SUB_SERVER} ubuntu@ele.on-air.me 'echo 3 | sudo tee /proc/sys/vm/drop_caches'")
 
     elif server == "main":
         MAIN_SERVER = "main_key.pem"

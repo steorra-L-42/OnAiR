@@ -18,12 +18,13 @@ class Channel:
         self.stop_event = Event()
         self.channel_id = channel_id
         self.start_time = datetime.now()
-        self.is_default = config.get("isDefault")
-        self.tts_engine = config.get("ttsEngine")
+        self.is_default = config.get("is_default")
+        self.tts_engine = config.get("tts_engine")
         self.personality = config.get("personality")
-        self.news_topic = config.get("newsTopic")
+        self.news_topic = config.get("news_topic")
+        self.fcm_token = config.get("fcm_token")
 
-        self.playlist_config = config.get("playList", [])
+        self.playlist_config = config.get("playlist", [])
         self.playback_queue = PlaybackQueue()
         self.content_provider = ContentProvider(self, self.playback_queue)
         self.dj = DJ(self, self.playback_queue)
@@ -40,11 +41,12 @@ class Channel:
 
     def download_playlist(self, playlist_config):
         """플레이리스트 다운로드 및 추가"""
+        logging.info(playlist_config)
         futures = []
         for index, item in enumerate(playlist_config):
-            title = item.get("playListMusicTitle")
-            artist = item.get("playListMusicArtist")
-            cover_url = item.get("playListMusicCoverUrl")
+            title = item.get("playlist_music_title")
+            artist = item.get("playlist_music_artist")
+            cover_url = item.get("playlist_music_cover_url")
 
             if title and artist:
                 futures.append(self.music_download_executor.submit(

@@ -13,6 +13,7 @@ import me.onair.main.domain.channel.error.ChannelMismatchException;
 import me.onair.main.domain.channel.error.ChannelNotFoundException;
 import me.onair.main.domain.channel.error.EndedChannelException;
 import me.onair.main.domain.channel.repository.ChannelRepository;
+import me.onair.main.domain.fcm.entity.FcmToken;
 import me.onair.main.domain.story.dto.CreateNewStoryKafka;
 import me.onair.main.domain.story.dto.StoryCreateRequest;
 import me.onair.main.domain.story.dto.StoryCreateRequest.Music;
@@ -44,15 +45,15 @@ public class StoryService {
     private final KafkaProducer kafkaProducer;
 
     @Transactional
-    public void createStory(Long channelId, CustomUserDetails customUserDetails, StoryCreateRequest request) {
+    public void createStory(String channelUuid, CustomUserDetails customUserDetails, StoryCreateRequest request) {
         log.info("StoryService.createStory: {}", request);
 
         // 1. 채널 검증
-        validateChannelId(channelId);
+        validateChannelUuid(channelUuid);
 
         // 2. 사용자 및 채널 조회
         User user = getUserById(customUserDetails.getId());
-        Channel channel = getChannelById(channelId);
+        Channel channel = getChannelByUuid(channelUuid);
 
         // 3. 스토리 생성 및 저장
         Story story = createStoryEntity(request, user, channel);
@@ -61,12 +62,12 @@ public class StoryService {
         StoryMusic storyMusic = processStoryMusic(request, story);
 
         // 5. KafKa Produce
-        produceRecord(story, storyMusic, channel);
+        produceRecord(user.getFcmToken(), story, storyMusic, channel);
     }
 
     // 채널 ID 검증
-    private void validateChannelId(Long channelId) {
-        Channel channel = getChannelById(channelId);
+    private void validateChannelUuid(String channelUuid) {
+        Channel channel = getChannelByUuid(channelUuid);
 
         // 방송이 끝난 채널인지 검사
         if (channel.getIsEnded()) {
@@ -78,12 +79,6 @@ public class StoryService {
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(NotExistUserException::new);
-    }
-
-    // 채널 find
-    private Channel getChannelById(Long channelId) {
-        return channelRepository.findById(channelId)
-                .orElseThrow(() -> new ChannelNotFoundException(CHANNEL_NOT_FOUND));
     }
 
     // 스토리 생성
@@ -121,8 +116,8 @@ public class StoryService {
     }
 
     // KafKa produce
-    private void produceRecord(Story story, StoryMusic storyMusic, Channel channel) {
-        CreateNewStoryKafka kafkaMessage = CreateNewStoryKafka.of(story, storyMusic);
+    private void produceRecord(FcmToken fcmToken, Story story, StoryMusic storyMusic, Channel channel) {
+        CreateNewStoryKafka kafkaMessage = CreateNewStoryKafka.of(fcmToken.getValue(), story, storyMusic);
         kafkaProducer.sendMessageToKafka(
                 Topics.STORY,
                 channel.getUuid(),
@@ -133,14 +128,14 @@ public class StoryService {
     // KafKa Story Reply Consume
     @Transactional
     public void addStoryReply(String key, StoryReplyDto storyReplyDto) {
-        log.info("StoryService.addStoryReply: {}", storyReplyDto);
+        log.info("StoryService.addStoryReply: {}", storyReplyDto.toString());
 
         Channel channel = getChannelByUuid(key); // 채널 검증
         Story story = getStoryById(storyReplyDto.getStoryId()); // 존재하는 사연인지 검증
         validateStoryReply(story); // 사연의 답변이 이미 있는지 검증
         validateStoryChannel(story, channel); // 사연의 채널이 Key값의 채널과 같은지 검증
 
-        story.saveReply(storyReplyDto.getStoryReply()); // 사연의 답변 저장
+        story.saveReply(storyReplyDto.getTypecast().getText()); // 사연의 답변 저장
     }
 
     // 채널 find, 검증
