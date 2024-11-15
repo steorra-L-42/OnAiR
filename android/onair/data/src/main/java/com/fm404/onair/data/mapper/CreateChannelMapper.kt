@@ -6,28 +6,22 @@ import com.fm404.onair.domain.model.broadcast.CreateChannelPlayList
 import com.fm404.onair.domain.model.broadcast.CreateChannelResult
 
 fun CreateChannelResponse.toCreateChannelResult() = CreateChannelResult(
-    userId = userId,
-    role = role,
-    ttsEngine = tts_engine,
-    personality = personality,
-    topic = topic,
-    playList = playList.map { it.toCreateChannelPlayList() },
-    channelId = channelId,
-    isDefault = isDefault,
+    channelUuid = channelUuid,
+    channelName = channelName,
     start = start,
     end = end,
-    isEnded = isEnded,
-    thumbnail = thumbnail
+    isDefault = isDefault,
+    ttsEngine = ttsEngine
 )
 
 fun PlayListDto.toCreateChannelPlayList() = CreateChannelPlayList(
-    musicTitle = playListMusicTitle,
-    musicArtist = playListMusicArtist,
-    musicCoverUrl = playListMusicCoverUrl
+    title = title,
+    artist = artist,
+    cover = cover
 )
 
 fun CreateChannelPlayList.toPlayListDto() = PlayListDto(
-    playListMusicTitle = musicTitle,
-    playListMusicArtist = musicArtist,
-    playListMusicCoverUrl = musicCoverUrl
+    title = title,
+    artist = artist,
+    cover = cover
 )

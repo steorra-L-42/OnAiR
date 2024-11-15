@@ -8,11 +8,11 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.fm404.onair.core.designsystem.component.image.NetworkImage
-import com.fm404.onair.domain.model.broadcast.Channel
+import com.fm404.onair.domain.model.broadcast.ChannelList
 
 @Composable
 fun ChannelItem(
-    channel: Channel,
+    channelList: ChannelList,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -27,7 +27,7 @@ fun ChannelItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             NetworkImage(
-                imageUrl = channel.profilePath,
+                imageUrl = channelList.profilePath,
                 contentDescription = "Profile image",
                 modifier = Modifier
                     .size(48.dp)
@@ -38,20 +38,20 @@ fun ChannelItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = channel.userNickname,
+                    text = channelList.userNickname,
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = channel.topic,
+                    text = channelList.newsTopic,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            if (!channel.isEnded) {
+            if (!channelList.isEnded) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Badge(
                     containerColor = MaterialTheme.colorScheme.primary

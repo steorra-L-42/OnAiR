@@ -1,13 +1,7 @@
 package com.fm404.onair.domain.model.broadcast
 
-data class PlaylistItem(
-    val title: String,
-    val artist: String,
-    val cover: String
-)
-
-data class Channel(
-    val uuid: String,
+data class ChannelList(
+    val channelUuid: String,
     val userNickname: String,
     val profilePath: String,
     val channelName: String,

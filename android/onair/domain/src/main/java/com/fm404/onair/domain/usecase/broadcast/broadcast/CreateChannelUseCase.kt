@@ -11,9 +11,18 @@ class CreateChannelUseCase @Inject constructor(
     suspend operator fun invoke(
         ttsEngine: String,
         personality: String,
-        topic: String,
-        playList: List<CreateChannelPlayList>
+        newsTopic: String,
+        thumbnail: String,
+        channelName: String,
+        trackList: List<CreateChannelPlayList>
     ): Result<CreateChannelResult> {
-        return repository.createChannel(ttsEngine, personality, topic, playList)
+        return repository.createChannel(
+            ttsEngine = ttsEngine,
+            personality = personality,
+            newsTopic = newsTopic,
+            thumbnail = thumbnail,
+            channelName = channelName,
+            trackList = trackList
+        )
     }
 }

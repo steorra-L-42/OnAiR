@@ -35,6 +35,7 @@ fun BottomNavBar(
 ) {
     val bottomNavItems = listOf(
         BottomNavItem("home", R.string.home, R.drawable.house, R.drawable.headphone),
+//        BottomNavItem("broadcast_list", R.string.home, R.drawable.house, R.drawable.headphone), // 실제 동작 시 홈이 아닌 방송 목록으로 가야함
         BottomNavItem("playlist", R.string.playlist, R.drawable.house, R.drawable.playlistf),
         // other items
         BottomNavItem("settings", R.string.show_more , R.drawable.more, R.drawable.moref)
