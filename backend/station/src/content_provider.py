@@ -172,13 +172,13 @@ class ContentProvider:
     def request_contents(self, content_type):
         """contents_request_topic으로 요청 전송"""
         value = {
-            "channelInfo": {
-                "isDefault": self.channel.is_default,
-                "ttsEngine": self.channel.tts_engine,
+            "channel_info": {
+                "is_default": self.channel.is_default,
+                "tts_engine": self.channel.tts_engine,
                 "personality": self.channel.personality,
-                "newsTopic": self.channel.news_topic
+                "news_topic": self.channel.news_topic
             },
-            "contentType": content_type
+            "content_type": content_type
         }
         message_value = json.dumps(value)
         producer.send_message('contents_request_topic',
