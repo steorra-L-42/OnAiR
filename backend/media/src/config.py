@@ -25,5 +25,17 @@ MEDIA_CONSUMER_GROUP_ID=os.environ.get('MEDIA_CONSUMER_GROUP_ID')
 AUTO_OFFSET_RESET=os.environ.get('AUTO_OFFSET_RESET')
 MEDIA_TOPIC='media_topic'
 
+# 카프카 레코드
+MEDIA_FILE_INFO = "file_info"
+MEDIA_FILE_PATH = "file_path"
+MEDIA_TYPE = "type"
+
+MEDIA_MUSIC_TITLE = "music_title"
+MEDIA_MUSIC_ARTIST = "music_artist"
+MEDIA_MUSIC_COVER = "music_cover_url"
+
+MEDIA_IS_START = "is_start"
+MEDIA_FCM_TOKEN = "fcm_token"
+
 # 기본 채널 변수
 BASIC_CHANNEL_NAME = 'channel_1'

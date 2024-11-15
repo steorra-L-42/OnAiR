@@ -20,7 +20,7 @@ channels = {}
 def add_channel(channel_name, file_info_list, loop):
   # 디렉토리 생성
   channel_path, playlist_path, hls_path = dir_setup(channel_name)
-  log.info(f"채널을 추가합니다 [{channel_name}] at [{channel_path}]")
+  log.info(f"[{channel_name}] 채널을 추가합니다 - '{channel_path}'")
 
   # 초기 세그먼트 생성
   metadata, next_start = generate_segment_from_files(
@@ -29,7 +29,8 @@ def add_channel(channel_name, file_info_list, loop):
     start= 0
   )
   if next_start == 0:
-    log.info(f"초기 제공 음성 파일이 모두 유효하지 않거나 없습니다. 채널 생성 취소 [{channel_name}]")
+    log.error(f"[{channel_name}] 초기 제공 음성 파일이 모두 유효하지 않거나 없습니다.")
+    log.error(f"[{channel_name}] 채널 생성을 취소합니다.")
     return
 
   # channels 변수에 추가

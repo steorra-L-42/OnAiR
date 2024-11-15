@@ -3,11 +3,13 @@ import os
 import subprocess
 import time
 from intervaltree import Interval, IntervalTree
+from pathlib import Path
 
 import aiofiles
 
 from logger import log
-from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, SEGMENT_UPDATE_SIZE
+from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, \
+  SEGMENT_UPDATE_SIZE, MEDIA_FILE_PATH, MEDIA_MUSIC_TITLE
 from file_utils import validate_file
 
 ######################  여러 파일 -> 세그먼트  ######################
@@ -16,7 +18,7 @@ def generate_segment_from_files(hls_path, file_info_list, start):
   next_start = start
 
   for file_info in file_info_list:
-    if not validate_file(file_info.get("filePath")):
+    if not validate_file(file_info.get(MEDIA_FILE_PATH)):
       continue
 
     start, next_start = generate_segment(hls_path, file_info, next_start)
@@ -26,13 +28,15 @@ def generate_segment_from_files(hls_path, file_info_list, start):
 
 ######################  파일 -ffmpeg-> 세그먼트  ######################
 def generate_segment(hls_path, file_info, start):
-  log.info(f'세그먼트 생성 시작 [{file_info.get("fileTitle")}]')
   dummy_path = f"{hls_path}/dummy.m3u8"
+  music_title = file_info.get(MEDIA_MUSIC_TITLE)
+  channel_name = Path(hls_path).parent.name
+  log.info(f"[{channel_name}] 세그먼트 생성 시작 - '{music_title}'")
 
   ffmpeg_command = [
     'ffmpeg',
     '-loglevel', 'verbose',
-    '-i', file_info.get("filePath"),
+    '-i', file_info.get(MEDIA_FILE_PATH),
     '-c:a', 'aac',
     '-b:a', '128k',
 
@@ -59,16 +63,16 @@ def generate_segment(hls_path, file_info, start):
     with open(dummy_path, mode="rb") as f:
       f.seek(-33, 2)
       last_line = f.readline().decode('utf-8').strip()
-      log.info(f"읽은 줄 [{last_line}]")
       end = int(last_line[8:14])
   except Exception as e:
     log.error(e)
 
   if process.returncode == 0:
-    log.info(f"세그먼트 생성 완료 [{file_info.get("fileTitle")}]")
+    log.info(f"[{channel_name}] 세그먼트 생성 완료 - '{music_title}'")
     return start, end+1
   else:
-    log.error(f"세그먼트 생성 실패 [{file_info.get("fileTitle")}\n{stderr}]")
+    log.error(f"[{channel_name}] 세그먼트 생성 실패 - '{music_title}'")
+    log.error(e)
     return start, start
 
 
@@ -135,7 +139,7 @@ async def update_m3u8(channel):
     # 파일 교체
     try:
       os.replace(temp_m3u8_path, m3u8_path)
-      log.info("index.m3u8 업데이트 완료")
+      log.info(f"[{channel['name']}] 스트리밍 중 - {segments}")
     except PermissionError as e:
       await asyncio.sleep(0.2)  # 잠시 대기 후 재시도
 

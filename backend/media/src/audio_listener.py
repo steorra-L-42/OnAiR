@@ -5,7 +5,7 @@ import os.path
 import threading
 
 # 내부 패키지
-from config import MEDIA_TOPIC
+from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
 from logger import log
 
 from shared_vars import channels, add_channel
@@ -39,20 +39,19 @@ def create_audio_listener_consumer(loop):
 ######################  토픽: media_topic 요청 처리  ######################
 def process_input_audio(msg, loop):
   global channels
+  # Key, Value 파싱
   key = msg.key().decode('utf-8')
   value = json.loads(msg.value().decode('utf-8'))
 
-  # file_info_list = value.get("fileInfo", [])
-  file_info_list = tmp_get_file_info_list(value.get("filePath"))
-  is_start = value.get("isStart", False)
+  file_info_list = value.get(MEDIA_FILE_INFO, [])
+  is_start = value.get(MEDIA_IS_START)
 
   if is_start:
     add_channel(
-      channel_name = key,
-      file_info_list = file_info_list.get("fileInfo"),
-      loop=loop
+      channel_name   = key,
+      file_info_list = file_info_list,
+      loop           = loop
     )
-
 
   else:
     channel = channels[key]
