@@ -16,8 +16,12 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import android.media.audiofx.Visualizer
+import android.util.Log
 import javax.inject.Inject
+import kotlin.math.absoluteValue
 
+private const val TAG = "BroadcastDetailViewMode"
 @HiltViewModel
 class BroadcastDetailViewModel @Inject constructor(
     private val mediaPlayerContract: MediaPlayerContract,
@@ -34,6 +38,9 @@ class BroadcastDetailViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     private var player: ExoPlayer? = null
+    private var visualizer: Visualizer? = null
+    private val _amplitudes = MutableStateFlow(FloatArray(10))
+    val amplitudes: StateFlow<FloatArray> = _amplitudes
 
     init {
         fetchContentTypeHeaders()
@@ -127,6 +134,7 @@ class BroadcastDetailViewModel @Inject constructor(
             prepare()
             play()
         }
+        setupVisualizer()
 
 //        val loadControl = DefaultLoadControl.Builder()
 //            .setBufferDurationsMs(
@@ -158,6 +166,41 @@ class BroadcastDetailViewModel @Inject constructor(
 //                play()
 //            }
     }
+
+    private fun setupVisualizer() {
+        player?.audioSessionId?.let { sessionId ->
+            visualizer = Visualizer(sessionId).apply {
+                captureSize = Visualizer.getCaptureSizeRange()[1]
+                val samplingRateRatio = 0.5
+//                Log.d(TAG, "setupVisualizer: Capture Rate: ${Visualizer.getMaxCaptureRate()}")
+                setDataCaptureListener(object : Visualizer.OnDataCaptureListener {
+                    override fun onWaveFormDataCapture(
+                        visualizer: Visualizer,
+                        waveform: ByteArray,
+                        samplingRate: Int
+                    ) {}
+
+                    override fun onFftDataCapture(
+                        visualizer: Visualizer,
+                        fft: ByteArray,
+                        samplingRate: Int
+                    ) {
+                        updateAmplitudes(fft)
+                    }
+                }, (Visualizer.getMaxCaptureRate() * samplingRateRatio).toInt(), false, true)
+                enabled = true
+            }
+        }
+    }
+
+    private fun updateAmplitudes(fft: ByteArray) {
+        val amplitudes = FloatArray(10)
+        for (i in amplitudes.indices) {
+            amplitudes[i] = fft.getOrNull(i)?.toFloat()?.absoluteValue ?: 0f
+        }
+        _amplitudes.value = amplitudes
+    }
+
 
     private fun releasePlayer() {
         player?.release()

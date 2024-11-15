@@ -18,7 +18,7 @@ fun AudioVisualizer(amplitudes: FloatArray, modifier: Modifier = Modifier) {
     Canvas(
         modifier = modifier
             .width(140.dp)
-            .height(40.dp)
+            .height(30.dp)
             .background(OnairBackground)
 //            .background(Color.White)
     ) {
@@ -29,7 +29,8 @@ fun AudioVisualizer(amplitudes: FloatArray, modifier: Modifier = Modifier) {
         val cornerRadius = 3.dp.toPx()
 
         for (index in amplitudes.indices) {
-            val scaledAmplitude = (amplitudes[index] / 100f) * canvasHeight
+//            val scaledAmplitude = (amplitudes[index] / 100f) * canvasHeight
+            val scaledAmplitude = (amplitudes[index] / 120f) * canvasHeight
             val x = index * spacingBetweenLines + spacingBetweenLines / 2 - lineWidth / 2
 
             drawRoundRect(

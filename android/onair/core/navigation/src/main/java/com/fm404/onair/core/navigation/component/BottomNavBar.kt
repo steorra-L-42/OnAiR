@@ -56,8 +56,8 @@ fun BottomNavBar(
 //            .padding(bottom = 10.dp)
             .clip(
                 RoundedCornerShape(
-                    topStart = 20.dp,
-                    topEnd = 20.dp,
+                    topStart = 18.dp,
+                    topEnd = 18.dp,
                     bottomStart = 0.dp,
                     bottomEnd = 0.dp
                 )

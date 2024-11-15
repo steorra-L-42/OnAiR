@@ -131,6 +131,9 @@ class FCMService : FirebaseMessagingService(), FCMServiceContract {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
+
+        Log.d(TAG, "onMessageReceived: 일단 메세지 왔다")
+        
         if (remoteMessage.data.isNotEmpty()) {
             processMessage(remoteMessage)
         }
