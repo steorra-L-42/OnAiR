@@ -19,8 +19,7 @@ if(os.getenv("LOG_LEVEL") == "DEBUG"):
     LOG_LEVEL = logging.DEBUG
 elif(os.getenv("LOG_LEVEL") == "INFO"):
     LOG_LEVEL = logging.INFO
-elif(os.getenv("LOG_LEVEL") == "WARNING"):
+elif(os.getenv("LOG_LEVEL") == "WARN"):
     LOG_LEVEL = logging.WARNING
 elif(os.getenv("LOG_LEVEL") == "ERROR"):
     LOG_LEVEL = logging.ERROR
-
