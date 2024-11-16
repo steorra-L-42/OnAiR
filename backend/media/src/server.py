@@ -1,10 +1,14 @@
 # 외부 패키지
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import faulthandler
+faulthandler.enable()
+
 
 from intervaltree import IntervalTree
 
@@ -37,28 +41,30 @@ async def lifespan(app: FastAPI):
   log.info("미디어 서버 초기화 루틴 시작")
   media_consumer = create_kafka_listener_consumer(MEDIA_TOPIC, process_input_audio, stream_manager)
   close_consumer = create_kafka_listener_consumer(CHANNEL_CLOSE_TOPIC, process_close_channel, stream_manager)
-
   log.info("미디어 서버 가동")
 
   yield
   log.info(f"서버 종료 루틴 시작")
   try:
+    for stream in stream_manager.get_all_stream():
+      stream.stop_streaming_and_remove_stream()
     stream_manager.remove_stream_all()
     log.info(f"스트림 정리 완료")
   except Exception as e:
     log.error(f"스트림 정리 에러 발생 [{e}]")
 
   try:
-    stream_setup_executor.shutdown(False)
-    stream_data_executor.shutdown(False)
+    stream_setup_executor.shutdown(True)
+    stream_data_executor.shutdown(True)
     log.info(f"ThreadPool 해제 완료")
   except Exception as e:
     log.error(f"ThreadPool 해제 에러 발생 [{e}]")
 
   try:
     media_consumer.stop_event.set()
-    media_consumer.close()
     close_consumer.stop_event.set()
+    await asyncio.sleep(1)
+    media_consumer.close()
     close_consumer.close()
     log.info("카프카 컨슈머 종료")
   except Exception as e:

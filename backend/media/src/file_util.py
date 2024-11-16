@@ -5,11 +5,7 @@ import shutil
 
 # 내부 패키지
 from config import STREAMING_CHANNELS, PLAYLIST_DIR, HLS_DIR
-
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from logger import log
-
-
 
 
 
@@ -28,19 +24,12 @@ def init_directory(stream_name):
     os.remove(os.path.join(stream_path, 'dummy.m3u8'))
   return stream_path, playlist_path, hls_path
 
+
 ######################  기존 디렉토리가 존재하면 초기화  ######################
 def create_or_clear_directory(path):
   if os.path.exists(path):
     shutil.rmtree(path)
   os.makedirs(path, exist_ok=True)
-
-######################  서버 종료시 디렉토리 정리  ######################
-def clear_hls_path(channel):
-  if os.path.exists(channel['hls_path']):
-    log.info(f"HLS path 정리 [{channel['hls_path']}]")
-    shutil.rmtree(channel['hls_path'])
-  if os.path.exists(os.path.join(channel['channel_path'], 'index.m3u8')):
-    os.remove(os.path.join(channel["channel_path"], "index.m3u8"))
 
 
 ######################  파일 유효성 검사  ######################

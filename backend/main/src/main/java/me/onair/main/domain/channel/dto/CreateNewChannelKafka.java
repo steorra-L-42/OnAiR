@@ -19,6 +19,7 @@ import me.onair.main.domain.channel.enums.TtsEngine;
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 필드는 직렬화에서 제외
 public class CreateNewChannelKafka {
 
+  private String channelName;
   private String fcmToken;
   private Boolean isDefault;
   private TtsEngine ttsEngine;
@@ -34,9 +35,10 @@ public class CreateNewChannelKafka {
   }
 
   @Builder
-  private CreateNewChannelKafka(String fcmToken, Boolean isDefault, TtsEngine ttsEngine,
+  private CreateNewChannelKafka(String channelName, String fcmToken, Boolean isDefault, TtsEngine ttsEngine,
       Personality personality, NewsTopic newsTopic, List<TrackInfo> playlist
   ) {
+    this.channelName = channelName;
     this.fcmToken = fcmToken;
     this.isDefault = isDefault;
     this.ttsEngine = ttsEngine;
@@ -47,6 +49,7 @@ public class CreateNewChannelKafka {
 
   public static CreateNewChannelKafka of(Channel channel, Dj dj, List<Track> trackList, String fcmToken) {
     return CreateNewChannelKafka.builder()
+        .channelName(channel.getChannelName())
         .fcmToken(fcmToken)
         .isDefault(channel.getIsDefault())
         .ttsEngine(dj.getTtsEngine())

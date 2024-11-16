@@ -49,3 +49,7 @@ BASIC_CHANNEL_NAME = 'channel_1'
 
 # 스레드 풀
 MAX_WORKERS = 3
+
+
+# Firebase 서비스 계정 키 파일 경로
+SERVICE_ACCOUNT_KEY_PATH = os.environ.get("SERVICE_ACCOUNT_KEY_PATH")
