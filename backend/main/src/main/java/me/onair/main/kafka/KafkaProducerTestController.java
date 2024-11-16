@@ -44,6 +44,16 @@ public class KafkaProducerTestController {
         );
     }
 
+    @GetMapping("/publish/channel-close-topic/{channelName}")
+    public CompletableFuture<String> publishToChannelCloseTopicTestTest(@PathVariable String channelName) {
+
+        return kafkaProducer.sendMessageToKafka(
+            Topics.CHANNEL_CLOSE,
+            channelName,
+            "{\"content\": \"please close the channel\"}"
+        );
+    }
+
     private String createMessage() {
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String uuid = UUID.randomUUID().toString().substring(0, 6); // UUID의 앞 6자리 추출
