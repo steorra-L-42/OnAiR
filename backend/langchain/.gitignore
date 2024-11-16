@@ -3,4 +3,5 @@ llm_cache.db
 .mypy_cache/
 .vscode
 *.db
+*.db.bak
 *.pyc
