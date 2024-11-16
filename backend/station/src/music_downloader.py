@@ -1,89 +1,55 @@
+import logging
 import os
-import time
-import requests
-from playwright.sync_api import sync_playwright
 
-def download_youtube_audio(url):
-    save_directory = "./saved_mp3"
-    os.makedirs(save_directory, exist_ok=True)
+from pytubefix import YouTube
+from youtubesearchpython import VideosSearch
 
-    with sync_playwright() as p:
-        try:
-            total_start_time = time.time()
+from path_util import get_medias_path
 
-            # 브라우저 실행
-            step_start_time = time.time()
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context()
-            print(f"브라우저 실행: {time.time() - step_start_time:.2f}초 소요")
 
-            # 페이지 열기
-            step_start_time = time.time()
-            page = context.new_page()
+def download_from_keyword(title, artist, cover_url, channel_id, content_type):
+    keyword = f"{title} - {artist}"
+    # 유튜브에서 키워드로 검색하여 가장 상단의 결과를 가져옴
+    videos_search = VideosSearch(keyword, limit=1)
+    result = videos_search.result()
 
-            # 속도 빠르게 하기 위해 애니메이션 등 비활성화
-            page.add_init_script("""
-                document.querySelectorAll('*').forEach(el => {
-                    el.style.transition = 'none';
-                    el.style.animation = 'none';
-                });
-            """)
+    # 검색 결과가 없는 경우 처리
+    if not result['result']:
+        logging.info("No videos found for the keyword.")
+        return
 
-            print("YouTube 다운로드 사이트 열기")
-            page.goto("https://yt5s.biz/enxj100/", wait_until="domcontentloaded")
-            print(f"페이지 열기 완료: {time.time() - step_start_time:.2f}초 소요")
+    # 최상단 비디오의 URL 가져오기
+    video_info = result['result'][0]
+    video_url = video_info['link']
 
-            # URL 입력 및 제출
-            step_start_time = time.time()
-            print(f"YouTube URL 입력: {url}")
-            page.fill("#txt-url", url)
-            page.click("#btn-submit")
-            print(f"URL 제출 완료: {time.time() - step_start_time:.2f}초 소요")
+    # 출력 파일 이름 설정
+    safe_filename = "".join(c if c.isalnum() or c in ["-", " "] else "" for c in keyword)
 
-            # MP3 버튼 대기 및 클릭
-            step_start_time = time.time()
-            print("MP3 128k 버튼 대기")
-            mp3_button = page.locator("button[data-ftype='mp3'][data-fquality='128']")
-            mp3_button.wait_for(state="visible", timeout=10_000)  # 대기 시간 축소
-            mp3_button.click()
-            print(f"MP3 버튼 클릭 완료: {time.time() - step_start_time:.2f}초 소요")
+    # medias 경로 설정
+    current_dir = os.getcwd()
+    medias_path = get_medias_path(current_dir)
 
-            # 모달 대기 및 다운로드 URL 추출
-            step_start_time = time.time()
-            print("모달 대기 중")
-            page.wait_for_selector("a#A_downloadUrl", timeout=10_000)  # 대기 시간 축소
-            download_anchor = page.locator("a#A_downloadUrl")
-            download_url = download_anchor.evaluate("anchor => anchor.href")
-            print(f"다운로드 URL 추출 완료: {time.time() - step_start_time:.2f}초 소요")
+    output_filepath = medias_path / channel_id / content_type
+    output_filename = output_filepath / f"{safe_filename}.mp3"
 
-            if not download_url:
-                print("다운로드 URL 찾을 수 없음. 디버깅 중")
-                print(page.content())  # 디버깅용
-                page.screenshot(path="debug_modal.png")
-                return
+    # 경로가 존재하지 않으면 생성
+    os.makedirs(output_filepath, exist_ok=True)
 
-            print(f"다운로드 URL: {download_url}")
-
-            # MP3 파일 다운로드
-            step_start_time = time.time()
-            file_name = f"{download_url.split('/')[-1].split('?')[0]}.mp3"
-            save_path = os.path.join(save_directory, file_name)
-            print(f"MP3 파일 다운로드 위치: {save_path}")
-            response = requests.get(download_url, stream=True)
-            response.raise_for_status()
-            with open(save_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=262144):  # 256KB 단위
-                    f.write(chunk)
-            print(f"MP3 파일 다운로드 완료: {time.time() - step_start_time:.2f}초 소요")
-
-            # 전체 실행 시간
-            print(f"전체 실행 시간: {time.time() - total_start_time:.2f}초 소요")
-
-        except Exception as e:
-            print(f"오류 발생: {e}")
-        finally:
-            browser.close()
-
-# 유튜브 URL
-youtube_url = "https://www.youtube.com/watch?v=ekr2nIex040"
-download_youtube_audio(youtube_url)
+    # pytubefix로 YouTube 오디오 다운로드
+    try:
+        yt = YouTube(video_url)
+        audio_stream = yt.streams.filter(only_audio=True).first()
+        if audio_stream:
+            audio_stream.download(output_path=str(output_filepath), filename=f"{safe_filename}.mp3")
+            length = yt.length
+            logging.info(f"Downloaded audio as '{output_filename}'")
+            return {"file_path": str(output_filename),
+                    "length": length,
+                    "type": "music",
+                    "music_title": title,
+                    "music_artist": artist,
+                    "music_cover_url": cover_url}
+        else:
+            logging.info("No audio stream available for this video.")
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
