@@ -1,25 +1,32 @@
 # 외부 패키지
 import os
+import sys
 import shutil
 
 # 내부 패키지
 from config import STREAMING_CHANNELS, PLAYLIST_DIR, HLS_DIR
+
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from logger import log
 
 
-######################  채널 추가시 폴더 구성  ######################
-def dir_setup(channel_name):
-  channel_path = os.path.join(STREAMING_CHANNELS, channel_name)
-  playlist_path = os.path.join(channel_path, PLAYLIST_DIR)
-  hls_path = os.path.join(channel_path, HLS_DIR)
 
-  os.makedirs(channel_path, exist_ok=True)
+
+
+######################  채널 추가시 폴더 구성  ######################
+def init_directory(stream_name):
+  log.info(f"[{stream_name}] 디렉토리 초기화")
+  stream_path = os.path.join(STREAMING_CHANNELS, stream_name)
+  playlist_path = os.path.join(stream_path, PLAYLIST_DIR)
+  hls_path = os.path.join(stream_path, HLS_DIR)
+
+  os.makedirs(stream_path, exist_ok=True)
   os.makedirs(playlist_path, exist_ok=True)
   create_or_clear_directory(hls_path)
 
-  if os.path.exists(os.path.join(channel_path, 'dummy.m3u8')):
-    os.remove(os.path.join(channel_path, 'dummy.m3u8'))
-  return channel_path, playlist_path, hls_path
+  if os.path.exists(os.path.join(stream_path, 'dummy.m3u8')):
+    os.remove(os.path.join(stream_path, 'dummy.m3u8'))
+  return stream_path, playlist_path, hls_path
 
 ######################  기존 디렉토리가 존재하면 초기화  ######################
 def create_or_clear_directory(path):

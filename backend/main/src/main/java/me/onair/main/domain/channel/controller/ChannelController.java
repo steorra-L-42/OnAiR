@@ -2,9 +2,11 @@ package me.onair.main.domain.channel.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.channel.dto.ChannelInfoResponse;
+import me.onair.main.domain.channel.dto.ChannelListResponse;
 import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.channel.dto.CreateNewChannelResponse;
 import me.onair.main.domain.channel.service.ChannelService;
@@ -44,6 +46,13 @@ public class ChannelController {
 
         ChannelInfoResponse response = channelService.getChannelInfo(channel_id);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getChannelList() throws JsonProcessingException {
+        log.info("Request to get channel list");
+        ChannelListResponse response = channelService.getChannelList();
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
 

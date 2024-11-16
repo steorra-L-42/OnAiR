@@ -1,22 +1,21 @@
 # 외부 패키지
-import asyncio
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-# 내부 패키지
-from audio_listener import create_audio_listener_consumer
-from file_utils import clear_hls_path
-from config import BASIC_CHANNEL_NAME, STREAMING_CHANNELS, HLS_DIR, \
-  SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START
-from logger import log
+from intervaltree import IntervalTree
 
-from shared_vars import add_channel, channels
-from segment_queue import SegmentQueue
+# 내부 패키지
+from config import STREAMING_CHANNELS, HLS_DIR, \
+  SEGMENT_FILE_INDEX_END, SEGMENT_FILE_INDEX_START, MEDIA_TYPE, \
+  MEDIA_MUSIC_TITLE, MEDIA_MUSIC_ARTIST, MEDIA_MUSIC_COVER, CHANNEL_CLOSE_TOPIC, MEDIA_TOPIC
+from shared_vars import stream_setup_executor, stream_data_executor, stream_manager
+
+from logger import log
+from kafka_listener import create_kafka_listener_consumer, process_input_audio, process_close_channel
 
 app = FastAPI()
 
@@ -34,27 +33,37 @@ app.add_middleware(
 ######################  서버 INIT  ######################
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-  global channels
-  log.info("서버 초기화 루틴 시작")
-  consumer = create_audio_listener_consumer(asyncio.get_event_loop())
+  global stream_manager
+  log.info("미디어 서버 초기화 루틴 시작")
+  media_consumer = create_kafka_listener_consumer(MEDIA_TOPIC, process_input_audio, stream_manager)
+  close_consumer = create_kafka_listener_consumer(CHANNEL_CLOSE_TOPIC, process_close_channel, stream_manager)
+
+  log.info("미디어 서버 가동")
 
   yield
-  log.info("서버 종료 루틴 시작")
-  for channel in channels.values():
-    clear_hls_path(channel)
-    channel['queue'].clear()
-    channel['update_task'].cancel()
-    try:
-      await channel['update_task'].result()
-      log.info(f'채널 제거 완료 [{channel["name"]}]')
-    except Exception as e:
-      log.info(f'채널 제거 실패 [{channel["name"]}] - {e}')
+  log.info(f"서버 종료 루틴 시작")
+  try:
+    stream_manager.remove_stream_all()
+    log.info(f"스트림 정리 완료")
+  except Exception as e:
+    log.error(f"스트림 정리 에러 발생 [{e}]")
 
-  del channels
-  consumer.stop_event.set()
-  consumer.close()
-  log.info("컨슈머 정지 완료, 서버 종료")
+  try:
+    stream_setup_executor.shutdown(False)
+    stream_data_executor.shutdown(False)
+    log.info(f"ThreadPool 해제 완료")
+  except Exception as e:
+    log.error(f"ThreadPool 해제 에러 발생 [{e}]")
 
+  try:
+    media_consumer.stop_event.set()
+    media_consumer.close()
+    close_consumer.stop_event.set()
+    close_consumer.close()
+    log.info("카프카 컨슈머 종료")
+  except Exception as e:
+    log.info(f"카프카 컨슈머 종료 에러 발생 [{e}]")
+  log.info("서버 종료 완료")
 app.router.lifespan_context = lifespan
 
 
@@ -63,16 +72,16 @@ app.router.lifespan_context = lifespan
 async def get_streams():
   return JSONResponse({
     "status": "success",
-    "streams": list(channels.keys())
+    "streams": list(stream_manager.keys())
   })
 
 
 ######################  API: 채널의 세그먼트 큐 조회  ######################
-@app.get("/api/queue")
-async def get_streams():
+@app.get("/api/queue/{stream_name}")
+async def get_streams(stream_name:str):
   return JSONResponse({
     "status": "success",
-    "streams": channels["channel_1"]["queue"].get_all_segments()
+    "streams": stream_manager.get_stream(stream_name).get_queue().get_all_segments()
   })
 
 
@@ -104,29 +113,28 @@ async def serve_playlist(stream_name: str):
 @app.get("/channel/{channel_name}/{segment}")
 async def serve_segment(channel_name: str, segment: str):
   segment_path = os.path.join(STREAMING_CHANNELS, channel_name, HLS_DIR, segment)
-  if not os.path.exists(segment_path):
+  if not os.path.exists(segment_path) or not stream_manager.is_exist(channel_name):
     raise HTTPException(status_code=404, detail="Segment not found")
 
   response = FileResponse(segment_path)
   response.headers["Cache-Control"] = "no-cache"
   add_metadata_to_response_header(
-    headers=      response.headers,        # Response Header
-    channel_name= channel_name,            # 채널 이름
-    index =       segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
+    headers      = response.headers,        # Response Header
+    stream_name  = channel_name,            # 채널 이름
+    index        = segment[SEGMENT_FILE_INDEX_START: SEGMENT_FILE_INDEX_END] # 요청한 파일 index
   )
   return response
 
 
 ######################  세그먼트 파일 조회(메타 데이터 조회)  ######################
-def add_metadata_to_response_header(headers, channel_name, index):
-  channel = channels[channel_name]
-  queue:SegmentQueue = channel['queue']
+def add_metadata_to_response_header(headers, stream_name, index):
+  stream = stream_manager.get_stream(stream_name)
   index_int = int(index)
   try:
-    headers['onair-content-type'] = get_metadata_and_encode_latin1(queue, index_int, 'fileGenre')
-    headers['music-title'] = get_metadata_and_encode_latin1(queue, index_int, 'fileTitle')
-    headers['music-artist'] = get_metadata_and_encode_latin1(queue, index_int, 'fileAuthor')
-    headers['music-cover'] = get_metadata_and_encode_latin1(queue, index_int, 'fileCover')
+    headers['onair-content-type'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_TYPE))
+    headers['music-title'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_MUSIC_TITLE))
+    headers['music-artist'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_MUSIC_ARTIST))
+    headers['music-cover'] = encode_latin1(stream.get_metadata_by_index_and_column(index_int, MEDIA_MUSIC_COVER))
 
   except Exception as e:
     log.error(f'메타데이터 조회 에러 [{e}]')
@@ -136,6 +144,5 @@ def add_metadata_to_response_header(headers, channel_name, index):
     headers['music-cover'] = 'error'
 
 
-def get_metadata_and_encode_latin1(queue:SegmentQueue, index, column):
-  return (queue.get_metadata_from_index(index, column)
-          .encode('utf-8').decode('latin-1'))
+def encode_latin1(data):
+  return (data.encode('utf-8').decode('latin-1'))

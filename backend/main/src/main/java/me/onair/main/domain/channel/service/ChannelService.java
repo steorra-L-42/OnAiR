@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.channel.dto.ChannelInfoResponse;
+import me.onair.main.domain.channel.dto.ChannelListResponse;
 import me.onair.main.domain.channel.dto.CreateNewChannelKafka;
 import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.channel.dto.CreateNewChannelResponse;
@@ -46,6 +47,7 @@ public class ChannelService {
 
         // 1. 유저 정보 얻기
         User user = userRepository.findById(userDetails.getId()).orElseThrow(NotExistUserException::new);
+        String fcmToken = user.getFcmToken().getValue();
 
         // 2. 채널 저장
         Channel channel = Channel.createChannel(request, user);
@@ -60,7 +62,7 @@ public class ChannelService {
         trackRepository.saveAll(trackList);
 
         // 5. 카프카 전송
-        CreateNewChannelKafka kafkaMessage = CreateNewChannelKafka.of(channel, dj, trackList);
+        CreateNewChannelKafka kafkaMessage = CreateNewChannelKafka.of(channel, dj, trackList, fcmToken);
         kafkaProducer.sendMessageToKafka(
                 Topics.CHANNEL_INFO,
                 channel.getUuid(),
@@ -72,6 +74,12 @@ public class ChannelService {
     public ChannelInfoResponse getChannelInfo(String channelId) {
         Channel channel = channelRepository.findByUuid(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(ErrorCode.CHANNEL_NOT_FOUND));
+
         return ChannelInfoResponse.from(channel);
+    }
+
+    public ChannelListResponse getChannelList() {
+        List<Channel> channelList = channelRepository.findByIsEnded(false); // 현재 진행 중인 방송 출력
+        return ChannelListResponse.from(channelList);
     }
 }
