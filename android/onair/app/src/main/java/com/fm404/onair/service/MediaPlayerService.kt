@@ -9,13 +9,10 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import com.fm404.onair.core.contract.media.MediaServiceBinder
 import com.fm404.onair.core.contract.media.MediaServiceContract
-import com.fm404.onair.domain.usecase.media.GetMediaStreamUseCase
 import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class MediaPlayerService : Service(), MediaServiceContract {
-    @Inject
-    lateinit var getMediaStreamUseCase: GetMediaStreamUseCase
 
     private val binder = MediaPlayerBinderImpl()
     private var mediaPlayer: MediaPlayer? = null
@@ -41,25 +38,25 @@ class MediaPlayerService : Service(), MediaServiceContract {
     }
 
     override fun startStream(channelName: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            getMediaStreamUseCase(channelName).fold(
-                onSuccess = { mediaStream ->
-                    withContext(Dispatchers.Main) {
-                        mediaPlayer?.apply {
-                            reset()
-                            setDataSource(mediaStream.url)
-                            prepareAsync()
-                            setOnPreparedListener {
-                                start()
-                            }
-                        }
-                    }
-                },
-                onFailure = {
-                    // Handle error
-                }
-            )
-        }
+//        CoroutineScope(Dispatchers.IO).launch {
+//            getMediaStreamUseCase(channelName).fold(
+//                onSuccess = { mediaStream ->
+//                    withContext(Dispatchers.Main) {
+//                        mediaPlayer?.apply {
+//                            reset()
+//                            setDataSource(mediaStream.url)
+//                            prepareAsync()
+//                            setOnPreparedListener {
+//                                start()
+//                            }
+//                        }
+//                    }
+//                },
+//                onFailure = {
+//                    // Handle error
+//                }
+//            )
+//        }
     }
 
     override fun stopStream() {

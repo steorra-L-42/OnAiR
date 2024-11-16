@@ -17,8 +17,12 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import android.media.audiofx.Visualizer
+import android.util.Log
 import javax.inject.Inject
+import kotlin.math.absoluteValue
 
+private const val TAG = "BroadcastDetailViewMode"
 @HiltViewModel
 class BroadcastDetailViewModel @Inject constructor(
     private val mediaPlayerContract: MediaPlayerContract,
@@ -36,6 +40,9 @@ class BroadcastDetailViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     private var player: ExoPlayer? = null
+    private var visualizer: Visualizer? = null
+    private val _amplitudes = MutableStateFlow(FloatArray(10))
+    val amplitudes: StateFlow<FloatArray> = _amplitudes
 
     init {
         fetchContentTypeHeaders()
@@ -159,37 +166,82 @@ class BroadcastDetailViewModel @Inject constructor(
     }
 
     private fun initializePlayer() {
-//        player = ExoPlayer.Builder(getApplication()).build().apply {
-////            val mediaItem = MediaItem.fromUri("http://wonyoung.on-air.me:8000/channel/channel_1/index.m3u8")
-//            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
-//            val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
-//                .createMediaSource(mediaItem)
-//            setMediaSource(mediaSource)
-//            prepare()
-//            play()
-//        }
+        player = ExoPlayer.Builder(getApplication()).build().apply {
+//            val mediaItem = MediaItem.fromUri("http://wonyoung.on-air.me:8000/channel/channel_1/index.m3u8")
+            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+            val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
+                .createMediaSource(mediaItem)
+            setMediaSource(mediaSource)
+            prepare()
+            play()
+        }
+        setupVisualizer()
 
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
-                10 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
-                15 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
-                1000,  // Minimum buffer before playback starts or resumes
-                5000   // Minimum buffer for stable playback without interruptions
-            )
-            .build()
+//        val loadControl = DefaultLoadControl.Builder()
+//            .setBufferDurationsMs(
+//                10 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
+//                15 * C.DEFAULT_BUFFER_SEGMENT_SIZE,
+//                1000,  // Minimum buffer before playback starts or resumes
+//                5000   // Minimum buffer for stable playback without interruptions
+//            )
+//            .build()
 
-        player = ExoPlayer.Builder(getApplication())
-            .setLoadControl(loadControl)  // Set custom load control here
-            .build()
-            .apply {
-                val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
-                val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
-                    .createMediaSource(mediaItem)
-                setMediaSource(mediaSource)
-                prepare()
-                play()
-            }
+//        val loadControl = DefaultLoadControl.Builder()
+//            .setBufferDurationsMs(
+//                20000,
+//                50000,
+//                1000,
+//                3000
+//            )
+//            .build()
+//
+//        player = ExoPlayer.Builder(getApplication())
+//            .setLoadControl(loadControl)  // Set custom load control here
+//            .build()
+//            .apply {
+//                val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+//                val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
+//                    .createMediaSource(mediaItem)
+//                setMediaSource(mediaSource)
+//                prepare()
+//                play()
+//            }
     }
+
+    private fun setupVisualizer() {
+        player?.audioSessionId?.let { sessionId ->
+            visualizer = Visualizer(sessionId).apply {
+                captureSize = Visualizer.getCaptureSizeRange()[1]
+                val samplingRateRatio = 0.5
+//                Log.d(TAG, "setupVisualizer: Capture Rate: ${Visualizer.getMaxCaptureRate()}")
+                setDataCaptureListener(object : Visualizer.OnDataCaptureListener {
+                    override fun onWaveFormDataCapture(
+                        visualizer: Visualizer,
+                        waveform: ByteArray,
+                        samplingRate: Int
+                    ) {}
+
+                    override fun onFftDataCapture(
+                        visualizer: Visualizer,
+                        fft: ByteArray,
+                        samplingRate: Int
+                    ) {
+                        updateAmplitudes(fft)
+                    }
+                }, (Visualizer.getMaxCaptureRate() * samplingRateRatio).toInt(), false, true)
+                enabled = true
+            }
+        }
+    }
+
+    private fun updateAmplitudes(fft: ByteArray) {
+        val amplitudes = FloatArray(10)
+        for (i in amplitudes.indices) {
+            amplitudes[i] = fft.getOrNull(i)?.toFloat()?.absoluteValue ?: 0f
+        }
+        _amplitudes.value = amplitudes
+    }
+
 
     private fun releasePlayer() {
         player?.release()
