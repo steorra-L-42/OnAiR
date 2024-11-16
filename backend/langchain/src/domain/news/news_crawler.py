@@ -45,7 +45,7 @@ class NewsCrawler:
         logging.info("NewsCrawler deleted yesterday news.")
 
         try:    
-            conn = sqlite3.connect(news_crawler.db_path)
+            conn = sqlite3.connect(self.db_path)
             c = conn.cursor()
 
             c.execute("DELETE FROM news WHERE created_at < datetime('now', '-1 day')")
