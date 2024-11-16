@@ -53,7 +53,7 @@ def test_news():
     contents_request = {
         "channel_info": {
             "is_default": "true",
-            "tts_engine": "세나",
+            "tts_engine": "제롬",
             "personality": "KIND",
             "news_topic" : "ECONOMY",
         },
@@ -69,7 +69,7 @@ def test_weather():
     contents_request = {
         "channel_info": {
             "is_default": "true",
-            "tts_engine": "세나",
+            "tts_engine": "은빈",
             "personality": "COOL",
             "news_topic" : "ECONOMY",
         },
