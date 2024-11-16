@@ -2,20 +2,19 @@ import logging
 import os
 import sqlite3
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 import time
 
 def init_selenium():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # 헤드리스 모드
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")  # GPU 사용 안 함
-    chrome_options.add_argument("--remote-debugging-port=9222")  # 원격 디버깅 포트
-    service = Service('/usr/bin/chromedriver')  # chromium 경로 지정
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    firefox_options = Options()
+    firefox_options.add_argument("--headless")  # 헤드리스 모드
+    firefox_options.add_argument("--no-sandbox")
+    firefox_options.add_argument("--disable-dev-shm-usage")
+    firefox_options.add_argument("--disable-gpu")  # GPU 사용 안 함
+    service = Service('/usr/local/bin/geckodriver')  # Geckodriver 경로 지정
+    driver = webdriver.Firefox(service=service, options=firefox_options)
     return driver
 
 class SeleniumWrapper:

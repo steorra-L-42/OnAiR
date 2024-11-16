@@ -25,6 +25,7 @@ if __name__ == "__main__":
     producer = instance.producer
 
     scheduler = instance.scheduler
+    time.sleep(1)
     scheduler.start()
 
     try:
