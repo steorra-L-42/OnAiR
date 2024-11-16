@@ -24,6 +24,9 @@ if __name__ == "__main__":
     consumer_manager.create_consumers()
     producer = instance.producer
 
+    scheduler = instance.scheduler
+    scheduler.start()
+
     try:
         while True:
             time.sleep(1)
