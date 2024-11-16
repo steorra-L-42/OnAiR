@@ -84,7 +84,6 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation (libs.androidx.core.splashscreen)
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.compose.bom))

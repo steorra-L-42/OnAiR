@@ -1,13 +1,19 @@
 package com.fm404.onair
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -25,6 +31,7 @@ import com.fm404.onair.core.network.manager.TokenManager
 import com.fm404.onair.presentation.main.screen.home.HomeScreenHolder
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -52,10 +59,24 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var tokenManager: TokenManager
 
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            // Handle the permissions result
+            val granted = permissions.all { it.value }
+            if (granted) {
+                Toast.makeText(this, "권한이 확인되었어요!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "권한을 허용해야 앱을 이용할 수 있어요.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        checkAndRequestPermissions()
+        
         setContent {
             OnAirTheme {
                 MainScreen(
@@ -69,6 +90,25 @@ class MainActivity : ComponentActivity() {
                     tokenManager = tokenManager
                 )
             }
+        }
+
+    }
+
+    private fun checkAndRequestPermissions() {
+        val permissions = mutableListOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (permissions.any {
+                ActivityCompat.checkSelfPermission(
+                    this,
+                    it
+                ) != PackageManager.PERMISSION_GRANTED
+            }) {
+
+            requestPermissionLauncher.launch(permissions.toTypedArray())
         }
     }
 }
@@ -93,6 +133,7 @@ private fun MainScreen(
     LaunchedEffect(Unit) {
         startDestination = if (tokenManager.hasValidToken()) {
             NavRoute.MainSection.Home.route
+//            NavRoute.BroadcastSection.List.route // 실제 동작 시 방송 목록이 홈 화면이 되어야함
         } else {
             AuthNavigationContract.GRAPH_AUTH
         }
@@ -110,13 +151,16 @@ private fun MainScreen(
             modifier = modifier.fillMaxSize(),
             bottomBar = {
                 // 현재 route가 login이나 register인 경우 BottomBar 숨김
-                val currentDestination = currentRoute?.destination?.route
-                if (currentDestination != AuthNavigationContract.ROUTE_LOGIN &&
-                    currentDestination != AuthNavigationContract.ROUTE_REGISTER) {
-                    BottomNavBar(
-                        navController = navController
-                    )
-                }
+//                val currentDestination = currentRoute?.destination?.route
+//                if (currentDestination != AuthNavigationContract.ROUTE_LOGIN &&
+//                    currentDestination != AuthNavigationContract.ROUTE_REGISTER) {
+//                    BottomNavBar(
+//                        navController = navController
+//                    )
+//                }
+                BottomNavBar(
+                    navController = navController
+                )
             }
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {

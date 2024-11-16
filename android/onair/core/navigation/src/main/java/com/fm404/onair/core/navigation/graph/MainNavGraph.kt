@@ -16,6 +16,7 @@ import com.fm404.onair.core.navigation.model.NavRoute
 fun MainNavGraph(
     navController: NavHostController,
     startDestination: String = NavRoute.MainSection.Home.route,
+//    startDestination: String = NavRoute.BroadcastSection.List.route, // 실제 동작 시 홈 화면
     homeScreen: @Composable (NavHostController) -> Unit,
     authScreen: AuthScreen,
     statisticsScreen: StatisticsScreen,
