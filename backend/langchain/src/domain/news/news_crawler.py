@@ -12,12 +12,12 @@ from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 
 class NewsTopic(Enum):
-    POLITICS = (auto(), "https://news.naver.com/section/100")
-    ECONOMY = (auto(), "https://news.naver.com/section/101")
-    SOCIETY = (auto(), "https://news.naver.com/section/102")
-    LIFE_CULTURE = (auto(), "https://news.naver.com/section/103")
-    WORLD = (auto(), "https://news.naver.com/section/104")
-    IT_SCIENCE = (auto(), "https://news.naver.com/section/105")
+    POLITICS = (1, "https://news.naver.com/section/100")
+    ECONOMY = (2, "https://news.naver.com/section/101")
+    SOCIETY = (3, "https://news.naver.com/section/102")
+    LIFE_CULTURE = (4, "https://news.naver.com/section/103")
+    WORLD = (5, "https://news.naver.com/section/104")
+    IT_SCIENCE = (6, "https://news.naver.com/section/105")
 
     def __init__(self, id, url):
         self.id = id

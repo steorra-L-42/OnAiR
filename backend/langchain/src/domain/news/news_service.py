@@ -1,7 +1,26 @@
 import logging
 import json
+import sqlite3
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from news_langchain import chat
 
 class NewsService:
+
+    news_topic = {
+        'POLITICS' : 1,
+        'ECONOMY' : 2,
+        'SOCIETY' : 3,
+        'LIFE_CULTURE' : 4,
+        'WORLD' : 5,
+        'IT_SCIENCE' : 6
+    }
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    db_path = os.path.join(base_dir, 'db/news.db')
+
     def __init__(self):
         logging.info("NewsService instance created.")
         pass
@@ -10,18 +29,12 @@ class NewsService:
         logging.info(f"NewsService process value : {value}")
         results = []
 
-        # // 정치, 경제, 사회, 생활/문화, IT/과학, 세계
-        # POLITICS, ECONOMY, SOCIETY, LIFE_CULTURE, IT_SCIENCE, WORLD
+        news_list = self.get_news_list(topic=value['channel_info']['news_topic'])
 
-        # TODO : 뉴스 별로 llm 모델을 이용하여 응답 생성
-        for i in range(3):
-            text = """트럼프 이너서클: 트럼프 가족의 정치적 영향력. 
-                도널드 트럼프 미국 대통령 당선인의 가족은 정치에서 중요한 역할을 하고 있으며, 특히 장남 도널드 트럼프 주니어가 강력한 영향력을 행사하고 있다. 
-                트럼프 주니어는 '마가' 운동을 계승하겠다고 선언하며, 인사와 정치적 결정에 큰 영향을 미치고 있다. 
-                둘째 며느리 라라 트럼프도 공화당 전국위원회 공동의장으로 활동하며 정치적 입지를 강화하고 있다. 
-                트럼프 가족은 앞으로도 정치에서 중요한 역할을 할 것으로 예상된다."""
+        for news in news_list: 
 
-            emotion_tone_preset = "normal-1"
+            chat_result = chat(news['title'], news['summary'], value['channel_info']['personality'], value['channel_info']['tts_engine'])
+
             volume = 100
             speed_x = 1.0
             tempo = 1.0
@@ -30,9 +43,9 @@ class NewsService:
 
             result = {
                 "typecast" : {
-	                "text": text,
+	                "text": chat_result['text'],
                     "actor": value['channel_info']['tts_engine'],
-                    "emotion_tone_preset": emotion_tone_preset,
+                    "emotion_tone_preset": chat_result['emotion_tone_preset'],
                     "volume": volume,
                     "speed_x": speed_x,
                     "tempo": tempo,
@@ -43,3 +56,20 @@ class NewsService:
             results.append(result)
 
         return results
+
+    # DB에서 해당 주제의 뉴스 조회
+    def get_news_list(self, topic):
+        logging.info(f"NewsService get_news_list topic : {topic}")
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+
+            c = conn.cursor()
+
+            # rows = c.execute(f"SELECT * FROM news WHERE topic_id = {self.news_topic[topic]}").fetchall()
+            rows = c.execute("SELECT * FROM news WHERE topic_id = (?) LIMIT 5", (self.news_topic[topic],)).fetchall()
+            return rows
+
+        except Exception as e:
+            logging.error(f"Error cannot get news : {e}")
+            raise e
