@@ -34,7 +34,7 @@ class Stream:
         self.stop_event = threading.Event()
 
     ######################  스트림 실행 전체 동작 정의  ######################
-    def start_streaming(self, initial_file_list, user_fcm_token):
+    def start_streaming(self, initial_file_list, fcm):
         # 디렉토리 셋업
         self.stream_path, self.playlist_path, self.hls_path = init_directory(self.name)
 
@@ -45,7 +45,7 @@ class Stream:
         self.init_m3u8()
 
         log.info(f"[{self.name}] 스트리밍 시작")
-        notify_stream_start(self.name, user_fcm_token)
+        notify_stream_start(fcm['token'], fcm['data'])
         try:
             update_m3u8(self, self.stop_event)
         except Exception as e:

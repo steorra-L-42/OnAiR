@@ -9,13 +9,10 @@ from config import SERVICE_ACCOUNT_KEY_PATH
 cred = credentials.Certificate(SERVICE_ACCOUNT_KEY_PATH)
 firebase_app = firebase_admin.initialize_app(cred)
 
-def notify_stream_start(stream_name, token):
-    hidden_data = {
-        "channel_uuid": stream_name,
-        "type": "channel_created",
-        "timestamp": str(datetime.datetime.now())
-    }
-    send_fcm_notification_only_data(token, hidden_data)
+def notify_stream_start(token, fcm_data:dict):
+    fcm_data["type"] = "channel_created"
+    fcm_data["timestamp"] = str(datetime.datetime.now())
+    send_fcm_notification_only_data(token, fcm_data)
 
 
 def send_fcm_notification(topic, title, body, data=None):

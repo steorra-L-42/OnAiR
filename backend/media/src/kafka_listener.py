@@ -54,10 +54,17 @@ def process_input_audio(msg, stream_manager:StreamManager):
     if stream_manager.is_exist(stream_name= key):
       log.error(f"[{key}] 이미 존재하는 채널입니다.")
       return
+    fcm = {
+      "token": value.get("fcm_token"),
+      "data": {
+        "channel_uuid": key,
+        "channel_name": value.get("channel_name"),
+      }
+    }
 
     stream = Stream(name = key)
     stream_manager.add_stream(stream)
-    future = stream_setup_executor.submit(stream.start_streaming, file_info_list, value.get("fcm_token"))
+    future = stream_setup_executor.submit(stream.start_streaming, file_info_list, fcm)
     stream.future = future
 
   # 기존 채널에 음성 추가
