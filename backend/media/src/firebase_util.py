@@ -12,6 +12,7 @@ firebase_app = firebase_admin.initialize_app(cred)
 def notify_stream_start(stream_name, token):
     hidden_data = {
         "channel_uuid": stream_name,
+        "type": "channel_created",
         "timestamp": str(datetime.datetime.now())
     }
     send_fcm_notification_only_data(token, hidden_data)

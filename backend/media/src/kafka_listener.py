@@ -7,7 +7,6 @@ from aiofiles import stderr
 # 내부 패키지
 from shared_vars import stream_setup_executor, stream_data_executor
 from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
-from src import config
 from Stream import Stream
 from StreamManager import StreamManager
 
