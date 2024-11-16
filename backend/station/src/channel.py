@@ -12,7 +12,9 @@ from play_back_queue import PlaybackQueue
 
 class Channel:
     def __init__(self, channel_id, config):
+        # 음악 다운로드 자원
         self.music_download_executor = ThreadPoolExecutor(max_workers=4)
+
         # 필드 정의
         self.broadcast_thread = None
         self.stop_event = Event()
@@ -51,7 +53,7 @@ class Channel:
 
             if title and artist:
                 futures.append(self.music_download_executor.submit(
-                    download_from_keyword, title, artist, cover_url, self.channel_id, "playlists"))
+                    download_from_keyword, title, artist, cover_url))
 
         # 비동기적으로 반환된 경로들을 playlist에 추가
         for future in futures:

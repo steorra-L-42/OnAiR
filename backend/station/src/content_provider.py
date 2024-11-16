@@ -156,7 +156,7 @@ def process_music(value, channel_id):
         return None
 
     try:
-        music_file_info = download_from_keyword(music_title, music_artist, music_cover_url, channel_id, "story")
+        music_file_info = download_from_keyword(music_title, music_artist, music_cover_url)
         if not music_file_info:
             logging.info("No music file found. Skipping playback.")
             return None

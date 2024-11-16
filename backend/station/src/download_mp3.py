@@ -1,7 +1,9 @@
 import os
 import time
+
 import requests
 from playwright.sync_api import sync_playwright
+
 
 def download_youtube_audio(url):
     save_directory = "./saved_mp3"
@@ -84,6 +86,7 @@ def download_youtube_audio(url):
         finally:
             browser.close()
 
+
 # 유튜브 URL
-youtube_url = "https://www.youtube.com/watch?v=ekr2nIex040"
+youtube_url = "https://www.youtube.com/watch?v=fJ9rUzIMcZQ&ab_channel=QueenOfficial"
 download_youtube_audio(youtube_url)
