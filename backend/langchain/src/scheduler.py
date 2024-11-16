@@ -1,5 +1,9 @@
 import schedule
 import time
+import sqlite3
+import os
+import logging
+
 
 class Scheduler:
 
@@ -11,10 +15,16 @@ class Scheduler:
         self.weather_crawler = weather_crawler
         self.news_crawler = news_crawler
 
-    def start(self):
         # 부팅 시 크롤링
-        self.weather_crawler.crawl()
-        self.news_crawler.crawl()
+        if self.need_to_crawl_when_start():
+            logging.info("News, Weather need to be crawled at start.")
+            time.sleep(1)
+            self.weather_crawler.crawl()
+            self.news_crawler.crawl()
+        else:
+            logging.info("News, Weather do not need to be crawled at start.")
+
+    def start(self):
 
         # weather
         schedule.every().day.at(self.MORNING).do(self.weather_crawler.crawl)
@@ -28,8 +38,29 @@ class Scheduler:
         schedule.every().day.at(self.MIDNIGHT).do(self.news_crawler.delete_yesterday_news)
         schedule.every().day.at(self.MIDNIGHT).do(self.weather_crawler.delete_yesterday_weather)
 
-        while True:
-            schedule.run_pending()
-            time.sleep(55) # 55초마다 반복
+    # 12시간 이내에 크롤링한 뉴스가 30개 이상, 날씨가 1개 이상 있으면 서버를 시작할 때 크롤링을 하지 않는다.
+    def need_to_crawl_when_start(self):
 
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            weather_db_path = os.path.join(base_dir, 'db/weather.db')
+            news_db_path = os.path.join(base_dir, 'db/news.db')
 
+            conn = sqlite3.connect(news_db_path)
+            c = conn.cursor()
+            news_count = c.execute("SELECT COUNT(*) FROM news where created_at >= datetime('now', '-12 hours')").fetchone()[0]
+            conn.close()
+
+            conn = sqlite3.connect(weather_db_path)
+            c = conn.cursor()
+            weather_count = c.execute("SELECT COUNT(*) FROM weather where created_at >= datetime('now', '-12 hours')").fetchone()[0]
+            conn.close()
+    
+            news_ok = news_count >= 30
+            weather_ok = weather_count >= 1
+
+            return not (news_ok and weather_ok)
+
+        except Exception as e:
+            logging.error(f"Error occurred while checking need_to_crawl_when_start: {e}")
+            return True

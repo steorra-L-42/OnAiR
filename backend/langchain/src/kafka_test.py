@@ -1,7 +1,10 @@
-import instance
 import json
+import logging
+from kafka_producer_wrapper import KafkaProducerWrapper
 
-producer = instance.producer
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+
+producer = KafkaProducerWrapper()
 
 def handle_shutdown(signum, frame):
     logging.info(f"Received shutdown signal: {signum}. Shutting down...")
