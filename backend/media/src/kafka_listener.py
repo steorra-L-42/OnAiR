@@ -63,8 +63,13 @@ def process_input_audio(msg, stream_manager:StreamManager):
 
   # 기존 채널에 음성 추가
   else:
+    if not stream_manager.is_exist(stream_name= key):
+      log.error(f"[{key}] 존재하지 않는 채널입니다.")
+      return
+
     stream = stream_manager.get_stream(stream_name= key)
-    stream_data_executor.submit(stream.add_audio, file_info_list)
+    future = stream_data_executor.submit(stream.add_audio, file_info_list)
+    stream.add_future = future
 
 
 
@@ -79,7 +84,7 @@ def process_close_channel(msg, stream_manager:StreamManager):
   log.info(f"[{stream_name}] 채널을 삭제합니다.")
   stream = stream_manager.get_stream(stream_name)
   stream_manager.remove_stream(stream_name)
-  stream_setup_executor.submit(stream.remove_stream())
+  stream_setup_executor.submit(stream.stop_streaming_and_remove_stream())
 
 
 

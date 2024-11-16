@@ -21,10 +21,13 @@ class StreamManager:
     def get_stream(self, stream_name):
         return self.streams[stream_name]
 
+    def get_all_stream(self):
+        return [stream for stream in self.streams.values()]
+
     def remove_stream_all(self):
         with self.lock:
-            for stream in self.streams.values():
-                stream.remove_stream()
+            for stream_name in self.streams.keys():
+                self.remove_stream(stream_name)
 
     def is_exist(self, stream_name):
         return (stream_name in self.streams)
