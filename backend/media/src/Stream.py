@@ -105,16 +105,16 @@ class Stream:
         create_or_clear_directory(self.hls_path)
 
     def remove_stream(self):
-        # 프로세스 종료 명령 ON
+        # 스레드 종료 명령 ON
         self.stop_event.set()
 
-        # 기다리는 동안 기타 자원들 할당 해제
+        # 스레드 종료 대기
+        if self.future:
+            self.future.result()
+        if self.add_future:
+            self.add_future.result()
+
+        # 기타 자원들 할당 해제
         self.metadata.clear()
         self.queue.clear()
-
-        # 실행 중인 스레드 종료 대기
-        self.future.result()
-        if self.add_future is not None:
-            self.add_future.result()
         log.info(f"[{self.name}] 채널 삭제 완료")
-
