@@ -1,7 +1,10 @@
-import instance
 import json
+import logging
+from kafka_producer_wrapper import KafkaProducerWrapper
 
-producer = instance.producer
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+
+producer = KafkaProducerWrapper()
 
 def handle_shutdown(signum, frame):
     logging.info(f"Received shutdown signal: {signum}. Shutting down...")
@@ -54,7 +57,7 @@ def test_news():
         "channel_info": {
             "is_default": "true",
             "tts_engine": "세나",
-            "personality": "KIND",
+            "personality": "TOUGH",
             "news_topic" : "ECONOMY",
         },
         "content_type": "news"
@@ -69,8 +72,8 @@ def test_weather():
     contents_request = {
         "channel_info": {
             "is_default": "true",
-            "tts_engine": "세나",
-            "personality": "COOL",
+            "tts_engine": "은빈",
+            "personality": "BAD",
             "news_topic" : "ECONOMY",
         },
         "content_type": "weather"

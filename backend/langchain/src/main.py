@@ -1,6 +1,7 @@
 import logging
 import signal
 import time
+import schedule
 from config import LOG_LEVEL
 
 import instance
@@ -24,8 +25,12 @@ if __name__ == "__main__":
     consumer_manager.create_consumers()
     producer = instance.producer
 
+    scheduler = instance.scheduler
+    scheduler.start()
+
     try:
         while True:
+            schedule.run_pending()
             time.sleep(1)
     except KeyboardInterrupt:
         handle_shutdown(None, None)
