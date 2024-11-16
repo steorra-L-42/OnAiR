@@ -133,6 +133,7 @@ private fun MainScreen(
     LaunchedEffect(Unit) {
         startDestination = if (tokenManager.hasValidToken()) {
             NavRoute.MainSection.Home.route
+//            NavRoute.BroadcastSection.List.route // 실제 동작 시 방송 목록이 홈 화면이 되어야함
         } else {
             AuthNavigationContract.GRAPH_AUTH
         }

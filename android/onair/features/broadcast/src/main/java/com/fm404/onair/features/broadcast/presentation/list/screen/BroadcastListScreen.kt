@@ -11,7 +11,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.fm404.onair.domain.model.broadcast.Channel
+import com.fm404.onair.domain.model.broadcast.ChannelList
 import com.fm404.onair.features.broadcast.presentation.list.BroadcastListViewModel
 import com.fm404.onair.features.broadcast.presentation.list.screen.component.ChannelItem
 import com.fm404.onair.features.broadcast.presentation.list.state.BroadcastListState
@@ -29,7 +29,7 @@ fun BroadcastListScreen(
             state = state,
             onBroadcastClick = onBroadcastClick,
             onChannelClick = { channel ->
-                onBroadcastClick(channel.channelId)
+                onBroadcastClick(channel.channelUuid)
             },
             onNotificationClick = viewModel::onNotificationClick
         )
@@ -68,7 +68,7 @@ fun BroadcastListScreen(
 private fun BroadcastListContent(
     state: BroadcastListState,
     onBroadcastClick: (String) -> Unit,
-    onChannelClick: (Channel) -> Unit,
+    onChannelClick: (ChannelList) -> Unit,
     onNotificationClick: () -> Unit
 ) {
     Column(
@@ -107,10 +107,10 @@ private fun BroadcastListContent(
         ) {
             items(
                 items = state.channels,
-                key = { it.channelId }
+                key = { it.channelUuid }
             ) { channel ->
                 ChannelItem(
-                    channel = channel,
+                    channelList = channel,
                     onClick = { onChannelClick(channel) }
                 )
             }

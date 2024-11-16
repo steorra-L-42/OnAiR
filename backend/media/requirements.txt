@@ -19,4 +19,4 @@ watchdog==6.0.0
 aiofiles==24.1.0
 confluent_kafka==2.6.0
 Requests==2.32.3
-
+intervaltree==3.1.0

@@ -15,6 +15,8 @@ import me.onair.main.MainApplication;
 import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.channel.repository.ChannelRepository;
+import me.onair.main.domain.fcm.entity.FcmToken;
+import me.onair.main.domain.fcm.repository.FcmRepository;
 import me.onair.main.domain.story.dto.CreateNewStoryKafka;
 import me.onair.main.domain.story.entity.Story;
 import me.onair.main.domain.story.entity.StoryMusic;
@@ -28,6 +30,8 @@ import me.onair.main.domain.user.repository.UserRepository;
 import me.onair.main.kafka.enums.Topics;
 import me.onair.main.kafka.producer.KafkaProducer;
 import me.onair.main.util.SecurityTestUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -63,8 +67,28 @@ public class CreateStoryTest {
     private ChannelRepository channelRepository;
     @Autowired
     private StoryMusicRepository storyMusicRepository;
+    @Autowired
+    private FcmRepository fcmRepository;
     @MockBean
     private KafkaProducer kafkaProducer;  // KafkaProducer를 모킹
+
+    @BeforeEach
+    void setUp() {
+        storyMusicRepository.deleteAll();
+        storyRepository.deleteAll();
+        channelRepository.deleteAll();
+        fcmRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    @AfterEach
+    void tearDown() {
+        storyMusicRepository.deleteAll();
+        storyRepository.deleteAll();
+        channelRepository.deleteAll();
+        fcmRepository.deleteAll();
+        userRepository.deleteAll();
+    }
 
     @Nested
     @DisplayName("[200 Ok]")
@@ -74,13 +98,18 @@ public class CreateStoryTest {
         void music이_있는_경우() throws Exception {
             // given
             SignupRequest signupRequest = createSignupRequest();
-            User user = userRepository.save(User.createNormalUser(signupRequest));
+            User user = User.createNormalUser(signupRequest);
+            FcmToken fcmToken = FcmToken.from("testFcmToken");
+            fcmRepository.save(fcmToken);
+
+            user.setFcmToken(fcmToken);
+            userRepository.save(user);
             SecurityTestUtil.setUpMockUser(customUserDetails, user.getId());
 
             CreateNewChannelRequest createNewChannelRequest = createNewChannelRequest();
             Channel channel = channelRepository.save(Channel.createChannel(createNewChannelRequest, user));
 
-            final String url = "/api/v1/story/" + channel.getId();
+            final String url = "/api/v1/story/" + channel.getUuid();
             final String requestBody = """
                     {
                         "title": "사연 제목 제목 제목",
@@ -111,7 +140,8 @@ public class CreateStoryTest {
             assertThat(savedStoryMusic.getArtist()).isEqualTo("Muse");
             assertThat(savedStoryMusic.getCoverUrl()).isEqualTo("https://www.example.com");
 
-            CreateNewStoryKafka createNewStoryKafka = CreateNewStoryKafka.of(savedStory, savedStoryMusic);
+            CreateNewStoryKafka createNewStoryKafka = CreateNewStoryKafka.of(fcmToken.getValue(), savedStory,
+                    savedStoryMusic);
             verify(kafkaProducer, Mockito.times(1)).sendMessageToKafka(Mockito.eq(Topics.STORY),
                     Mockito.eq(channel.getUuid()),
                     Mockito.eq(createNewStoryKafka.toJson()));
@@ -122,13 +152,18 @@ public class CreateStoryTest {
         void music이_비어있는_경우() throws Exception {
             // given
             SignupRequest signupRequest = createSignupRequest();
-            User user = userRepository.save(User.createNormalUser(signupRequest));
+            User user = User.createNormalUser(signupRequest);
+            FcmToken fcmToken = FcmToken.from("testFcmToken");
+            fcmRepository.save(fcmToken);
+
+            user.setFcmToken(fcmToken);
+            userRepository.save(user);
             SecurityTestUtil.setUpMockUser(customUserDetails, user.getId());
 
             CreateNewChannelRequest createNewChannelRequest = createNewChannelRequest();
             Channel channel = channelRepository.save(Channel.createChannel(createNewChannelRequest, user));
 
-            final String url = "/api/v1/story/" + channel.getId();
+            final String url = "/api/v1/story/" + channel.getUuid();
             final String requestBody = """
                     {
                         "title": "사연 제목 제목 제목",
@@ -150,7 +185,7 @@ public class CreateStoryTest {
             assertThat(savedStory.getTitle()).isEqualTo("사연 제목 제목 제목");
             assertThat(savedStory.getContent()).isEqualTo("사연 내용 내용 내용");
 
-            CreateNewStoryKafka createNewStoryKafka = CreateNewStoryKafka.of(savedStory, null);
+            CreateNewStoryKafka createNewStoryKafka = CreateNewStoryKafka.of(fcmToken.getValue(), savedStory, null);
             verify(kafkaProducer, Mockito.times(1)).sendMessageToKafka(Mockito.eq(Topics.STORY),
                     Mockito.eq(channel.getUuid()),
                     Mockito.eq(createNewStoryKafka.toJson()));
@@ -661,7 +696,7 @@ public class CreateStoryTest {
             channel.endChannel();
             channelRepository.save(channel);
 
-            final String url = "/api/v1/story/" + channel.getId();
+            final String url = "/api/v1/story/" + channel.getUuid();
             final String requestBody = """
                     {
                         "title": "사연 제목 제목 제목",

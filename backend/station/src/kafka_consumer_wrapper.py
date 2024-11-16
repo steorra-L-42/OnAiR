@@ -128,8 +128,8 @@ def add_channel_info_to_story(msg):
     personality = channel.personality  # 채널에서 성격 정보 가져오기
 
     # 채널 정보 추가
-    value["channelInfo"] = {
-        "ttsEngine": tts_engine,
+    value["channel_info"] = {
+        "tts_engine": tts_engine,
         "personality": personality
     }
 

@@ -62,7 +62,7 @@ fun BroadcastDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Channel 404", fontSize = 20.sp)
+                    Text(state.title ?: "Channel 404", fontSize = 20.sp)
                 },
                 navigationIcon = {
                     IconButton(onClick =  onBack ) {
