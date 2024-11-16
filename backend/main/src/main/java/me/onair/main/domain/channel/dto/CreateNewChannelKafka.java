@@ -20,7 +20,7 @@ import me.onair.main.domain.channel.enums.TtsEngine;
 public class CreateNewChannelKafka {
 
   private String fcmToken;
-  private String isDefault;
+  private Boolean isDefault;
   private TtsEngine ttsEngine;
   private Personality personality;
   private NewsTopic newsTopic;
@@ -34,7 +34,7 @@ public class CreateNewChannelKafka {
   }
 
   @Builder
-  private CreateNewChannelKafka(String fcmToken, String isDefault, TtsEngine ttsEngine,
+  private CreateNewChannelKafka(String fcmToken, Boolean isDefault, TtsEngine ttsEngine,
       Personality personality, NewsTopic newsTopic, List<TrackInfo> playlist
   ) {
     this.fcmToken = fcmToken;
@@ -48,7 +48,7 @@ public class CreateNewChannelKafka {
   public static CreateNewChannelKafka of(Channel channel, Dj dj, List<Track> trackList, String fcmToken) {
     return CreateNewChannelKafka.builder()
         .fcmToken(fcmToken)
-        .isDefault(channel.getIsDefault().toString())
+        .isDefault(channel.getIsDefault())
         .ttsEngine(dj.getTtsEngine())
         .personality(dj.getPersonality())
         .newsTopic(dj.getNewsTopic())
