@@ -11,32 +11,32 @@ import config
 
 # Actor 별 지원하는 emotion presets 설정
 ACTOR_EMOTIONS = {
-    "세나": [
+    "TYPECAST_SENA": [
         "tonemid-1", "tonemid-2", "tonemid-3", "tonemid-4",
         "normal-1", "normal-2", "normal-3", "normal-4",
         "happy-1", "happy-2", "happy-3",
         "sad-1", "sad-2", "sad-3", "sad-4",
         "angry-1", "angry-2", "angry-3"
     ],
-    "제롬": ["normal-1", "normal-2", "normal-3", "normal-4"],
-    "현지": ["normal-1", "normal-2", "normal-3", "normal-4"],
-    "은빈": ["happy-1", "happy-2", "soft-1", "soft-2", "normal-1", "normal-2"]
+    "TYPECAST_JEROME": ["normal-1", "normal-2", "normal-3", "normal-4"],
+    "TYPECAST_HYEONJI": ["normal-1", "normal-2", "normal-3", "normal-4"],
+    "TYPECAST_EUNBIN": ["happy-1", "happy-2", "soft-1", "soft-2", "normal-1", "normal-2"]
 }
 
 # Actor 별로 다른 API 토큰 설정
 ACTOR_TOKENS = {
-    "세나": config.sena_token,
-    "제롬": config.jerome_token,
-    "현지": config.hyeonji_token,
-    "은빈": config.eunbin_token
+    "TYPECAST_SENA": config.sena_token,
+    "TYPECAST_JEROME": config.jerome_token,
+    "TYPECAST_HYEONJI": config.hyeonji_token,
+    "TYPECAST_EUNBIN": config.eunbin_token
 }
 
 # Actor 별 actor_id 설정
 ACTOR_IDS = {
-    "세나": config.sena_actor_id,
-    "제롬": config.jerome_actor_id,
-    "현지": config.hyeonji_actor_id,
-    "은빈": config.eunbin_actor_id
+    "TYPECAST_SENA": config.sena_actor_id,
+    "TYPECAST_JEROME": config.jerome_actor_id,
+    "TYPECAST_HYEONJI": config.hyeonji_actor_id,
+    "TYPECAST_EUNBIN": config.eunbin_actor_id
 }
 
 
