@@ -145,7 +145,7 @@ class DynamicScheduleManager:
 
     def process_first_music(self, playlist):
         first_music = playlist[self.playlist_index][0]
-        self.playlist_index += 1
+        self.playlist_index = (self.playlist_index + 1) % len(playlist)
         self.buffering_time = first_music.get("length")
         self.dj.produce_contents([{
             "file_path": first_music.get("file_path"),
