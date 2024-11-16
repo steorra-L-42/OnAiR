@@ -76,8 +76,9 @@ def handle_story(msg):
         add_to_queue(channel_id, story_mp3_list)
         logging.info(f"Story and music processed successfully.")
 
-        # todo: FCM 전송하기.
-        push_fcm(channel_id, value);
+        # FCM 전송하기
+        channel_name = channel_manager.channels[channel_id].channel_name
+        push_fcm(channel_id, channel_name, value)
 
     except Exception as e:
         logging.error(f"Error handling story: {e}")
@@ -155,7 +156,7 @@ def process_music(value, channel_id):
         return None
 
     try:
-        music_file_info = download_from_keyword(music_title, music_artist, music_cover_url, channel_id, "story")
+        music_file_info = download_from_keyword(music_title, music_artist, music_cover_url)
         if not music_file_info:
             logging.info("No music file found. Skipping playback.")
             return None
