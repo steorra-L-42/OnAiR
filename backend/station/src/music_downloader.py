@@ -150,6 +150,9 @@ def convert_to_mp3(input_file, output_file):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT
         )
+        if os.path.exists(input_file):
+            os.remove(input_file)
+
         logging.info(f"Conversion successful: {output_file}")
     except subprocess.CalledProcessError as e:
         logging.info(f"Error during conversion: {output_file}")

@@ -14,7 +14,7 @@ class DJ:
 
         start_filepath = medias_path + "/" + "start.mp3"
         file_info_list = [{
-            "file_path": str(start_filepath),
+            "file_path": start_filepath.lstrip(".."),
             "type": "start"
         }]
 
