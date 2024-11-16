@@ -147,12 +147,12 @@ class DynamicScheduleManager:
         first_music = playlist[self.playlist_index][0]
         self.playlist_index += 1
         self.buffering_time = first_music.get("length")
-        self.dj.produce_contents({
+        self.dj.produce_contents([{
             "file_path": first_music.get("file_path"),
             "type": "music",
             "music_title": first_music.get("music_title"),
             "music_artist": first_music.get("music_artist"),
-            "music_cover_url": first_music.get("music_cover_url")})
+            "music_cover_url": first_music.get("music_cover_url")}])
 
     def stop(self):
         """스케줄러 종료 및 리소스 정리"""
