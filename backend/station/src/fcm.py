@@ -41,7 +41,7 @@ def send_fcm_notification(fcm_token, title, body, data=None):
         logging.info(f"Failed to push FCM: {e}")
 
 
-def push_fcm(channel_uuid, value):
+def push_fcm(channel_uuid, channel_name, value):
     story_title = value.get("story_title")
     fcm_token = value.get("fcm_token")
 
@@ -50,4 +50,5 @@ def push_fcm(channel_uuid, value):
                           None,
                           {"type": "story_chosen",
                            "channel_uuid": channel_uuid,
+                           "channel_name": channel_name,
                            "story_title": story_title})

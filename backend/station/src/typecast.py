@@ -8,7 +8,6 @@ from datetime import datetime
 import requests
 
 import config
-from path_util import get_medias_path
 
 # Actor 별 지원하는 emotion presets 설정
 ACTOR_EMOTIONS = {
@@ -193,13 +192,12 @@ def download_audio(speak_id, token, channel, content_type):
 
 def save_audio_file(audio_url, channel_id, content_type):
     # medias 경로 설정
-    current_dir = os.getcwd()
-    medias_path = get_medias_path(current_dir)
+    medias_path = "../medias"
 
-    output_filepath = medias_path / channel_id / content_type
+    output_filepath = medias_path + f"/{channel_id}/{content_type}"
 
     # 디렉토리 생성 (존재하지 않으면)
-    output_filepath.mkdir(parents=True, exist_ok=True)
+    os.makedirs(output_filepath, exist_ok=True)
 
     # 고유한 파일 이름 설정
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -207,7 +205,7 @@ def save_audio_file(audio_url, channel_id, content_type):
     unique_id = uuid.uuid4()
     # 파일 이름 생성 (날짜 시간 + UUID)
     file_name = f"{current_time}_{unique_id}.mp3"
-    output_file = output_filepath / file_name
+    output_file = output_filepath + "/" + file_name
 
     # 오디오 파일 저장
     response = requests.get(audio_url)
@@ -215,7 +213,7 @@ def save_audio_file(audio_url, channel_id, content_type):
         with open(output_file, 'wb') as f:
             f.write(response.content)
         logging.info(f"Audio downloaded successfully as {str(output_file)}")
-        return str(output_file)
+        return output_file.lstrip("..")
     else:
         logging.error(f"Failed to download audio: {response.status_code}, {response.text}")
         return

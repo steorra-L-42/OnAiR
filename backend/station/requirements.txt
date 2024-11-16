@@ -1,7 +1,8 @@
 confluent_kafka==2.6.0
+eyed3==0.9.7
 firebase_admin==6.6.0
+playwright==1.48.0
 python-dotenv==1.0.1
-pytubefix==8.3.0
 Requests==2.32.3
 schedule==1.2.2
 youtube_search_python==1.6.6
