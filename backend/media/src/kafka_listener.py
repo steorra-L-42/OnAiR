@@ -58,7 +58,7 @@ def process_input_audio(msg, stream_manager:StreamManager):
 
     stream = Stream(name = key)
     stream_manager.add_stream(stream)
-    future = stream_setup_executor.submit(stream.start_streaming, file_info_list)
+    future = stream_setup_executor.submit(stream.start_streaming, file_info_list, user_fcm_token)
     stream.future = future
 
   # 기존 채널에 음성 추가

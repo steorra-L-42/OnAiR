@@ -5,8 +5,6 @@ import shutil
 
 # 내부 패키지
 from config import STREAMING_CHANNELS, PLAYLIST_DIR, HLS_DIR
-
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from logger import log
 
 

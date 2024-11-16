@@ -10,6 +10,7 @@ from file_util import init_directory, create_or_clear_directory
 from logger import log
 from segment_queue import SegmentQueue
 from segmenter import generate_segment_from_files
+from firebase_util import notify_stream_start
 
 
 class Stream:
@@ -33,7 +34,7 @@ class Stream:
         self.stop_event = threading.Event()
 
     ######################  스트림 실행 전체 동작 정의  ######################
-    def start_streaming(self, initial_file_list):
+    def start_streaming(self, initial_file_list, user_fcm_token):
         # 디렉토리 셋업
         self.stream_path, self.playlist_path, self.hls_path = init_directory(self.name)
 
@@ -44,6 +45,7 @@ class Stream:
         self.init_m3u8()
 
         log.info(f"[{self.name}] 스트리밍 시작")
+        notify_stream_start(self.name, user_fcm_token)
         try:
             update_m3u8(self, self.stop_event)
         except Exception as e:
