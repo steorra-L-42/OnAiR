@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+//    id("com.google.gms.google-services")
 }
 
 android {
@@ -41,6 +42,8 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":domain"))
     implementation(project(":core:contract"))
+    api(platform("com.google.firebase:firebase-bom:33.5.1"))
+    api("com.google.firebase:firebase-messaging:24.0.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

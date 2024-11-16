@@ -19,7 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
-
+# Firebase
+-keepattributes *Annotation*
+-keepattributes Signature
+-keep class com.google.android.gms.** { *; }
+-keep class com.google.firebase.** { *; }
+-keep class com.fm404.onair.core.firebase.FCMServiceKt
 # FCM Service
 -keep class com.fm404.onair.core.firebase.FCMService { *; }
 -keep class com.fm404.onair.core.firebase.FCMData { *; }
+-keepclasseswithmembers class com.google.firebase.messaging.FirebaseMessagingService {
+    public *;
+}
