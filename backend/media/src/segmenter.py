@@ -143,13 +143,13 @@ def update_m3u8(stream: Stream, stop_event):
     # 저장할 세그먼트 리스트 조회
     segments = stream.get_queue().get_buffer_list()
     segments.extend(stream.get_queue().dequeue(SEGMENT_UPDATE_SIZE))
-
-    # index_temp.m3u8 작성
+    # m3u8 파일 갱신
     first_seg_length = write_m3u8(stream, segments, temp_m3u8_path)
-
-    # 파일 교체
     os.replace(temp_m3u8_path, m3u8_path)
     log.info(f"[{stream.name}] 스트리밍 중 - {segments}")
+
+    # 오래된 세그먼트 삭제
+    os.remove(os.path.join(stream.hls_path, f"segment_{(segments[0]-1):06d}.ts"))
 
     # 루프 종료 시간 기록
     end_time = time.perf_counter()

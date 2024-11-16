@@ -6,10 +6,11 @@ from intervaltree import IntervalTree
 # 내부 패키지
 from config import SEGMENT_LIST_SIZE
 from segmenter import write_m3u8, update_m3u8
-from file_util import init_directory
+from file_util import init_directory, create_or_clear_directory
 from logger import log
 from segment_queue import SegmentQueue
 from segmenter import generate_segment_from_files
+from firebase_util import notify_stream_start
 
 
 class Stream:
@@ -29,10 +30,11 @@ class Stream:
         # 스레딩, 동시성 제어 관련 변수
         self.lock = threading.Lock()
         self.future = None
+        self.add_future = None
         self.stop_event = threading.Event()
 
     ######################  스트림 실행 전체 동작 정의  ######################
-    def start_streaming(self, initial_file_list):
+    def start_streaming(self, initial_file_list, fcm):
         # 디렉토리 셋업
         self.stream_path, self.playlist_path, self.hls_path = init_directory(self.name)
 
@@ -43,6 +45,7 @@ class Stream:
         self.init_m3u8()
 
         log.info(f"[{self.name}] 스트리밍 시작")
+        notify_stream_start(fcm['token'], fcm['data'])
         try:
             update_m3u8(self, self.stop_event)
         except Exception as e:
@@ -99,9 +102,21 @@ class Stream:
 
 
     ######################  자원 할당 해제  ######################
+    def stop_streaming_and_remove_stream(self):
+        self.remove_stream()
+        create_or_clear_directory(self.hls_path)
+
     def remove_stream(self):
+        # 스레드 종료 명령 ON
         self.stop_event.set()
-        self.future.result()
+
+        # 스레드 종료 대기
+        if self.future:
+            self.future.result()
+        if self.add_future:
+            self.add_future.result()
+
+        # 기타 자원들 할당 해제
         self.metadata.clear()
         self.queue.clear()
         log.info(f"[{self.name}] 채널 삭제 완료")
