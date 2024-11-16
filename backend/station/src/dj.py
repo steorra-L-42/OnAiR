@@ -1,9 +1,7 @@
 import json
 import logging
-import os
 
 from instance import producer
-from path_util import get_medias_path
 
 
 class DJ:
@@ -12,18 +10,18 @@ class DJ:
         self.playback_queue = playback_queue
 
     def produce_channel_start(self, channel_id):
-        current_dir = os.getcwd()
-        medias_path = get_medias_path(current_dir)
+        medias_path = "../medias"
 
-        start_filepath = medias_path / "start.mp3"
+        start_filepath = medias_path + "/" + "start.mp3"
         file_info_list = [{
-            "file_path": str(start_filepath),
+            "file_path": start_filepath.lstrip(".."),
             "type": "start"
         }]
 
         value = json.dumps({
             "file_info": file_info_list,
             "is_start": True,
+            "channel_name": self.channel.channel_name,
             "fcm_token": self.channel.fcm_token
         })
         producer.send_message("media_topic",
