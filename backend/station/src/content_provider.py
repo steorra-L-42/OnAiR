@@ -76,8 +76,9 @@ def handle_story(msg):
         add_to_queue(channel_id, story_mp3_list)
         logging.info(f"Story and music processed successfully.")
 
-        # todo: FCM 전송하기.
-        push_fcm(channel_id, value);
+        # FCM 전송하기
+        channel_name = channel_manager.channels[channel_id].channel_name
+        push_fcm(channel_id, channel_name, value)
 
     except Exception as e:
         logging.error(f"Error handling story: {e}")

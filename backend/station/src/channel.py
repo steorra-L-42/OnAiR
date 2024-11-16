@@ -17,6 +17,7 @@ class Channel:
         self.broadcast_thread = None
         self.stop_event = Event()
         self.channel_id = channel_id
+        self.channel_name = config.get("channel_name")
         self.start_time = datetime.now()
         self.is_default = config.get("is_default")
         self.tts_engine = config.get("tts_engine")

@@ -24,6 +24,7 @@ class DJ:
         value = json.dumps({
             "file_info": file_info_list,
             "is_start": True,
+            "channel_name": self.channel.channel_name,
             "fcm_token": self.channel.fcm_token
         })
         producer.send_message("media_topic",
