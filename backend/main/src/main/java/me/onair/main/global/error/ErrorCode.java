@@ -33,6 +33,7 @@ public enum ErrorCode {
     CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "Channel Not Found", "E001"),
     ENDED_CHANNEL(HttpStatus.BAD_REQUEST, "Ended channel", "E002"),
     CHANNEL_MISMATCH(HttpStatus.BAD_REQUEST, "Channel Mismatch", "E003"),
+    CHANNEL_NOT_CREATED(HttpStatus.BAD_REQUEST, "Channel Not Created", "E004"),
 
     // 사연
     STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "Story Not Found", "F001"),
