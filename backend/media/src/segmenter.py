@@ -149,7 +149,9 @@ def update_m3u8(stream: Stream, stop_event):
     log.info(f"[{stream.name}] 스트리밍 중 - {segments}")
 
     # 오래된 세그먼트 삭제
-    os.remove(os.path.join(stream.hls_path, f"segment_{(segments[0]-1):06d}.ts"))
+    obsolete_segments = os.path.join(stream.hls_path, f"segment_{(segments[0]-1):06d}.ts")
+    if os.path.exists(obsolete_segments):
+      os.remove(obsolete_segments)
 
     # 루프 종료 시간 기록
     end_time = time.perf_counter()
