@@ -1,12 +1,13 @@
 # 외부 패키지
 import json
+import os
 import threading
 
 from aiofiles import stderr
 
 # 내부 패키지
 from shared_vars import stream_setup_executor, stream_data_executor
-from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START
+from config import MEDIA_TOPIC, MEDIA_FILE_INFO, MEDIA_IS_START, STREAMING_CHANNELS
 from Stream import Stream
 from StreamManager import StreamManager
 
@@ -45,6 +46,7 @@ def process_input_audio(msg, stream_manager:StreamManager):
   key, value = get_key_and_value_from_msg(msg)
 
   file_info_list = value.get(MEDIA_FILE_INFO, [])
+  file_info_list = adjust_path_for_env(file_info_list)
   is_start = value.get(MEDIA_IS_START)
   if isinstance(is_start, str):
     is_start = is_start.lower() == 'true'
@@ -64,7 +66,8 @@ def process_input_audio(msg, stream_manager:StreamManager):
 
     stream = Stream(name = key)
     stream_manager.add_stream(stream)
-    future = stream_setup_executor.submit(stream.start_streaming, file_info_list, fcm)
+
+    future = stream_setup_executor.submit(stream.start_streaming, stream_manager, file_info_list, fcm)
     stream.future = future
 
   # 기존 채널에 음성 추가
@@ -100,3 +103,17 @@ def get_key_and_value_from_msg(msg):
   key = msg.key().decode('utf-8')
   value = json.loads(msg.value().decode('utf-8'))
   return key, value
+
+
+
+######################  경로 바꿔치기  ######################
+def adjust_path_for_env(file_info_list, base_path=f"{STREAMING_CHANNELS}"):
+  adjusted_list = []
+
+  for file_info in file_info_list:
+    adjusted_path = os.path.join(base_path, file_info["file_path"][8:])
+    adjusted_info = {**file_info, "file_path": adjusted_path}
+    adjusted_list.append(adjusted_info)
+
+  log.info(adjusted_list)
+  return adjusted_list
