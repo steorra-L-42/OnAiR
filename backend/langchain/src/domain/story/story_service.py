@@ -16,7 +16,7 @@ class StoryService:
 
         chat_result = chat(value['story_title'], value['story_content'], value['channel_info']['personality'], value['channel_info']['tts_engine'])
 
-        volume = 150
+        volume = 200
         speed_x = 1.0
         tempo = 1.0
         pitch = 0
