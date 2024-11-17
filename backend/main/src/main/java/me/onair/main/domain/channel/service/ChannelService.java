@@ -12,6 +12,7 @@ import me.onair.main.domain.channel.dto.CreateNewChannelResponse;
 import me.onair.main.domain.channel.entity.Channel;
 import me.onair.main.domain.channel.entity.Dj;
 import me.onair.main.domain.channel.entity.Track;
+import me.onair.main.domain.channel.error.ChannelNotCreated;
 import me.onair.main.domain.channel.error.ChannelNotFoundException;
 import me.onair.main.domain.channel.repository.ChannelRepository;
 import me.onair.main.domain.channel.repository.DjRepository;
@@ -23,6 +24,7 @@ import me.onair.main.domain.user.repository.UserRepository;
 import me.onair.main.global.error.ErrorCode;
 import me.onair.main.kafka.enums.Topics;
 import me.onair.main.kafka.producer.KafkaProducer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,11 +41,20 @@ public class ChannelService {
 
     private final KafkaProducer kafkaProducer;
 
+    @Value("${channel.max.size}")
+    private int maxChannelSize;
+
     @Transactional
     public CreateNewChannelResponse createNewChannel(
             CreateNewChannelRequest request,
             CustomUserDetails userDetails
     ) throws JsonProcessingException {
+
+        long channelCount = channelRepository.countByIsEnded(false);
+        if (channelCount >= maxChannelSize) {
+            log.error("유효 채널이 5개 이상입니다.");
+            throw new ChannelNotCreated(ErrorCode.CHANNEL_NOT_CREATED);
+        }
 
         // 1. 유저 정보 얻기
         User user = userRepository.findById(userDetails.getId()).orElseThrow(NotExistUserException::new);
@@ -81,5 +92,11 @@ public class ChannelService {
     public ChannelListResponse getChannelList() {
         List<Channel> channelList = channelRepository.findByIsEnded(false); // 현재 진행 중인 방송 출력
         return ChannelListResponse.from(channelList);
+    }
+
+    public void stopChannel(String channelUuid) {
+        Channel channel = channelRepository.findByUuid(channelUuid)
+                .orElseThrow(() -> new ChannelNotFoundException(ErrorCode.CHANNEL_NOT_FOUND));
+        channel.endChannel();
     }
 }

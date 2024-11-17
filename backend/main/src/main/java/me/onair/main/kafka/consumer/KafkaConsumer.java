@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.onair.main.domain.channel.service.ChannelService;
 import me.onair.main.domain.story.service.StoryService;
 import me.onair.main.kafka.dto.StoryReplyDto;
 import me.onair.main.kafka.enums.Topics;
@@ -22,6 +23,7 @@ public class KafkaConsumer {
     private final Gson gson = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .create();
+    private final ChannelService channelService;
 
     // Value 값만 Consume
 //    @KafkaListener(topics = Topics.NAMES.TEST)
@@ -65,6 +67,16 @@ public class KafkaConsumer {
         StoryReplyDto storyReplyDto = gson.fromJson(value, StoryReplyDto.class);
 
         storyService.addStoryReply(key, storyReplyDto);
+        log.info("Success to add story reply");
+    }
+
+    @KafkaListener(topics = NAMES.STORY_REPLY)
+    public void consumeChannelCloseTopic(ConsumerRecord<String, String> record) {
+        log.info("[consume message]: key - {}, value - {}", record.key(), record.value());
+
+        String key = record.key();
+        String value = record.value();
+        channelService.stopChannel(key);
         log.info("Success to add story reply");
     }
 }
