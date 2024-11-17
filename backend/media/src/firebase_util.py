@@ -1,17 +1,19 @@
 import datetime
+import json
 
 import firebase_admin
 from firebase_admin import messaging, credentials
 from logger import log
-from config import SERVICE_ACCOUNT_KEY_PATH
+from config import FIREBASE_CREDENTIALS
 
 # Firebase 앱 초기화
-cred = credentials.Certificate(SERVICE_ACCOUNT_KEY_PATH)
-firebase_app = firebase_admin.initialize_app(cred)
+firebase_cred = credentials.Certificate(json.loads(FIREBASE_CREDENTIALS))
+firebase_app = firebase_admin.initialize_app(firebase_cred)
 
 def notify_stream_start(token, fcm_data:dict):
     fcm_data["type"] = "channel_created"
     fcm_data["timestamp"] = str(datetime.datetime.now())
+    log.info(f"fcm_data: {fcm_data}")
     send_fcm_notification_only_data(token, fcm_data)
 
 
