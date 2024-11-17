@@ -127,25 +127,25 @@ def get_tts(value, channel_id, content_type):
         "Authorization": f"Bearer {token}"
     }
 
-    # ## 운영용
-    # response = requests.post(url, headers=headers, data=payload)
-    #
-    # if response.status_code == 200:
-    #     response_data = response.json()
-    #     speak_v2_url = response_data.get("result", {}).get("speak_v2_url")
-    #     if speak_v2_url:
-    #         speak_id = speak_v2_url.split('/')[-1]
-    #         audio_info = download_audio(speak_id, token, channel_id, content_type)
-    #         return audio_info
-    #     else:
-    #         logging.error(f"Failed to get speak_v2_url: {response_data}")
-    # else:
-    #     logging.error(f"Failed: {response.status_code}, {response.text}")
+    ## 운영용
+    response = requests.post(url, headers=headers, data=payload)
 
-    ## 테스트용
-    speak_id = "67321dc699ff75f1fc28b89a"
-    audio_info = download_audio(speak_id, token, channel_id, content_type)
-    return audio_info
+    if response.status_code == 200:
+        response_data = response.json()
+        speak_v2_url = response_data.get("result", {}).get("speak_v2_url")
+        if speak_v2_url:
+            speak_id = speak_v2_url.split('/')[-1]
+            audio_info = download_audio(speak_id, token, channel_id, content_type)
+            return audio_info
+        else:
+            logging.error(f"Failed to get speak_v2_url: {response_data}")
+    else:
+        logging.error(f"Failed: {response.status_code}, {response.text}")
+
+    # ## 테스트용
+    # speak_id = "67321dc699ff75f1fc28b89a"
+    # audio_info = download_audio(speak_id, token, channel_id, content_type)
+    # return audio_info
 
 
 def download_audio(speak_id, token, channel, content_type):
