@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 
 import eyed3
 
@@ -14,7 +15,7 @@ def download_from_keyword(title, artist, cover_url):
     # 존재하는 파일이라면
     if file_path is not None:
         audiofile = eyed3.load(dir_prefix + file_path)
-        length = audiofile.info.time_secs
+        length = get_audio_duration(dir_prefix + file_path)
         title = audiofile.tag.title
         artist = audiofile.tag.artist
         cover_url = audiofile.tag.album
@@ -49,6 +50,29 @@ def find_exist_file(title, artist, content_type='mp3'):
             return base_dir + f"/{file}"
 
     return None
+
+
+def get_audio_duration(file_path):
+    try:
+        # ffprobe 명령어 실행하여 mp3 파일의 길이 추출
+        result = subprocess.run(
+            [
+                'ffprobe',
+                '-v', 'error',
+                '-show_entries', 'format=duration',
+                '-of', 'default=noprint_wrappers=1:nokey=1',
+                file_path
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+
+        # 결과를 float으로 변환하여 초 단위로 반환
+        return float(result.stdout.strip())
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 
 def create_return_value(file_path, length, title, artist, cover_url):
