@@ -1,6 +1,5 @@
 from enum import Enum
 
-# 세나
 sena_emontion_tone_preset = {
     "보통의": "tonemid-1",
     "차분한": "tonemid-2",
@@ -47,24 +46,24 @@ eunbin_emontion_tone_preset = {
 
 def get_list_emotion_tone_preset(tts_engine):
     tts_engine = tts_engine.strip()
-    if tts_engine == "세나":
+    if tts_engine == "TYPECAST_SENA":
         return sena_emontion_tone_preset.keys()
-    if tts_engine == "제롬":
+    if tts_engine == "TYPECAST_JEROME":
         return jerome_emontion_tone_preset.keys()
-    if tts_engine == "현지":
+    if tts_engine == "TYPECAST_HYEONJI":
         return hyunji_emontion_tone_preset.keys()
-    if tts_engine == "은빈":
+    if tts_engine == "TYPECAST_EUNBIN":
         return eunbin_emontion_tone_preset.keys()
     return None
 
 def get_emotion_tone_preset(tts_engine, key):
     tts_engine = tts_engine.strip()
-    if tts_engine == "세나":
+    if tts_engine == "TYPECAST_SENA":
         return sena_emontion_tone_preset[key]
-    if tts_engine == "제롬":
+    if tts_engine == "TYPECAST_JEROME":
         return jerome_emontion_tone_preset[key]
-    if tts_engine == "현지":
+    if tts_engine == "TYPECAST_HYEONJI":
         return hyunji_emontion_tone_preset[key]
-    if tts_engine == "은빈":
+    if tts_engine == "TYPECAST_EUNBIN":
         return eunbin_emontion_tone_preset[key]
     return None
