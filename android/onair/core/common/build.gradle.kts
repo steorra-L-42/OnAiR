@@ -53,6 +53,7 @@ dependencies {
     api(libs.retrofit)
     api(libs.okhttp)
     api(libs.coil.compose)
+    api(libs.accompanist.swiperefresh)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
