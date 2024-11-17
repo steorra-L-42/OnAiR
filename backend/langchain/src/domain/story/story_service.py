@@ -36,7 +36,7 @@ class StoryService:
             "fcm_token" : value['fcm_token'],
             "story_title": value['story_title'],
             "story_id": value['story_id'],
-            "story_music": value['story_music'],
+            "story_music": value['story_music']
         }
 
         reply = json.dumps(result, ensure_ascii=False)
