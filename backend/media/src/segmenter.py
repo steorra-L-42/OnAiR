@@ -43,9 +43,10 @@ def generate_segment(hls_path, file_info):
     'ffmpeg',
     '-loglevel', 'verbose',
 
+    '-i', f"{STREAMING_CHANNELS}/empty.mp3",
     '-i', file_info.get(MEDIA_FILE_PATH),
     '-i', f"{STREAMING_CHANNELS}/empty.mp3",
-    '-filter_complex', '[0:a][1:a]concat=n=2:v=0:a=1[aout]',
+    '-filter_complex', '[0:a][1:a][2:a]concat=n=3:v=0:a=1[aout]',
     '-map', '[aout]',
 
     '-c:a', 'aac',
