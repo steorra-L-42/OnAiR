@@ -19,6 +19,7 @@ public class CreateNewChannelResponse {
     private Boolean isDefault;
 
     public static CreateNewChannelResponse from(Channel channel) {
-        return new CreateNewChannelResponse(channel.getUuid(), channel.getStart(), channel.getEnd(), channel.getIsDefault());
+        return new CreateNewChannelResponse(channel.getUuid(), channel.getStart(), channel.getEnd(),
+                channel.getIsDefault());
     }
 }

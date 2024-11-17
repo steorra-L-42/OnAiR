@@ -9,7 +9,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChannelRepository extends JpaRepository<Channel, Long> {
 
-  public Optional<Channel> findByUuid(String uuid);
+    public Optional<Channel> findByUuid(String uuid);
 
-  public List<Channel> findByIsEnded(boolean isEnded);
+    public List<Channel> findByIsEnded(boolean isEnded);
+
+    public long countByIsEnded(boolean isEnded);
 }
