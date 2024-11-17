@@ -1,6 +1,8 @@
 # 외부 패키지
 import threading
 import os
+import time
+
 from intervaltree import IntervalTree
 
 # 내부 패키지
@@ -34,22 +36,33 @@ class Stream:
         self.stop_event = threading.Event()
 
     ######################  스트림 실행 전체 동작 정의  ######################
-    def start_streaming(self, initial_file_list, fcm):
-        # 디렉토리 셋업
-        self.stream_path, self.playlist_path, self.hls_path = init_directory(self.name)
-
-        # 초기 세그먼트 생성 & 큐에 삽입
-        self.init_segment_and_queue(initial_file_list)
-
-        # 초기 m3u8 파일 생성
-        self.init_m3u8()
-
-        log.info(f"[{self.name}] 스트리밍 시작")
-        notify_stream_start(fcm['token'], fcm['data'])
+    def start_streaming(self, stream_manager, initial_file_list, fcm):
         try:
-            update_m3u8(self, self.stop_event)
+            # 디렉토리 셋업
+            self.stream_path, self.playlist_path, self.hls_path = init_directory(self.name)
+
+            # 초기 세그먼트 생성 & 큐에 삽입
+            self.init_segment_and_queue(initial_file_list)
+
+            # 초기 m3u8 파일 생성
+            self.init_m3u8()
+
+            log.info(f"[{self.name}] 스트리밍 시작")
         except Exception as e:
-            log.error(f"[{self.name}] 스트리밍 오류 발생 - {e}")
+            log.error(f"[{self.name}] 스트리밍 생성 오류 발생")
+            stream_manager.remove_stream(self.name)
+            return
+        notify_stream_start(fcm['token'], fcm['data'])
+
+        while not self.stop_event.is_set():
+            try:
+                update_m3u8(self, self.stop_event)
+                break
+            except Exception as e:
+                log.error(f"[{self.name}] 스트리밍 오류 발생 - {e}")
+                log.error(f"[{self.name}] 5초 후 재시도합니다.")
+                time.sleep(5)
+
 
 
     ######################  초기 파일들로 세그먼트 구성 & 큐 저장  ######################
@@ -59,7 +72,8 @@ class Stream:
             initial_file_list,
             start = 0
         )
-        self.queue = SegmentQueue(next_start)  # 0부터 next_start 범위의 세그먼트 초기화
+        if next_start != 0:
+            self.queue = SegmentQueue(next_start)  # 0부터 next_start 범위의 세그먼트 초기화
 
 
     ######################  초기 세그먼트들로 m3u8 구성  ######################
