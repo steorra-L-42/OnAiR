@@ -132,7 +132,7 @@ class DynamicScheduleManager:
                         file_lengths += file_info.get("length")
                     self.dj.produce_contents(file_info_list)
                     logging.info(f"Sleeping for File length: {file_lengths}")
-                    self.async_sleep(file_lengths)
+                    self.async_sleep(file_lengths + 3)
                     logging.info(f"Done sleeping for File length: {file_lengths}")
 
     def async_sleep(self, duration):
