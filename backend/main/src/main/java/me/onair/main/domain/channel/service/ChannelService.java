@@ -82,6 +82,7 @@ public class ChannelService {
         return CreateNewChannelResponse.from(channel);
     }
 
+    @Transactional(readOnly = true)
     public ChannelInfoResponse getChannelInfo(String channelId) {
         Channel channel = channelRepository.findByUuid(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(ErrorCode.CHANNEL_NOT_FOUND));
@@ -89,14 +90,19 @@ public class ChannelService {
         return ChannelInfoResponse.from(channel);
     }
 
+    @Transactional(readOnly = true)
     public ChannelListResponse getChannelList() {
         List<Channel> channelList = channelRepository.findByIsEnded(false); // 현재 진행 중인 방송 출력
         return ChannelListResponse.from(channelList);
     }
 
+    @Transactional()
     public void stopChannel(String channelUuid) {
         Channel channel = channelRepository.findByUuid(channelUuid)
                 .orElseThrow(() -> new ChannelNotFoundException(ErrorCode.CHANNEL_NOT_FOUND));
+
+        log.info("uuid: {}", channelUuid);
+        log.info("channel: {}", channel.toString());
         channel.endChannel();
     }
 }

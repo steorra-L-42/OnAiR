@@ -70,7 +70,7 @@ public class KafkaConsumer {
         log.info("Success to add story reply");
     }
 
-    @KafkaListener(topics = NAMES.STORY_REPLY)
+    @KafkaListener(topics = NAMES.CHANNEL_CLOSE)
     public void consumeChannelCloseTopic(ConsumerRecord<String, String> record) {
         log.info("[consume message]: key - {}, value - {}", record.key(), record.value());
 
