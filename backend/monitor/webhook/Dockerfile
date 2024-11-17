@@ -1,6 +1,7 @@
 FROM python:3.12
 
-ENV PYTHONENCODING=utf-8
+ENV PYTHONIOENCODING=utf-8
+ENV TZ=Asia/Seoul
 
 WORKDIR /webhook
 

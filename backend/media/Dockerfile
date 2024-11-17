@@ -2,7 +2,8 @@
 FROM python:3.12
 
 # UTF-8 환경 설정
-ENV PYTHONENCODING=utf-8
+ENV PYTHONIOENCODING=utf-8
+ENV TZ=Asia/Seoul
 
 # 작업 디렉토리 설정
 WORKDIR /media
