@@ -12,6 +12,7 @@ RUN apt-get update && \
     libxrandr2 libxdamage1 libgbm1 libpango-1.0-0 libxcursor1 libwoff1 \
     libwebpdemux2 libharfbuzz-icu0 libenchant-2-2 libsecret-1-0 libhyphen0 \
     libegl1 libevdev2 libgles2 \
+    libgtk-3.so.0 libgdk-3.so.0 \
     libatk-bridge2.0-0 libatspi2.0-0 &&\
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
