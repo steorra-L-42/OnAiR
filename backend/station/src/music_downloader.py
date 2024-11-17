@@ -57,7 +57,7 @@ def download_from_keyword(title, artist, cover_url):
     video_url = get_video_url_from_keyword(keyword)
 
     # 출력 파일 이름 설정
-    safe_file_name = f"{"".join(c if c.isalnum() or c in ["-", " "] else "" for c in keyword)}.mp3"
+    safe_file_name = "{}.mp3".format("".join(c if c.isalnum() or c in ["-", " "] else "" for c in keyword))
     output_filename = f"{safe_file_name}.mp3"
 
     try:
@@ -196,10 +196,13 @@ def download_music(url):
     with (sync_playwright() as p):
         try:
             # 브라우저 실행
+            logging.info("Opening browser...")
             browser = p.chromium.launch(headless=True)
+            logging.info("Opening context...")
             context = browser.new_context()
 
             # 페이지 열기
+            logging.info("Opening page...")
             page = context.new_page()
 
             # 속도 빠르게 하기 위해 애니메이션 등 비활성화
@@ -222,6 +225,7 @@ def download_music(url):
             mp3_button.click()
 
             # 모달 대기 및 다운로드 URL 추출
+            logging.info("Extracting download URL...")
             page.wait_for_selector("a#A_downloadUrl", timeout=10_000)  # 대기 시간 축소
             download_anchor = page.locator("a#A_downloadUrl")
             download_url = download_anchor.evaluate("anchor => anchor.href")
@@ -244,7 +248,7 @@ def download_music(url):
             return f"{base_dir_with_prefix}/{file_name}"
 
         except Exception as e:
-            logging.info(f"Error occurred while downloading music")
+            logging.info(f"Error occurred while downloading music : {e}")
         finally:
             page.close()
             context.close()
