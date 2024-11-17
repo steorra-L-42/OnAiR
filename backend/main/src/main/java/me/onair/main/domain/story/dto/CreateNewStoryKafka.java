@@ -26,7 +26,7 @@ public class CreateNewStoryKafka {
     private String storyTitle;
     private String storyContent;
     private Long storyId;
-    private Music music;
+    private Music storyMusic;
 
     public static CreateNewStoryKafka of(String fcmTokenValue, Story story, StoryMusic storyMusic) {
         if (storyMusic != null) {
@@ -35,7 +35,7 @@ public class CreateNewStoryKafka {
                     .storyTitle(story.getTitle())
                     .storyContent(story.getContent())
                     .storyId(story.getId())
-                    .music(Music.from(storyMusic))
+                    .storyMusic(Music.from(storyMusic))
                     .build();
         }
         return CreateNewStoryKafka.builder()
