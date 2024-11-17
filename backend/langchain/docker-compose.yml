@@ -6,7 +6,13 @@ services:
       - .env
     networks:
       - kafka_kafka_network
+    volumes:
+      - langchain_db:/app/src/db
+    restart: always
 
 networks:
   kafka_kafka_network:
     external: true
+  
+volumes:
+  langchain_db:

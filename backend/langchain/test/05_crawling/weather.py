@@ -34,7 +34,7 @@ class SeleniumWrapper:
     def __init__(self):
         self.driver = init_selenium()
 
-    def get_texts_by_css_selector(self, url, css_selector, wait_time=3):
+    def get_texts_by_css_selector(self, url, css_selector, wait_time=2):
         self.driver.get(url)
         time.sleep(wait_time)  # 페이지 로드 대기 시간
         elements = self.driver.find_elements(By.CSS_SELECTOR, css_selector)  # CSS 셀렉터로 요소 선택
