@@ -22,7 +22,7 @@ class WeatherService:
         weather = self.get_weather()
         chat_result = chat(weather, value['channel_info']['personality'])
 
-        volume = 150
+        volume = 200
         speed_x = 1.0
         tempo = 1.0
         pitch = 0
