@@ -6,7 +6,7 @@ import typecast
 from config import max_story_count
 from fcm import push_fcm
 from instance import channel_manager, producer
-from music_downloader import download_from_keyword
+from music_finder import download_from_keyword
 
 # Lock 객체를 사용하여 동기화
 queue_lock = threading.Lock()

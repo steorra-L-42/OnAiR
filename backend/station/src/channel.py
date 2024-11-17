@@ -6,7 +6,7 @@ from threading import Thread, current_thread, Event
 from content_provider import ContentProvider
 from dj import DJ
 from dynamic_schedule_manager import DynamicScheduleManager
-from music_downloader import download_from_keyword
+from music_finder import download_from_keyword
 from play_back_queue import PlaybackQueue
 
 
