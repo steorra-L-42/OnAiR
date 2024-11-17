@@ -2,8 +2,10 @@ package com.fm404.onair.data.di
 
 import com.fm404.onair.data.repository.auth.UserRepositoryImpl
 import com.fm404.onair.data.repository.broadcast.BroadcastRepositoryImpl
+import com.fm404.onair.data.repository.story.StoryRepositoryImpl
 import com.fm404.onair.domain.repository.auth.UserRepository
 import com.fm404.onair.domain.repository.broadcast.BroadcastRepository
+import com.fm404.onair.domain.repository.story.StoryRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,4 +24,9 @@ abstract class RepositoryModule {
         repositoryImpl: BroadcastRepositoryImpl
     ): BroadcastRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindStoryRepository(
+        repositoryImpl: StoryRepositoryImpl
+    ): StoryRepository
 }
