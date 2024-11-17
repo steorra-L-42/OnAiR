@@ -2,7 +2,9 @@ package com.fm404.onair.features.broadcast.presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fm404.onair.core.contract.auth.AuthNavigationContract
 import com.fm404.onair.core.contract.broadcast.BroadcastNavigationContract
+import com.fm404.onair.domain.usecase.auth.GetUserInfoUseCase
 import com.fm404.onair.domain.usecase.broadcast.broadcast.GetBroadcastListUseCase
 import com.fm404.onair.domain.usecase.broadcast.broadcast.GetChannelListUseCase
 import com.fm404.onair.features.broadcast.presentation.list.state.BroadcastListEvent
@@ -16,27 +18,50 @@ import javax.inject.Inject
 class BroadcastListViewModel @Inject constructor(
     private val getBroadcastListUseCase: GetBroadcastListUseCase,
     private val getChannelListUseCase: GetChannelListUseCase,
-    private val broadcastNavigationContract: BroadcastNavigationContract
+    private val getUserInfoUseCase: GetUserInfoUseCase,
+    private val broadcastNavigationContract: BroadcastNavigationContract,
+    private val authNavigationContract: AuthNavigationContract
 ) : ViewModel() {
     private val _state = MutableStateFlow(BroadcastListState())
     val state = _state.asStateFlow()
 
     init {
-        loadBroadcasts()
-//        loadChannels()
+        validateUserAndLoadChannels()
     }
 
     fun onEvent(event: BroadcastListEvent) {
         when (event) {
             is BroadcastListEvent.LoadBroadcasts -> loadBroadcasts()
+            is BroadcastListEvent.LoadChannels -> validateUserAndLoadChannels()
             is BroadcastListEvent.OnBroadcastClick -> {
-//            is BroadcastListEvent.LoadChannels -> loadChannels()
-//            is BroadcastListEvent.OnChannelClick -> {
-                // 필요한 경우 방송 클릭 처리
+                broadcastNavigationContract.navigateToBroadcastDetail(event.broadcastId)
+            }
+            is BroadcastListEvent.OnChannelClick -> {
+                broadcastNavigationContract.navigateToBroadcastDetail(event.channelUuid)
             }
             is BroadcastListEvent.OnNotificationClick -> {
                 broadcastNavigationContract.navigateToNotification()
             }
+        }
+    }
+
+    private fun validateUserAndLoadChannels() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            getUserInfoUseCase()
+                .onSuccess { userInfo ->
+                    loadChannels()
+                }
+                .onFailure { throwable ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = throwable.message
+                        )
+                    }
+                    authNavigationContract.navigateToLogin()
+                }
         }
     }
 
@@ -69,28 +94,32 @@ class BroadcastListViewModel @Inject constructor(
         }
     }
 
-//    private fun loadChannels() {
-//        viewModelScope.launch {
-//            _state.update { it.copy(isLoading = true) }
-//
-//            getChannelListUseCase()
-//                .onSuccess { channels ->
-//                    _state.update {
-//                        it.copy(
-//                            isLoading = false,
-//                            channels = channels,
-//                            error = null
-//                        )
-//                    }
-//                }
-//                .onFailure { throwable ->
-//                    _state.update {
-//                        it.copy(
-//                            isLoading = false,
-//                            error = throwable.message
-//                        )
-//                    }
-//                }
-//        }
-//    }
+    private fun loadChannels() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            getChannelListUseCase()
+                .onSuccess { channels ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            channels = channels,
+                            error = null
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = throwable.message
+                        )
+                    }
+                }
+        }
+    }
+
+    fun retryLoad() {
+        validateUserAndLoadChannels()
+    }
 }
