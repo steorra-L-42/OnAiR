@@ -1,6 +1,7 @@
 package com.fm404.onair.features.broadcast.presentation.create.screen
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,6 +56,7 @@ fun BroadcastCreateScreen(
     viewModel: BroadcastCreateViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
 
     BroadcastCreateContent(
         state = state,
@@ -63,7 +65,11 @@ fun BroadcastCreateScreen(
         onNewsTopicChange = { viewModel.onEvent(BroadcastCreateEvent.OnNewsTopicChange(it)) },
         onChannelNameChange = { viewModel.onEvent(BroadcastCreateEvent.OnChannelNameChange(it)) },
         onTrackListChange = { viewModel.onEvent(BroadcastCreateEvent.OnTrackListChange(it)) },
-        onCreateClick = { viewModel.onEvent(BroadcastCreateEvent.OnCreateClick) },
+        onCreateClick = {
+            viewModel.onEvent(BroadcastCreateEvent.OnCreateClick) // 기존 로직 호출
+            Toast.makeText(context, "채널 생성을 요청했어요.", Toast.LENGTH_SHORT).show() // Toast 메시지 띄우기
+            onBackClick() // onBack 호출
+        },
         onBackClick = onBackClick,
         onErrorDismiss = { viewModel.onErrorDismiss() }
     )
@@ -268,7 +274,7 @@ private fun BroadcastCreateContent(
                                     "TYPECAST_EUNBIN" -> com.fm404.onair.core.common.R.drawable.eunbin
                                     else -> com.fm404.onair.core.common.R.drawable.sena // 기본 이미지
                                 }
-                            ),
+                            ) ,
                             contentDescription = "DJ 썸네일",
                             modifier = Modifier
                                 .size(50.dp)
@@ -499,40 +505,53 @@ private fun BroadcastCreateContent(
                 .clip(RoundedCornerShape(8.dp))
                 .background(Color.White.copy(alpha = 0.03f))
         ) {
-            LazyColumn {
-                items(state.trackList) { track ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Image(
-                            painter = rememberImagePainter(data = track.cover),
-                            contentDescription = "선택한 음악 커버",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(52.dp)
-                                .clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(18.dp))
-                        Column {
-                            Text(
-                                text = track.title,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White,
-                                fontFamily = pMedium,
-                                fontSize = 15.sp
+            if (state.trackList.isEmpty()) {
+                Text(
+                    text = "'음악 선택하기' 버튼을 눌러서\n나만의 플레이리스트를 완성해보세요!",
+                    fontSize = 14.sp,
+                    fontFamily = pMedium,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.padding(16.dp)
+                ){
+                    items(state.trackList) { track ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Image(
+                                painter = rememberImagePainter(data = track.cover),
+                                contentDescription = "선택한 음악 커버",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
                             )
-                            Spacer(modifier = Modifier.height(3.dp))
-                            Text(
-                                text = track.artist,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray,
-                                fontFamily = pRegular,
-                                fontSize = 15.sp
-                            )
+                            Spacer(modifier = Modifier.width(18.dp))
+                            Column {
+                                Text(
+                                    text = track.title,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.White,
+                                    fontFamily = pMedium,
+                                    fontSize = 15.sp
+                                )
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = track.artist,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray,
+                                    fontFamily = pRegular,
+                                    fontSize = 15.sp
+                                )
+                            }
                         }
+                        Spacer(modifier = Modifier.height(14.dp))
                     }
-                    Spacer(modifier = Modifier.height(14.dp))
                 }
             }
         }

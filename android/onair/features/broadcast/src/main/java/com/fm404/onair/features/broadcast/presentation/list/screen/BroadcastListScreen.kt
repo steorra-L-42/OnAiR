@@ -105,7 +105,7 @@ private fun BroadcastListContent(
             modifier = Modifier
                 .fillMaxWidth()
 //                .background(OnairHighlight)
-                .padding(horizontal = 11.dp, vertical = 24.dp),
+                .padding(horizontal = 20.dp, vertical = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -125,7 +125,7 @@ private fun BroadcastListContent(
                 Image(
                     painter = painterResource(id = R.drawable.add_mic),
                     contentDescription = "채널 추가",
-                    modifier = Modifier.size(27.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
         }
@@ -136,29 +136,46 @@ private fun BroadcastListContent(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            Button(
+//                modifier = Modifier.fillMaxWidth(),
+//                onClick = { onBroadcastClick("1") }
+//            ) {
+//                Text("방송 1로 이동")
+//            }
+//
+//            Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { onBroadcastClick("1") } 
-            ) {
-                Text("방송 1로 이동")
-            }
+            if (state.channels.isEmpty()) {
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(
-                    items = state.channels,
-                    key = { it.channelUuid }
-                ) { channel ->
-                    ChannelItem(
-                        channelList = channel,
-                        onClick = { onChannelClick(channel) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "진행중인 방송이 없습니다",
+                        fontFamily = pBold,
+                        fontSize = 18.sp,
+                        color = Color.Gray
                     )
+                }
+
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(
+                        items = state.channels,
+                        key = { it.channelUuid }
+                    ) { channel ->
+                        ChannelItem(
+                            channelList = channel,
+                            onClick = { onChannelClick(channel) }
+                        )
+                    }
                 }
             }
         }
