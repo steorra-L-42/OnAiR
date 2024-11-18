@@ -23,8 +23,6 @@ class ChannelManager:
             # 시작
             channel.start()
 
-            # 채널 시작 여부 produce
-            channel.dj.produce_channel_start(channel_id)
             logging.info(f"Channel {channel_id} created.")
             # 방송 시작
             self.channels[channel_id].process_broadcast()
