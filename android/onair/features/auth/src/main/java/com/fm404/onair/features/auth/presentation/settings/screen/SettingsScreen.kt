@@ -2,6 +2,7 @@ package com.fm404.onair.features.auth.presentation.settings.screen
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -30,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.fm404.onair.core.contract.auth.NavControllerHolder
 import com.fm404.onair.core.designsystem.component.image.NetworkImage
+import com.fm404.onair.core.designsystem.theme.*
 import com.fm404.onair.features.auth.presentation.settings.SettingsViewModel
 import com.fm404.onair.features.auth.presentation.settings.state.SettingsEvent
 
@@ -39,16 +41,28 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Error Toast 표시
+    LaunchedEffect(state.error) {
+        state.error?.let { error ->
+            Toast.makeText(
+                context,
+                error.message,
+                Toast.LENGTH_SHORT
+            ).show()
+            // Toast를 보여준 후 에러 초기화
+            viewModel.onEvent(SettingsEvent.ClearError)
+        }
+    }
+
     // navController 설정 추가
     LaunchedEffect(Unit) {
         Log.d("Settings", "Setting NavController in SettingsScreen")
         (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(navController)
     }
 
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-
-    // 프로필 이미지 변경은 아직 지원하지 않음ㅅ
     // Image picker launcher
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -100,19 +114,32 @@ fun SettingsScreen(
                     onValueChange = { viewModel.onEvent(SettingsEvent.OnNicknameChange(it)) },
                     label = { Text("닉네임") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = OnSurface,
+                        unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
+                        focusedLabelColor = OnSurface,
+                        unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
+                        cursorColor = OnSurface
+                    )
                 )
             },
             confirmButton = {
                 TextButton(
-                    onClick = { viewModel.onEvent(SettingsEvent.OnUpdateNickname) }
+                    onClick = { viewModel.onEvent(SettingsEvent.OnUpdateNickname) },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Secondary
+                    )
                 ) {
                     Text("변경")
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) }
+                    onClick = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = SecondaryVariant
+                    )
                 ) {
                     Text("취소")
                 }
@@ -128,7 +155,12 @@ fun SettingsScreen(
                     IconButton(onClick = { viewModel.onEvent(SettingsEvent.OnBackClick) }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { paddingValues ->
@@ -150,63 +182,31 @@ fun SettingsScreen(
                         .padding(16.dp)
                 ) {
                     // 프로필 이미지
-                    var isPressed by remember { mutableStateOf(false) }
-
-//                    Box(
-//                        modifier = Modifier
-//                            .size(80.dp)
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-//                            .align(Alignment.CenterHorizontally)
-//                    ) {
-//                        var isPressed by remember { mutableStateOf(false) }
-//
-//                        NetworkImage(
-//                            imageUrl = state.userInfo?.profilePath,
-//                            contentDescription = "Profile",
-//                            modifier = Modifier
-//                                .matchParentSize()
-//                                .scale(if (isPressed) 1.5f else 1f)
-//                                .pointerInput(Unit) {
-//                                    awaitPointerEventScope {
-//                                        while (true) {
-//                                            val event = awaitPointerEvent()
-//                                            when (event.type) {
-//                                                PointerEventType.Press -> isPressed = true
-//                                                PointerEventType.Release -> isPressed = false
-//                                            }
-//                                        }
-//                                    }
-//                                },
-//                            contentScale = ContentScale.Crop,
-//                            placeholderContent = {
-//                                Icon(
-//                                    imageVector = Icons.Default.Person,
-//                                    contentDescription = "Profile",
-//                                    modifier = Modifier
-//                                        .size(40.dp)
-//                                        .align(Alignment.Center),
-//                                    tint = MaterialTheme.colorScheme.primary
-//                                )
-//                            }
-//                        )
-
                     Box(
                         modifier = Modifier
                             .size(80.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                             .align(Alignment.CenterHorizontally)
-                            .clickable {
-                                // 이미지 선택 launcher 실행
-                                launcher.launch("image/*")
-                            }
                     ) {
+                        var isPressed by remember { mutableStateOf(false) }
+
                         NetworkImage(
                             imageUrl = state.userInfo?.profilePath,
                             contentDescription = "Profile",
                             modifier = Modifier
-                                .matchParentSize(),
+                                .matchParentSize()
+                                .scale(if (isPressed) 1.2f else 1f)
+                                .clip(CircleShape)
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        while (true) {
+                                            val event = awaitPointerEvent()
+                                            when (event.type) {
+                                                PointerEventType.Press -> isPressed = true
+                                                PointerEventType.Release -> isPressed = false
+                                            }
+                                        }
+                                    }
+                                },
                             contentScale = ContentScale.Crop,
                             placeholderContent = {
                                 Icon(
@@ -223,14 +223,18 @@ fun SettingsScreen(
                         // 카메라 아이콘 오버레이
                         Box(
                             modifier = Modifier
-                                .matchParentSize()
-                                .background(Color.Black.copy(alpha = 0.3f))
+                                .size(28.dp)
+                                .align(Alignment.TopEnd)
+                                .offset(x = 4.dp, y = (-4).dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .clickable { launcher.launch("image/*") }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Camera,
                                 contentDescription = "Change profile image",
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .size(16.dp)
                                     .align(Alignment.Center),
                                 tint = Color.White
                             )
@@ -296,30 +300,30 @@ fun SettingsScreen(
                 )
             }
 
-            state.error?.let { error ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "Error Code: ${error.code}",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = error.message,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
+//            state.error?.let { error -> // 더 이상 에러를 보여주지 않음
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = CardDefaults.cardColors(
+//                        containerColor = MaterialTheme.colorScheme.errorContainer
+//                    )
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp),
+//                        verticalArrangement = Arrangement.spacedBy(4.dp)
+//                    ) {
+//                        Text(
+//                            text = "Error Code: ${error.code}",
+//                            color = MaterialTheme.colorScheme.error,
+//                            style = MaterialTheme.typography.bodyMedium
+//                        )
+//                        Text(
+//                            text = error.message,
+//                            color = MaterialTheme.colorScheme.error,
+//                            style = MaterialTheme.typography.bodyLarge
+//                        )
+//                    }
+//                }
+//            }
         }
     }
 }
