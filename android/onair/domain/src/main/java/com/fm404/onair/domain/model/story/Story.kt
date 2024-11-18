@@ -9,7 +9,7 @@ data class Story(
 )
 
 data class Music(
-    val musicTitle: String,
-    val musicArtist: String,
-    val musicCoverUrl: String
+    val title: String,
+    val artist: String,
+    val cover: String
 )

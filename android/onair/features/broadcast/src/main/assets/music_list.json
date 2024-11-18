@@ -1,0 +1,602 @@
+[
+    {
+        "id": 1,
+        "title": "APT.",
+        "artist": "로제 (ROSÉ), Bruno Mars",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/19/809/11619809_20241018103507_500.jpg"
+    },
+    {
+        "id": 2,
+        "title": "Whiplash",
+        "artist": "aespa",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/20/540/11620540_20241018183208_500.jpg"
+    },
+    {
+        "id": 3,
+        "title": "POWER",
+        "artist": "G-DRAGON",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/30/124/11630124_20241031100530_500.jpg"
+    },
+    {
+        "id": 4,
+        "title": "UP (KARINA Solo)",
+        "artist": "aespa",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/80/909/11580909_20240923131754_500.jpg"
+    },
+    {
+        "id": 5,
+        "title": "HAPPY",
+        "artist": "DAY6 (데이식스)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/44/397/11444397_20240318115810_500.jpg"
+    },
+    {
+        "id": 6,
+        "title": "내 이름 맑음",
+        "artist": "QWER",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/80/909/11580909_20240923131754_500.jpg"
+    },
+    {
+        "id": 7,
+        "title": "Mantra",
+        "artist": "제니 (JENNIE)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/12/674/11612674_20241010154851_500.jpg"
+    },
+    {
+        "id": 8,
+        "title": "Welcome to the Show",
+        "artist": "DAY6 (데이식스)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/44/397/11444397_20240318115810_500.jpg"
+    },
+    {
+        "id": 9,
+        "title": "내게 사랑이 뭐냐고 물어본다면",
+        "artist": "로이킴",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/16/312/11616312_20241015135802_500.jpg"
+    },
+    {
+        "id": 10,
+        "title": "Supernova",
+        "artist": "aespa",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/87/023/11487023_20240527154018_500.jpg"
+    },
+    {
+        "id": 11,
+        "title": "한 페이지가 될 수 있게",
+        "artist": "DAY6 (데이식스)",
+        "cover": "https://cdnimg.melon.co.kr/cm/album/images/103/07/346/10307346_500.jpg"
+    },
+    {
+        "id": 12,
+        "title": "나는 반딧불",
+        "artist": "황가람",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/20/541/11620541_20241018183253_500.jpg"
+    },
+    {
+        "id": 13,
+        "title": "어떻게 이별까지 사랑하겠어, 널 사랑하는 거지",
+        "artist": "AKMU (악뮤)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/103/31/947/10331947_500.jpg"
+    },
+    {
+        "id": 14,
+        "title": "소나기",
+        "artist": "이클립스 (ECLIPSE)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/59/325/11459325_20240405171054_500.jpg"
+    },
+    {
+        "id": 15,
+        "title": "Supersonic",
+        "artist": "프로미스나인",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/64/698/11564698_20240812100922_500.jpg"
+    },
+    {
+        "id": 16,
+        "title": "Pump Up The Volume!",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/70/634/11570634_20240820095436_500.jpg"
+    },
+    {
+        "id": 17,
+        "title": "WAY 4 LUV",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/27/101/11427101_20240223153059_500.jpg"
+    },
+    {
+        "id": 18,
+        "title": "사랑은 늘 도망가",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/107/35/654/10735654_20211008114339_500.jpg"
+    },
+    {
+        "id": 19,
+        "title": "예뻤어",
+        "artist": "DAY6 (데이식스)",
+        "cover": "https://cdnimg.melon.co.kr/cm/album/images/100/36/099/10036099_500.jpg"
+    },
+    {
+        "id": 20,
+        "title": "천상연",
+        "artist": "이창섭",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/21/941/11421941_20240220105008_500.jpg"
+    },
+    {
+        "id": 21,
+        "title": "고민중독",
+        "artist": "QWER",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/54/681/11454681_20240328174504_500.jpg"
+    },
+    {
+        "id": 22,
+        "title": "달랐을까",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/13/772/11613772_20241011150204_500.jpg"
+    },
+    {
+        "id": 23,
+        "title": "How Sweet",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/75/749/11475749_20240524105642_500.jpg"
+    },
+    {
+        "id": 24,
+        "title": "슬픈 초대장",
+        "artist": "순순희(지환)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/86/568/11386568_20231218192452_500.jpg"
+    },
+    {
+        "id": 25,
+        "title": "녹아내려요",
+        "artist": "DAY6 (데이식스)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/80/616/11580616_20240830171855_500.jpg"
+    },
+    {
+        "id": 26,
+        "title": "우리 영화",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/27/101/11427101_20240223153059_500.jpg"
+    },
+    {
+        "id": 27,
+        "title": "From",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/27/101/11427101_20240223153059_500.jpg"
+    },
+    {
+        "id": 28,
+        "title": "Small girl (feat. 도경수(D.O.))",
+        "artist": "이영지",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/17/951/11517951_20240620173412_500.jpg"
+    },
+    {
+        "id": 29,
+        "title": "우리들의 블루스",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/109/23/444/10923444_20220502140600_500.jpg"
+    },
+    {
+        "id": 30,
+        "title": "나는 아픈 건 딱 질색이니까",
+        "artist": "(여자)아이들",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/02/655/11402655_20240129121016_500.jpg"
+    },
+    {
+        "id": 31,
+        "title": "클락션 (Klaxon)",
+        "artist": "(여자)아이들",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/33/515/11533515_20240708112323_500.jpg"
+    },
+    {
+        "id": 32,
+        "title": "Love wins all",
+        "artist": "아이유",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/04/142/11404142_20240220141548_500.jpg"
+    },
+    {
+        "id": 33,
+        "title": "Drowning",
+        "artist": "WOODZ",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/111/83/506/11183506_20230426141236_500.jpg"
+    },
+    {
+        "id": 34,
+        "title": "온기",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/81/211/11481211_20240503151321_500.jpg"
+    },
+    {
+        "id": 35,
+        "title": "첫 만남은 계획대로 되지 않아",
+        "artist": "TWS (투어스)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/91/902/11391902_20240122132041_500.jpg"
+    },
+    {
+        "id": 36,
+        "title": "버추얼 아이돌",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/27/101/11427101_20240223153059_500.jpg"
+    },
+    {
+        "id": 37,
+        "title": "Home",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/81/211/11481211_20240503151321_500.jpg"
+    },
+    {
+        "id": 38,
+        "title": "그대만 있다면",
+        "artist": "너드커넥션 (Nerd Connection)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/05/759/11305759_20230814111006_500.jpg"
+    },
+    {
+        "id": 39,
+        "title": "모래 알갱이",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/112/58/233/11258233_20230605094802_500.jpg"
+    },
+    {
+        "id": 40,
+        "title": "Watch Me Woo!",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/27/101/11427101_20240223153059_500.jpg"
+    },
+    {
+        "id": 41,
+        "title": "Magnetic",
+        "artist": "아일릿(ILLIT)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/50/069/11450069_20240325110702_500.jpg"
+    },
+    {
+        "id": 42,
+        "title": "다시 만날 수 있을까",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/109/23/444/10923444_20220502140600_500.jpg"
+    },
+    {
+        "id": 43,
+        "title": "이제 나만 믿어요",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/104/12/319/10412319_20200403103006_500.jpg"
+    },
+    {
+        "id": 44,
+        "title": "Sticky",
+        "artist": "KISS OF LIFE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/25/661/11525661_20240628155508_500.jpg"
+    },
+    {
+        "id": 45,
+        "title": "에피소드",
+        "artist": "이무진",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/82/987/11382987_20231212165916_500.jpg"
+    },
+    {
+        "id": 46,
+        "title": "너의 모든 순간",
+        "artist": "성시경",
+        "cover": "https://cdnimg.melon.co.kr/cm/album/images/022/32/505/2232505_500.jpg"
+    },
+    {
+        "id": 47,
+        "title": "주저하는 연인들을 위해",
+        "artist": "잔나비",
+        "cover": "https://cdnimg.melon.co.kr/cm/album/images/102/60/858/10260858_500.jpg"
+    },
+    {
+        "id": 48,
+        "title": "Armageddon",
+        "artist": "aespa",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/87/023/11487023_20240527154018_500.jpg"
+    },
+    {
+        "id": 49,
+        "title": "무지개",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/109/23/444/10923444_20220502140600_500.jpg"
+    },
+    {
+        "id": 50,
+        "title": "Do or Die",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/40/391/11340391_20231006154621_500.jpg"
+    },
+    {
+        "id": 51,
+        "title": "Supernatural",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/14/014/11514014_20240621110830_500.jpg"
+    },
+    {
+        "id": 52,
+        "title": "London Boy",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/111/02/375/11102375_20221115101140_500.jpg"
+    },
+    {
+        "id": 53,
+        "title": "헤어지자 말해요",
+        "artist": "박재정",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/112/27/533/11227533_20230419162238_500.jpg"
+    },
+    {
+        "id": 54,
+        "title": "비의 랩소디",
+        "artist": "임재현",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/76/816/11376816_20231201120653_500.jpg"
+    },
+    {
+        "id": 55,
+        "title": "Merry PLLIstmas",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/27/101/11427101_20240223153059_500.jpg"
+    },
+    {
+        "id": 56,
+        "title": "Polaroid",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/111/02/375/11102375_20221115101140_500.jpg"
+    },
+    {
+        "id": 57,
+        "title": "Seven (feat. Latto) - Clean Ver.",
+        "artist": "정국",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/112/86/070/11286070_20230713181059_500.jpg"
+    },
+    {
+        "id": 58,
+        "title": "인생찬가",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/109/23/444/10923444_20220502140600_500.jpg"
+    },
+    {
+        "id": 59,
+        "title": "다정히 내 이름을 부르면",
+        "artist": "경서예지, 전건호",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/106/10/525/10610525_20210518143433_500.jpg"
+    },
+    {
+        "id": 60,
+        "title": "인사",
+        "artist": "범진",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/108/21/699/10821699_20231205103724_500.jpg"
+    },
+    {
+        "id": 61,
+        "title": "미안해 미워해 사랑해",
+        "artist": "Crush",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/49/278/11449278_20240322170237_500.jpg"
+    },
+    {
+        "id": 62,
+        "title": "모든 날, 모든 순간 (Every day, Every Moment)",
+        "artist": "폴킴",
+        "cover": "https://cdnimg.melon.co.kr/cm/album/images/101/49/492/10149492_500.jpg"
+    },
+    {
+        "id": 63,
+        "title": "Congratulations",
+        "artist": "DAY6 (데이식스)",
+        "cover": "https://cdnimg.melon.co.kr/cm/album/images/026/38/778/2638778_500.jpg"
+    },
+    {
+        "id": 64,
+        "title": "해야 (HEYA)",
+        "artist": "IVE (아이브)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/75/530/11475530_20240430093854_500.jpg"
+    },
+    {
+        "id": 65,
+        "title": "청춘만화",
+        "artist": "이무진",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/08/521/11608521_20241004161722_500.jpg"
+    },
+    {
+        "id": 66,
+        "title": "네모네모",
+        "artist": "YENA (최예나)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/03/345/11603345_20240927114551_500.jpg"
+    },
+    {
+        "id": 67,
+        "title": "Cherish (My Love)",
+        "artist": "아일릿(ILLIT)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/20/616/11620616_20241021095654_500.jpg"
+    },
+    {
+        "id": 68,
+        "title": "Hype Boy",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/110/11/565/11011565_20220801102637_500.jpg"
+    },
+    {
+        "id": 69,
+        "title": "연애편지",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/109/23/444/10923444_20220502140600_500.jpg"
+    },
+    {
+        "id": 70,
+        "title": "SPOT! (feat. JENNIE)",
+        "artist": "지코 (ZICO)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/74/894/11474894_20240426103349_500.jpg"
+    },
+    {
+        "id": 71,
+        "title": "I AM",
+        "artist": "IVE (아이브)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/112/11/297/11211297_20230410151046_500.jpg"
+    },
+    {
+        "id": 72,
+        "title": "멈추지 않아",
+        "artist": "PLAVE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/43/210/11643210_20241115161055_500.jpg"
+    },
+    {
+        "id": 73,
+        "title": "Bubble Gum",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/75/749/11475749_20240524105642_500.jpg"
+    },
+    {
+        "id": 74,
+        "title": "Ditto",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/111/27/145/11127145_20231213133532_500.jpg"
+    },
+    {
+        "id": 75,
+        "title": "Igloo",
+        "artist": "KISS OF LIFE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/07/747/11607747_20241015110919_500.jpg"
+    },
+    {
+        "id": 76,
+        "title": "청혼하지 않을 이유를 못 찾았어",
+        "artist": "이무진",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/55/285/11455285_20240401151801_500.jpg"
+    },
+    {
+        "id": 77,
+        "title": "사랑인가 봐",
+        "artist": "멜로망스",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/108/71/162/10871162_20220217162422_500.jpg"
+    },
+    {
+        "id": 78,
+        "title": "LOVE, MONEY, FAME (feat. DJ Khaled)",
+        "artist": "세븐틴 (SEVENTEEN)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/14/469/11614469_20241014104803_500.jpg"
+    },
+    {
+        "id": 79,
+        "title": "취중고백",
+        "artist": "김민석",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/108/16/959/10816959_20211217144957_500.jpg"
+    },
+    {
+        "id": 80,
+        "title": "To. X",
+        "artist": "태연 (TAEYEON)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/72/896/11372896_20231127104957_500.jpg"
+    },
+    {
+        "id": 81,
+        "title": "사건의 지평선",
+        "artist": "윤하 (YOUNHA)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/109/03/868/10903868_20220330103544_500.jpg"
+    },
+    {
+        "id": 82,
+        "title": "보금자리",
+        "artist": "임영웅",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/109/23/444/10923444_20220502140600_500.jpg"
+    },
+    {
+        "id": 83,
+        "title": "봄날",
+        "artist": "방탄소년단",
+        "cover": "https://cdnimg.melon.co.kr/cm/album/images/100/37/969/10037969_500.jpg"
+    },
+    {
+        "id": 84,
+        "title": "Dynamite",
+        "artist": "방탄소년단",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/104/79/150/10479150_20200918102847_500.jpg"
+    },
+    {
+        "id": 85,
+        "title": "별별별 (See that)",
+        "artist": "NMIXX",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/68/571/11568571_20240814180403_500.jpg"
+    },
+    {
+        "id": 86,
+        "title": "파이팅 해야지 (Feat. 이영지)",
+        "artist": "부석순 (SEVENTEEN)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/111/66/539/11166539_20230207143921_500.jpg"
+    },
+    {
+        "id": 87,
+        "title": "Boom Boom Bass",
+        "artist": "RIIZE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/114/56/179/11456179_20240617152303_500.jpg"
+    },
+    {
+        "id": 88,
+        "title": "Drama",
+        "artist": "aespa",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/62/544/11362544_20231110142622_500.jpg"
+    },
+    {
+        "id": 89,
+        "title": "사막에서 꽃을 피우듯",
+        "artist": "우디 (Woody)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/112/85/867/11285867_20230713162404_500.jpg"
+    },
+    {
+        "id": 90,
+        "title": "ETA",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/112/81/456/11281456_20230706180841_500.jpg"
+    },
+    {
+        "id": 91,
+        "title": "Love 119",
+        "artist": "RIIZE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/94/065/11394065_20240104151541_500.jpg"
+    },
+    {
+        "id": 92,
+        "title": "I Don't Think That I Like Her",
+        "artist": "Charlie Puth",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/108/44/485/10844485_20221006154824_500.jpg"
+    },
+    {
+        "id": 93,
+        "title": "Over The Moon",
+        "artist": "투모로우바이투게더",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/32/009/11632009_20241104105912_500.jpg"
+    },
+    {
+        "id": 94,
+        "title": "오래된 노래",
+        "artist": "허각, 임한별, 이무진, 이진성 (먼데이 키즈), 김희재, #안녕",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/13/169/11513169_20240614150349_500.jpg"
+    },
+    {
+        "id": 95,
+        "title": "플러팅",
+        "artist": "황인욱",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/51/069/11551069_20240725152601_500.jpg"
+    },
+    {
+        "id": 96,
+        "title": "Attention",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/110/11/565/11011565_20220801102637_500.jpg"
+    },
+    {
+        "id": 97,
+        "title": "내가 S면 넌 나의 N이 되어줘",
+        "artist": "TWS (투어스)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/115/05/319/11505319_20240624143253_500.jpg"
+    },
+    {
+        "id": 98,
+        "title": "Super Shy",
+        "artist": "NewJeans",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/112/81/456/11281456_20230706180841_500.jpg"
+    },
+    {
+        "id": 99,
+        "title": "너와의 모든 지금",
+        "artist": "재쓰비 (JAESSBEE)",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/116/37/218/11637218_20241108150236_500.jpg"
+    },
+    {
+        "id": 100,
+        "title": "Get A Guitar",
+        "artist": "RIIZE",
+        "cover": "https://cdnimg.melon.co.kr/cm2/album/images/113/09/832/11309832_20230904111501_500.jpg"
+    }
+]
