@@ -18,6 +18,7 @@ import me.onair.main.global.error.ErrorResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 @Slf4j
@@ -88,6 +89,12 @@ public class ControllerAdvice {
     public ResponseEntity<ErrorResponseDto> handleNotVerifiedPhoneNumberException(NotVerifiedPhoneNumberException e) {
         log.error("handleNotVerifiedPhoneNumberException", e);
         return getResponse(ErrorCode.NOT_VERIFIED_PHONE_NUMBER);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponseDto> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.error("handleMaxUploadSizeExceededException", e);
+        return getResponse(ErrorCode.MAX_UPLOAD_SIZE_EXCEEDED);
     }
 
     @ExceptionHandler(CustomException.class)
