@@ -46,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
+import com.fm404.onair.core.common.util.BroadcastConstants
 import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
 import com.fm404.onair.core.designsystem.theme.OnairBackground
 import com.fm404.onair.core.designsystem.theme.OnairHighlight
@@ -113,13 +114,20 @@ fun BroadcastDetailScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = rememberImagePainter(
-                        data = com.fm404.onair.core.common.R.drawable.sena // DJ프사 해야됨
-                    ),
+                    painter = painterResource(
+                        id = when (state.ttsEngine) {
+                            "TYPECAST_SENA" -> com.fm404.onair.core.common.R.drawable.sena
+                            "TYPECAST_JEROME" -> com.fm404.onair.core.common.R.drawable.jerome
+                            "TYPECAST_HYEONJI" -> com.fm404.onair.core.common.R.drawable.hyunji
+                            "TYPECAST_EUNBIN" -> com.fm404.onair.core.common.R.drawable.eunbin
+                            else -> com.fm404.onair.core.common.R.drawable.sena // 기본 이미지
+                        }
+                    ) ,
                     contentDescription = "DJ 프사",
                     modifier = Modifier
                         .size(54.dp)
                         .clip(RoundedCornerShape(54.dp))
+//                        .background(Color(0x66FFFFFF))
                 )
                 Column(
                     modifier = Modifier
@@ -128,7 +136,7 @@ fun BroadcastDetailScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Log.d(TAG, "BroadcastDetailScreen: 야 이거는 뭐냐면 ${state.title}")
+//                    Log.d(TAG, "BroadcastDetailScreen: 야 이거는 뭐냐면 ${state.title}")
                     when {
                         !state.title.isNullOrEmpty() -> state.title
                         else -> "세나의 K-POP 라디오"
@@ -150,7 +158,7 @@ fun BroadcastDetailScreen(
 //                        modifier = Modifier.padding(bottom = 0.dp)
 //                    )
                     Text(
-                        text = "#날씨 #뉴스 #연예",
+                        text = "#날씨 #뉴스 #${BroadcastConstants.NEWS_TOPIC_OPTIONS[state.topic] ?: "기타"}",
                         color = Color.Gray,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(top = 0.dp)
@@ -205,25 +213,56 @@ fun BroadcastDetailScreen(
 //                .clip(RoundedCornerShape(16.dp))
 //        )
 
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(state.coverImageUrl)
-                .crossfade(true)
-                .placeholder(R.drawable.wy1)
-                .error(R.drawable.wy1)
-                .build(),
-            contentDescription = "Channel Cover",
-            modifier = Modifier
-                .size(300.dp)
-                .clip(RoundedCornerShape(16.dp))
-        )
+        when (state.contentType) {
+            "뉴스" -> Image(
+                painter = painterResource(id = R.drawable.newsroom),
+                contentDescription = "뉴스 이미지",
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
+            "날씨" -> Image(
+                painter = painterResource(id = R.drawable.weather),
+                contentDescription = "날씨 이미지",
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
+            "사연" -> Image(
+                painter = painterResource(id = R.drawable.episode_bg),
+                contentDescription = "사연 이미지",
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
+            "음악" -> AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(state.coverImageUrl)
+                    .crossfade(true)
+                    .placeholder(R.drawable.wy1)
+                    .error(R.drawable.wy1)
+                    .build(),
+                contentDescription = "Channel Cover",
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
+            else -> Image(
+                painter = painterResource(id = R.drawable.wy1),
+                contentDescription = "기본 이미지",
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
+        }
 
         Spacer(modifier = Modifier.height(30.dp))
 
 //        Log.d(TAG, "BroadcastDetailScreen: ${state.contentType} 타입")
+//        Log.d(TAG, "BroadcastDetailScreen: ${state.musicTitle} 노래제목")
         when {
-            !state.title.isNullOrEmpty() -> state.title
             state.contentType == "음악" && !state.musicTitle.isNullOrEmpty() -> state.musicTitle
+            !state.title.isNullOrEmpty() -> state.title
             else -> "세나의 K-POP 라디오"
         }?.let {
             Text(
@@ -236,9 +275,9 @@ fun BroadcastDetailScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = if (state.contentType == "음악" && !state.musicArtist.isNullOrEmpty()) {
-                state.musicArtist ?: "#날씨 #뉴스 #연예"
+                state.musicArtist ?: "#날씨 #뉴스 #${BroadcastConstants.NEWS_TOPIC_OPTIONS[state.topic] ?: "기타"}"
             } else {
-                "#날씨 #뉴스 #연예"
+                "#날씨 #뉴스 #${BroadcastConstants.NEWS_TOPIC_OPTIONS[state.topic] ?: "기타"}"
             },
             fontFamily = pMedium,
             fontSize = 16.sp,

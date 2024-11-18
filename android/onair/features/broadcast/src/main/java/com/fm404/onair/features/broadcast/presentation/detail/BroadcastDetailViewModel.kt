@@ -47,7 +47,10 @@ class BroadcastDetailViewModel @Inject constructor(
     init {
         fetchContentTypeHeaders()
         // channelId로 채널 정보 로드
+//        Log.d(TAG, "channelID: 채널 아이디: ${_state.value.broadcastId}")
+//        Log.d(TAG, "channelID: 채널 제목 : ${_state.value.title}")
         _state.value.broadcastId.takeIf { it.isNotEmpty() }?.let { channelId ->
+            Log.d(TAG, "채널 로딩: channelId: $channelId")
             loadChannelDetail(channelId)
         }
     }
@@ -58,6 +61,7 @@ class BroadcastDetailViewModel @Inject constructor(
 
             getChannelUseCase(channelId)
                 .onSuccess { channel ->
+                    Log.d(TAG, "loadChannelDetail: 여기여기여기여기 ${channel.channelName}")
                     _state.update { currentState ->
                         currentState.copy(
                             title = channel.channelName,
@@ -78,6 +82,8 @@ class BroadcastDetailViewModel @Inject constructor(
                     }
                 }
                 .onFailure { throwable ->
+                    Log.e(TAG, "loadChannelDetail: 실패 - ${throwable.message}", throwable) // Add throwable stack trace
+
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -134,14 +140,12 @@ class BroadcastDetailViewModel @Inject constructor(
                                     "news" -> "뉴스"
                                     "story" -> "사연"
                                     "weather" -> "날씨"
-                                    "music" -> {
-                                        if (!title.isNullOrEmpty() && !artist.isNullOrEmpty()) {
-                                            "$artist - $title"
-                                        } else "음악"
-                                    }
+                                    "music" -> "음악"
                                     else -> "사연"
                                 },
-                                coverImageUrl = coverUrl
+                                coverImageUrl = coverUrl,
+                                musicTitle = title,
+                                musicArtist = artist
                             )
                         }
                     }
