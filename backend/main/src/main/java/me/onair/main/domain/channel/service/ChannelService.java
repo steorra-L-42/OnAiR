@@ -60,6 +60,12 @@ public class ChannelService {
         User user = userRepository.findById(userDetails.getId()).orElseThrow(NotExistUserException::new);
         String fcmToken = user.getFcmToken().getValue();
 
+//        TODO: 일반 유저 채널 개설 제한
+//        if (user.getRole() == Role.ROLE_USER) {
+//            log.error("일반 유저는 채널 생성을 할 수 없습니다.");
+//            throw new ChannelNotCreated(ErrorCode.CHANNEL_NOT_CREATED);
+//        }
+
         // 2. 채널 저장
         Channel channel = Channel.createChannel(request, user);
         channelRepository.save(channel);
