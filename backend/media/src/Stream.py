@@ -108,8 +108,26 @@ class Stream:
         return self.metadata[index]
 
     def get_metadata_by_index_and_column(self, index, column):
-        data = next(iter(self.metadata[index])).data
-        return data[column]
+        try:
+            # 인덱스가 유효한지 확인
+            if index >= len(self.metadata) or index < 0:
+                raise IndexError("Invalid index.")
+
+            # 데이터 접근 및 None 체크
+            data = next(iter(self.metadata[index])).data
+            if data is None:
+                raise ValueError("Metadata is None.")
+
+            # 컬럼 값 확인 및 반환
+            value = data.get(column)
+            if value is None:
+                raise KeyError(f"Column '{column}' not found.")
+
+            return value
+
+        except (IndexError, ValueError, KeyError) as e:
+            print(f"Error: {e}")
+            return None
 
     def get_queue(self):
         return self.queue
