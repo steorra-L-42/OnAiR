@@ -12,9 +12,27 @@ from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, \
 import Stream
 
 
+def validate_file_info(file_info):
+  required_keys = [
+    "file_path",
+    "type",
+    "music_title",
+    "music_artist",
+    "music_cover_url"
+  ]
+
+  # 누락된 키를 '없음'으로 채워 넣기
+  for key in required_keys:
+    if key not in file_info or not file_info[key]:
+      file_info[key] = "없음"
+
+  return file_info
+
+
 ######################  여러 파일 -> 세그먼트  ######################
 def generate_segment_from_files(hls_path, file_info_list, start):
   metadata = IntervalTree()
+  file_info_list = [validate_file_info(file_info) for file_info in file_info_list]
 
   for file_info in file_info_list:
     if not validate_file(file_info.get(MEDIA_FILE_PATH)):
@@ -27,6 +45,7 @@ def generate_segment_from_files(hls_path, file_info_list, start):
 
     # 시작 인덱스 ~ 마지막 인덱스 범위를 key로 metadata 저장
     metadata[start: next_start] = file_info
+
     start = next_start
   return metadata, next_start
 
