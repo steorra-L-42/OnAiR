@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import subprocess
 import time
 import uuid
 from datetime import datetime
@@ -111,7 +112,7 @@ def get_tts(value, channel_id, content_type):
         "text": validated_value["text"],
         "lang": "ko-kr",
         "model_version": "latest",
-        "xapi_hd": False,
+        "xapi_hd": True,
         "xapi_audio_format": "mp3",
         "emotion_tone_preset": validated_value["emotion_tone_preset"],
         "volume": validated_value["volume"],
@@ -119,7 +120,7 @@ def get_tts(value, channel_id, content_type):
         "tempo": validated_value["tempo"],
         "pitch": validated_value["pitch"],
         "last_pitch": validated_value["last_pitch"],
-        "max_seconds": 60
+        "max_seconds": 60,
     })
 
     headers = {
@@ -199,6 +200,30 @@ def save_audio_file(audio_url, channel_id, content_type):
     # 디렉토리 생성 (존재하지 않으면)
     os.makedirs(output_filepath, exist_ok=True)
 
+    tmp_file = create_path_name(output_filepath)
+
+    # 오디오 파일 저장
+    response = requests.get(audio_url)
+    if response.status_code == 200:
+        with open(tmp_file, 'wb') as f:
+            f.write(response.content)
+        logging.info(f"Audio downloaded successfully as {str(tmp_file)}")
+        logging.info(f"Start adjusting volume...")
+
+        adjusted_file = create_path_name(output_filepath)
+        output_file = adjust_volume(tmp_file, adjusted_file)
+
+        # 변환 실패 시 예외 발생
+        if output_file is None:
+            raise ValueError("Failed to adjust volume.")
+
+        return output_file.lstrip("..")
+    else:
+        logging.error(f"Failed to download audio: {response.status_code}, {response.text}")
+        return
+
+
+def create_path_name(output_filepath):
     # 고유한 파일 이름 설정
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     # UUID 생성
@@ -206,14 +231,38 @@ def save_audio_file(audio_url, channel_id, content_type):
     # 파일 이름 생성 (날짜 시간 + UUID)
     file_name = f"{current_time}_{unique_id}.mp3"
     output_file = output_filepath + "/" + file_name
+    return output_file
 
-    # 오디오 파일 저장
-    response = requests.get(audio_url)
-    if response.status_code == 200:
-        with open(output_file, 'wb') as f:
-            f.write(response.content)
-        logging.info(f"Audio downloaded successfully as {str(output_file)}")
-        return output_file.lstrip("..")
-    else:
-        logging.error(f"Failed to download audio: {response.status_code}, {response.text}")
-        return
+
+def adjust_volume(input_file, output_file, volume=3.0):
+    """
+    오디오 파일의 볼륨을 조절
+
+    :param input_file: 원본 파일 경로
+    :param output_file: 출력 파일 경로
+    :param volume: 볼륨 배율
+    """
+    try:
+        command = [
+            "ffmpeg", "-i", input_file,
+            "-filter:a", f"volume={volume}",
+            output_file
+        ]
+        # 명령어 실행
+        subprocess.run(command,
+                       check=True,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.STDOUT)
+
+        if os.path.exists(input_file):
+            os.remove(input_file)
+
+        logging.info(f"Adjusted volume: {output_file}")
+        return output_file
+
+    except:
+        logging.error(f"Failed to adjust volume: {input_file}")
+        if os.path.exists(input_file):
+            os.remove(input_file)
+        if os.path.exists(output_file):
+            os.remove(output_file)
