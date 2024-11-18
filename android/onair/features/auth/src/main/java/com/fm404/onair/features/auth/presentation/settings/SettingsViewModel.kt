@@ -27,6 +27,10 @@ class SettingsViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : BaseViewModel<SettingsState, SettingsEvent>() {
 
+    companion object {
+        private const val MAX_FILE_SIZE_BYTES = 2L * 1024 * 1024 // 2MB in bytes
+    }
+
     override fun createInitialState(): SettingsState = SettingsState()
 
     init {
@@ -69,9 +73,11 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.OnHideNicknameDialog -> setState { copy(showNicknameDialog = false) }
             is SettingsEvent.OnNicknameChange -> setState { copy(newNickname = event.nickname) }
             is SettingsEvent.OnUpdateNickname -> handleUpdateNickname()
-            is SettingsEvent.OnImageSelected -> handleUpdateProfileImage(event.uri)
+            is SettingsEvent.OnImageSelected -> validateAndUpdateProfileImage(event.uri)
             is SettingsEvent.OnShowImageDialog -> setState { copy(showImageDialog = true) }
             is SettingsEvent.OnHideImageDialog -> setState { copy(showImageDialog = false) }
+            is SettingsEvent.ShowToast -> setState { copy(error = ErrorState(code = "TOAST", message = event.message)) }
+            is SettingsEvent.ClearError -> setState { copy(error = null) }
         }
     }
 
@@ -93,26 +99,16 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
 
-            try {
-                // 토큰 제거 시도
-                userRepository.logout()
-                    .onSuccess {
-                        Log.d("Settings", "로그아웃 성공")
-                    }
-                    .onFailure { exception ->
-                        // 실패해도 무시
-                        Log.d("Settings", "로그아웃 실패: ${exception.message}")
-                    }
-
-                // 결과와 상관없이 로그인 화면으로 이동
-                Log.d("Settings", "로그인 화면으로 이동")
-                authNavigationContract.navigateToLogin()
-
-            } catch (e: Exception) {
-                // 예상치 못한 에러도 무시하고 로그인 화면으로
-                Log.e("Settings", "예상치 못한 오류", e)
-                authNavigationContract.navigateToLogin()
-            }
+            userRepository.logout()
+                .onSuccess {
+                    Log.d("Settings", "로그아웃 성공")
+                    authNavigationContract.navigateToLogin()
+                }
+                .onFailure { exception ->
+                    Log.e("Settings", "서버 로그아웃 실패: ${exception.message}")
+                    // 실패하더라도 로컬 토큰은 삭제된 상태이므로 로그인 화면으로 이동
+                    authNavigationContract.navigateToLogin()
+                }
         }
     }
 
@@ -171,6 +167,33 @@ class SettingsViewModel @Inject constructor(
                         error = ErrorState("IMAGE_ERROR", "이미지 처리 중 오류가 발생했습니다: ${e.message}")
                     )
                 }
+            }
+        }
+    }
+
+    private fun validateAndUpdateProfileImage(uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            setState { copy(isLoading = true, error = null) }
+
+            try {
+                // ContentResolver를 사용하여 파일 크기 확인
+                val contentResolver = application.contentResolver
+                contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+                    val fileSize = descriptor.statSize
+
+                    if (fileSize > MAX_FILE_SIZE_BYTES) {
+                        setState { copy(isLoading = false) }
+                        // Toast 메시지 이벤트 발생
+                        onEvent(SettingsEvent.ShowToast("이미지 크기는 2MB를 초과할 수 없습니다."))
+                        return@launch
+                    }
+                }
+
+                // 파일 크기가 적절하면 이미지 업데이트 진행
+                handleUpdateProfileImage(uri)
+            } catch (e: Exception) {
+                setState { copy(isLoading = false) }
+                onEvent(SettingsEvent.ShowToast("이미지 파일 접근 중 오류가 발생했습니다."))
             }
         }
     }

@@ -68,11 +68,15 @@ fun BroadcastDetailScreen(
 
     LaunchedEffect(state.playerError) {
         if (state.playerError) {
+            Log.d(TAG, "Player error detected: ${state.error}")  // 디버깅을 위한 로그 추가
             Toast.makeText(
                 context,
                 state.error ?: "방송이 종료되었습니다",
                 Toast.LENGTH_SHORT
             ).show()
+
+            // 약간의 딜레이를 주어 Toast가 표시된 후 화면 전환
+            kotlinx.coroutines.delay(300)
             onBack()
         }
     }

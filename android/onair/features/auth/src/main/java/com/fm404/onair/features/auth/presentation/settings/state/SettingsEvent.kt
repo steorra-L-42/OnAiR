@@ -15,4 +15,8 @@ sealed class SettingsEvent {
     data class OnImageSelected(val uri: Uri) : SettingsEvent()
     object OnShowImageDialog : SettingsEvent()
     object OnHideImageDialog : SettingsEvent()
+
+
+    data class ShowToast(val message: String) : SettingsEvent()
+    object ClearError : SettingsEvent()
 }

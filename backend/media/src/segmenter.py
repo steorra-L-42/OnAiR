@@ -50,7 +50,8 @@ def generate_segment(hls_path, file_info):
     '-map', '[aout]',
 
     '-c:a', 'aac',
-    '-b:a', '128k',
+    '-b:a', '320k',
+    '-ar', '48000',
 
     # HLS 세그먼트 옵션
     '-f', 'hls',

@@ -15,6 +15,7 @@ import android.content.Context
 import android.telephony.TelephonyManager
 import android.util.Log
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
+import com.fm404.onair.domain.exception.DomainException
 
 private const val TAG = "RegisterViewModel"
 
@@ -320,10 +321,33 @@ class RegisterViewModel @Inject constructor(
                     handleVerificationFailure()
                 }
             }.onFailure { exception ->
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
-                )
+                when (exception) {
+                    is DomainException -> {
+                        if (exception.code == "409") {
+                            _state.value = _state.value.copy(
+                                isLoading = false,
+                                error = "이미 가입된 번호입니다. 로그인해주세요."
+                            )
+                            // 잠시 딜레이 후 로그인 화면으로 이동
+                            viewModelScope.launch {
+                                delay(1500) // Toast 메시지를 보여줄 시간
+                                navigationContract.navigateToLogin()
+                            }
+                        } else {
+                            _state.value = _state.value.copy(
+                                isLoading = false,
+                                error = exception.message
+                            )
+                        }
+                    }
+
+                    else -> {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
+                        )
+                    }
+                }
             }
 
 //            // 테스트를 위해 항상 성공 처리
