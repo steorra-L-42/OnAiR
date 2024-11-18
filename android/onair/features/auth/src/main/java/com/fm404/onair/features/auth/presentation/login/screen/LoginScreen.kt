@@ -2,9 +2,13 @@ package com.fm404.onair.features.auth.presentation.login.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -38,6 +42,8 @@ private fun LoginContent(
     state: LoginState,
     onEvent: (LoginEvent) -> Unit
 ) {
+    val passwordFocusRequester = remember { FocusRequester() }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,13 +61,22 @@ private fun LoginContent(
             value = state.username,
             onValueChange = { onEvent(LoginEvent.UsernameChanged(it)) },
             label = { Text("ID") },
-            modifier = Modifier.width(300.dp),
+            modifier = Modifier
+                .width(300.dp)
+                .focusRequester(FocusRequester()),
+            singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = OnSurface,
                 unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
                 focusedLabelColor = OnSurface,
                 unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
                 cursorColor = OnSurface
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = androidx.compose.ui.text.input.ImeAction.Next // 다음 버튼
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { passwordFocusRequester.requestFocus() } // 비밀번호 필드로 포커스 이동
             )
         )
 
@@ -72,13 +87,22 @@ private fun LoginContent(
             onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.width(300.dp),
+            modifier = Modifier
+                .width(300.dp)
+                .focusRequester(passwordFocusRequester),
+            singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = OnSurface,
                 unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
                 focusedLabelColor = OnSurface,
                 unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
                 cursorColor = OnSurface
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = androidx.compose.ui.text.input.ImeAction.Done // 완료 버튼
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { onEvent(LoginEvent.LoginClicked) } // 완료 시 로그인
             )
         )
 
