@@ -50,7 +50,8 @@ fun BroadcastListScreen(
                 onChannelClick = { channel ->
                     onBroadcastClick(channel.channelUuid) // 채널 UUID로 이동
                 },
-                onNotificationClick = viewModel::onNotificationClick // 알림 버튼 클릭 처리
+//                onNotificationClick = viewModel::onNotificationClick // 알림 버튼 클릭 처리,
+                onCreateClick = onCreateClick
             )
 
 //            FloatingActionButton(
@@ -93,7 +94,7 @@ private fun BroadcastListContent(
     state: BroadcastListState,
     onBroadcastClick: (String) -> Unit,
     onChannelClick: (ChannelList) -> Unit,
-    onNotificationClick: () -> Unit
+    onCreateClick: () -> Unit
 ) {
 
     Column(
@@ -118,7 +119,8 @@ private fun BroadcastListContent(
 //            Spacer(modifier = Modifier.weight(4f))
             
             IconButton(
-                onClick = onNotificationClick
+//                onClick = onNotificationClick
+                onClick = onCreateClick
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.add_mic),
