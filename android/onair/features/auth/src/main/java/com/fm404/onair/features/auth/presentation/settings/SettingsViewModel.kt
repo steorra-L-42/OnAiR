@@ -1,5 +1,6 @@
 package com.fm404.onair.features.auth.presentation.settings
 
+import android.app.Application
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toFile
@@ -20,6 +21,7 @@ import com.fm404.onair.core.common.base.ErrorState
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    private val application: Application,
     val authNavigationContract: AuthNavigationContract,
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val userRepository: UserRepository
@@ -140,19 +142,33 @@ class SettingsViewModel @Inject constructor(
             setState { copy(isLoading = true, error = null) }
 
             try {
-                val file = uri.toFile()
+                // ContentResolver를 사용하여 실제 파일로 변환
+                val contentResolver = application.contentResolver
+                val inputStream = contentResolver.openInputStream(uri)
+                val file = createTempFile("profile", ".jpg").apply {
+                    outputStream().use { fileOut ->
+                        inputStream?.copyTo(fileOut)
+                    }
+                }
+                inputStream?.close()
+
                 userRepository.updateProfileImage(file)
-                    .onSuccess {
+                    .onSuccess { response ->
+                        // 임시 파일 삭제
+                        file.delete()
+                        // 프로필 업데이트 성공 후 유저 정보 갱신
                         fetchUserInfo()
                     }
                     .onFailure { exception ->
+                        // 임시 파일 삭제
+                        file.delete()
                         handleError(exception)
                     }
             } catch (e: Exception) {
                 setState {
                     copy(
                         isLoading = false,
-                        error = ErrorState("IMAGE_ERROR", "이미지 처리 중 오류가 발생했습니다.")
+                        error = ErrorState("IMAGE_ERROR", "이미지 처리 중 오류가 발생했습니다: ${e.message}")
                     )
                 }
             }

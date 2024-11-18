@@ -152,32 +152,61 @@ fun SettingsScreen(
                     // 프로필 이미지
                     var isPressed by remember { mutableStateOf(false) }
 
+//                    Box(
+//                        modifier = Modifier
+//                            .size(80.dp)
+//                            .clip(CircleShape)
+//                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+//                            .align(Alignment.CenterHorizontally)
+//                    ) {
+//                        var isPressed by remember { mutableStateOf(false) }
+//
+//                        NetworkImage(
+//                            imageUrl = state.userInfo?.profilePath,
+//                            contentDescription = "Profile",
+//                            modifier = Modifier
+//                                .matchParentSize()
+//                                .scale(if (isPressed) 1.5f else 1f)
+//                                .pointerInput(Unit) {
+//                                    awaitPointerEventScope {
+//                                        while (true) {
+//                                            val event = awaitPointerEvent()
+//                                            when (event.type) {
+//                                                PointerEventType.Press -> isPressed = true
+//                                                PointerEventType.Release -> isPressed = false
+//                                            }
+//                                        }
+//                                    }
+//                                },
+//                            contentScale = ContentScale.Crop,
+//                            placeholderContent = {
+//                                Icon(
+//                                    imageVector = Icons.Default.Person,
+//                                    contentDescription = "Profile",
+//                                    modifier = Modifier
+//                                        .size(40.dp)
+//                                        .align(Alignment.Center),
+//                                    tint = MaterialTheme.colorScheme.primary
+//                                )
+//                            }
+//                        )
+
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                             .align(Alignment.CenterHorizontally)
+                            .clickable {
+                                // 이미지 선택 launcher 실행
+                                launcher.launch("image/*")
+                            }
                     ) {
-                        var isPressed by remember { mutableStateOf(false) }
-
                         NetworkImage(
                             imageUrl = state.userInfo?.profilePath,
                             contentDescription = "Profile",
                             modifier = Modifier
-                                .matchParentSize()
-                                .scale(if (isPressed) 1.5f else 1f)
-                                .pointerInput(Unit) {
-                                    awaitPointerEventScope {
-                                        while (true) {
-                                            val event = awaitPointerEvent()
-                                            when (event.type) {
-                                                PointerEventType.Press -> isPressed = true
-                                                PointerEventType.Release -> isPressed = false
-                                            }
-                                        }
-                                    }
-                                },
+                                .matchParentSize(),
                             contentScale = ContentScale.Crop,
                             placeholderContent = {
                                 Icon(
@@ -191,22 +220,21 @@ fun SettingsScreen(
                             }
                         )
 
-                        // 프로필 이미지 변경은 아직 지원하지 않음
-//                        // 카메라 아이콘 오버레이
-//                        Box(
-//                            modifier = Modifier
-//                                .matchParentSize()
-//                                .background(Color.Black.copy(alpha = 0.3f))
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.Camera,
-//                                contentDescription = "Change profile image",
-//                                modifier = Modifier
-//                                    .size(24.dp)
-//                                    .align(Alignment.Center),
-//                                tint = Color.White
-//                            )
-//                        }
+                        // 카메라 아이콘 오버레이
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Color.Black.copy(alpha = 0.3f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Camera,
+                                contentDescription = "Change profile image",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .align(Alignment.Center),
+                                tint = Color.White
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))

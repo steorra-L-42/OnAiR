@@ -109,7 +109,7 @@ class UserRepositoryImpl @Inject constructor(
         userApi.updateNickname(UpdateNicknameRequestDto(nickname = nickname))
     }
 
-    override suspend fun updateProfileImage(imageFile: File): Result<Unit> = runCatching {
+    override suspend fun updateProfileImage(imageFile: File): Result<UpdateProfileResponse> = runCatching {
         // Create RequestBody from file
         val requestBody = create(
             "image/*".toMediaTypeOrNull(),
@@ -119,17 +119,7 @@ class UserRepositoryImpl @Inject constructor(
         // Create MultipartBody.Part
         val part = MultipartBody.Part.createFormData("file", imageFile.name, requestBody)
 
-        val response = userApi.updateProfileImage(part)
-
-        if (!response.isSuccessful) {
-            val errorBody = response.errorBody()?.string()
-            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
-            throw CustomException(
-                code = errorResponse.code,
-                message = errorResponse.message,
-                httpCode = response.code()
-            ).toDomainException()
-        }
+        userApi.updateProfileImage(part).toDomain()
     }
 
     override suspend fun registerFCMToken(request: FCMTokenRequest): Result<Unit> = runCatching {
