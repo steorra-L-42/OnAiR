@@ -48,7 +48,6 @@ fun SettingsScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // 프로필 이미지 변경은 아직 지원하지 않음ㅅ
     // Image picker launcher
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -151,45 +150,6 @@ fun SettingsScreen(
                 ) {
                     // 프로필 이미지
                     var isPressed by remember { mutableStateOf(false) }
-
-//                    Box(
-//                        modifier = Modifier
-//                            .size(80.dp)
-//                            .clip(CircleShape)
-//                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-//                            .align(Alignment.CenterHorizontally)
-//                    ) {
-//                        var isPressed by remember { mutableStateOf(false) }
-//
-//                        NetworkImage(
-//                            imageUrl = state.userInfo?.profilePath,
-//                            contentDescription = "Profile",
-//                            modifier = Modifier
-//                                .matchParentSize()
-//                                .scale(if (isPressed) 1.5f else 1f)
-//                                .pointerInput(Unit) {
-//                                    awaitPointerEventScope {
-//                                        while (true) {
-//                                            val event = awaitPointerEvent()
-//                                            when (event.type) {
-//                                                PointerEventType.Press -> isPressed = true
-//                                                PointerEventType.Release -> isPressed = false
-//                                            }
-//                                        }
-//                                    }
-//                                },
-//                            contentScale = ContentScale.Crop,
-//                            placeholderContent = {
-//                                Icon(
-//                                    imageVector = Icons.Default.Person,
-//                                    contentDescription = "Profile",
-//                                    modifier = Modifier
-//                                        .size(40.dp)
-//                                        .align(Alignment.Center),
-//                                    tint = MaterialTheme.colorScheme.primary
-//                                )
-//                            }
-//                        )
 
                     Box(
                         modifier = Modifier
@@ -296,30 +256,30 @@ fun SettingsScreen(
                 )
             }
 
-            state.error?.let { error ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "Error Code: ${error.code}",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = error.message,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
+//            state.error?.let { error -> // 더 이상 에러를 보여주지 않음
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = CardDefaults.cardColors(
+//                        containerColor = MaterialTheme.colorScheme.errorContainer
+//                    )
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp),
+//                        verticalArrangement = Arrangement.spacedBy(4.dp)
+//                    ) {
+//                        Text(
+//                            text = "Error Code: ${error.code}",
+//                            color = MaterialTheme.colorScheme.error,
+//                            style = MaterialTheme.typography.bodyMedium
+//                        )
+//                        Text(
+//                            text = error.message,
+//                            color = MaterialTheme.colorScheme.error,
+//                            style = MaterialTheme.typography.bodyLarge
+//                        )
+//                    }
+//                }
+//            }
         }
     }
 }
