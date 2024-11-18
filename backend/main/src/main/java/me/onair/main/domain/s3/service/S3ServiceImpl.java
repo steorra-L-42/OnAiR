@@ -2,6 +2,7 @@ package me.onair.main.domain.s3.service;
 
 import static me.onair.main.global.error.ErrorCode.IMAGE_UPLOAD_FAILED;
 import static me.onair.main.global.error.ErrorCode.INVALID_FILE_FORMAT;
+import static me.onair.main.global.error.ErrorCode.MULTIPARTFILE_IS_NULL;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.onair.main.domain.s3.error.ImageUploadFailedException;
 import me.onair.main.domain.s3.error.InvalidFileFormatException;
+import me.onair.main.domain.s3.error.MultipartFileNullException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +37,10 @@ public class S3ServiceImpl implements S3Service {
      */
     public String uploadSingleFile(MultipartFile multipartFile) {
 
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            throw new MultipartFileNullException(MULTIPARTFILE_IS_NULL);
+        }
+        
         String fileName = createFileName(multipartFile.getOriginalFilename());
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(multipartFile.getSize());
