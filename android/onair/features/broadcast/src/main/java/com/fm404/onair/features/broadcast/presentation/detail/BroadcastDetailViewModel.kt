@@ -129,26 +129,57 @@ class BroadcastDetailViewModel @Inject constructor(
                         // 새로운 헤더를 받을 때마다 시간 업데이트
                         lastHeaderTime = System.currentTimeMillis()
 
-                        val contentType = headers["onair-content-type"] ?: "story"
+                        val contentType = headers["onair-content-type"]
                         val title = headers["music-title"]
                         val artist = headers["music-artist"]
                         val coverUrl = headers["music-cover"]
 
-                        _state.update { currentState ->
-                            currentState.copy(
-                                contentType = when (contentType) {
-                                    "news" -> "뉴스"
-                                    "story" -> "사연"
-                                    "weather" -> "날씨"
-                                    "music" -> "음악"
-                                    else -> "사연"
-                                },
-                                coverImageUrl = coverUrl,
-                                musicTitle = title,
-                                musicArtist = artist
-                            )
+                        // 유효성 검사
+                        val isValidContentType = contentType != null && contentType.isNotEmpty()
+                        val isValidCoverUrl = coverUrl != null && coverUrl.isNotEmpty()
+                        val isValidTitle = title != null && title.isNotEmpty()
+                        val isValidArtist = artist != null && artist.isNotEmpty()
+
+                        // 유효한 경우에만 state 업데이트
+                        if (isValidContentType) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    contentType = when (contentType) {
+                                        "news" -> "뉴스"
+                                        "story" -> "사연"
+                                        "weather" -> "날씨"
+                                        "music" -> "음악"
+                                        else -> currentState.contentType  // 이전 값 유지
+                                    }
+                                )
+                            }
+                        }
+
+                        if (isValidCoverUrl) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    coverImageUrl = coverUrl
+                                )
+                            }
+                        }
+
+                        if (isValidTitle) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    musicTitle = title
+                                )
+                            }
+                        }
+
+                        if (isValidArtist) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    musicArtist = artist
+                                )
+                            }
                         }
                     }
+
                     .transformLatest { headers ->
                         // 세그먼트 체크 로직
                         while(true) {
