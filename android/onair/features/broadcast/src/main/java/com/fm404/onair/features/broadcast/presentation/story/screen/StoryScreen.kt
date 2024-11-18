@@ -322,7 +322,13 @@ fun StoryScreen(
             val commonShape = RoundedCornerShape(12.dp)
 
             Button(
-                onClick = { viewModel.onEvent(StoryEvent.OnSubmit) },
+                onClick = {
+                    viewModel.onEvent(StoryEvent.OnSubmit)
+
+                    Toast.makeText(context, "성공! 사연이 선정되면 알림을 보내드려요.", Toast.LENGTH_SHORT).show()
+
+                    onBackClick()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),

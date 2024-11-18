@@ -62,14 +62,34 @@ class MainActivity : ComponentActivity() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            // Handle the permissions result
-            val granted = permissions.all { it.value }
-            if (granted) {
-                Toast.makeText(this, "권한이 확인되었어요!", Toast.LENGTH_SHORT).show()
+            val allPermissionsGranted = permissions.all { it.value }
+
+            if (allPermissionsGranted) {
+                Toast.makeText(this, "모든 권한이 확인되었습니다.", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "권한을 허용해야 앱을 이용할 수 있어요.", Toast.LENGTH_SHORT).show()
+                val deniedPermissions = permissions.filterNot { it.value }.keys
+                deniedPermissions.forEach { permission ->
+                    when (permission) {
+                        Manifest.permission.RECORD_AUDIO -> {
+                            Toast.makeText(this, "마이크 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        Manifest.permission.READ_PHONE_STATE -> {
+                            Toast.makeText(this, "전화 상태 읽기 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        Manifest.permission.READ_SMS -> {
+                            Toast.makeText(this, "SMS 읽기 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        Manifest.permission.POST_NOTIFICATIONS -> {
+                            Toast.makeText(this, "알림 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                // 권한 거부되면 앱 종료
+                Toast.makeText(this, "필수 권한이 거부되었습니다. 앱을 종료합니다.", Toast.LENGTH_LONG).show()
+                finish()  // 강제종료
             }
         }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,16 +121,29 @@ class MainActivity : ComponentActivity() {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        if (permissions.any {
-                ActivityCompat.checkSelfPermission(
-                    this,
-                    it
-                ) != PackageManager.PERMISSION_GRANTED
-            }) {
+        // Add all required permissions
+        permissions.addAll(
+            listOf(
+                Manifest.permission.INTERNET,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.FOREGROUND_SERVICE,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.READ_SMS,
+                Manifest.permission.WAKE_LOCK,
+                "com.google.android.c2dm.permission.RECEIVE"
+            )
+        )
 
-            requestPermissionLauncher.launch(permissions.toTypedArray())
+        val runtimePermissions = permissions.filter {
+            ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (runtimePermissions.isNotEmpty()) {
+            requestPermissionLauncher.launch(runtimePermissions.toTypedArray())
         }
     }
+
+
 }
 
 @Composable
