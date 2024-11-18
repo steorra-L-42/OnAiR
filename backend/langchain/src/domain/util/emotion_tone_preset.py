@@ -28,7 +28,7 @@ jerome_emontion_tone_preset = {
     "높은목소리": "normal-4"
 }
 
-hyunji_emontion_tone_preset = {
+hyeonji_emontion_tone_preset = {
     "보통목소리": "normal-1",
     "차분한목소리": "normal-2",
     "낮은목소리": "normal-3",
@@ -51,7 +51,7 @@ def get_list_emotion_tone_preset(tts_engine):
     if tts_engine == "TYPECAST_JEROME":
         return jerome_emontion_tone_preset.keys()
     if tts_engine == "TYPECAST_HYEONJI":
-        return hyunji_emontion_tone_preset.keys()
+        return hyeonji_emontion_tone_preset.keys()
     if tts_engine == "TYPECAST_EUNBIN":
         return eunbin_emontion_tone_preset.keys()
     return None
