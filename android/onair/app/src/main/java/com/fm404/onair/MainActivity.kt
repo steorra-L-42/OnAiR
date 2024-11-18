@@ -151,16 +151,16 @@ private fun MainScreen(
             modifier = modifier.fillMaxSize(),
             bottomBar = {
                 // 현재 route가 login이나 register인 경우 BottomBar 숨김
-//                val currentDestination = currentRoute?.destination?.route
-//                if (currentDestination != AuthNavigationContract.ROUTE_LOGIN &&
-//                    currentDestination != AuthNavigationContract.ROUTE_REGISTER) {
-//                    BottomNavBar(
-//                        navController = navController
-//                    )
-//                }
-                BottomNavBar(
-                    navController = navController
-                )
+                val currentDestination = currentRoute?.destination?.route
+                if (currentDestination != AuthNavigationContract.ROUTE_LOGIN &&
+                    currentDestination != AuthNavigationContract.ROUTE_REGISTER) {
+                    BottomNavBar(
+                        navController = navController
+                    )
+                }
+//                BottomNavBar( // 테스트를 위해 바텀바가 보이게 함
+//                    navController = navController
+//                )
             }
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
