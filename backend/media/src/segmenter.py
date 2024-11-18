@@ -151,10 +151,10 @@ def update_m3u8(stream: Stream, stop_event):
     # 저장할 세그먼트 리스트 조회
     segments = stream.get_queue().get_buffer_list()
     segments.extend(stream.get_queue().dequeue(SEGMENT_UPDATE_SIZE))
-    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_TYPE))
-    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_TITLE))
-    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_ARTIST))
-    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_COVER))
+    log.info(f"타입: {stream.get_metadata_by_index_and_column(segments[0], MEDIA_TYPE)}")
+    log.info(f"제목: {stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_TITLE)}")
+    log.info(f"가수: {stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_ARTIST)}")
+    log.info(f"커버: {stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_COVER)}")
 
     # m3u8 파일 갱신
     first_seg_length = write_m3u8(stream, segments, temp_m3u8_path)
