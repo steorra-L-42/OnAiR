@@ -123,19 +123,15 @@ class Stream:
 
     def get_metadata_by_index_and_column(self, index, column):
         try:
-            # 인덱스가 유효한지 확인
-            if index >= len(self.metadata) or index < 0:
-                raise IndexError("Invalid index.")
-
             # 데이터 접근 및 None 체크
             data = next(iter(self.metadata[index])).data
             if data is None:
-                raise ValueError("Metadata is None.")
+                return "없음"
 
             # 컬럼 값 확인 및 반환
             value = data.get(column)
             if value is None:
-                raise KeyError(f"Column '{column}' not found.")
+                return "없음"
 
             return value
 
