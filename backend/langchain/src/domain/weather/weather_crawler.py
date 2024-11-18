@@ -6,6 +6,8 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 import time
+import pytz
+from datetime import datetime, timedelta
 
 def init_selenium():
     firefox_options = Options()
@@ -49,7 +51,7 @@ class WeatherCrawler:
             selenium_wrapper = SeleniumWrapper()
 
             css_selector = "div.right-con div.text-area div.paragraph p.txt"
-            text = selenium_wrapper.get_texts_by_css_selector(self.URL, css_selector)
+            text = selenium_wrapper.get_texts_by_css_selector(self.URL, css_selector)[0]
 
             selenium_wrapper.close()
         except Exception as e:
@@ -65,11 +67,13 @@ class WeatherCrawler:
             c.execute('''CREATE TABLE IF NOT EXISTS weather (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             content TEXT,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                            created_at TIMESTAMP
                         )''')
 
             # 데이터 삽입
-            c.execute("INSERT INTO weather (content) VALUES (?)", (text))
+            seoul_tz = pytz.timezone('Asia/Seoul')
+            SEOUL_NOW = (datetime.now(seoul_tz)).strftime('%Y-%m-%d %H:%M:%S')
+            c.execute("INSERT INTO weather (content, created_at) VALUES (?, ?)", (text, SEOUL_NOW))
 
             # 변경사항 저장
             conn.commit()
@@ -88,7 +92,9 @@ class WeatherCrawler:
             conn = sqlite3.connect(self.db_path)
             c = conn.cursor()
 
-            c.execute("DELETE FROM weather WHERE created_at < datetime('now', '-1 day')")
+            seoul_tz = pytz.timezone('Asia/Seoul')
+            SEOUL_YESTERDAY = (datetime.now(seoul_tz) - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+            c.execute("DELETE FROM weather WHERE created_at < ?", (SEOUL_YESTERDAY,))
 
             conn.commit()
             conn.close()

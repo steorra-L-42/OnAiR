@@ -11,6 +11,7 @@ if dotenv_path:
 BOOTSTRAP_SERVER = os.getenv("BOOTSTRAP_SERVERS")
 GROUP_ID = os.getenv("LANGCHAIN_CONSUMER_GROUP_ID")
 AUTO_OFFSET_RESET = os.getenv("AUTO_OFFSET_RESET")
+TIMEZONE = os.getenv("TIMEZONE")
 
 import logging
 
