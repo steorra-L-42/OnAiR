@@ -20,7 +20,13 @@ class BroadcastCreateViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(BroadcastCreateState(
         ttsEngine = "TYPECAST_SENA",
-        personality = "GENTLE"
+        personality = "GENTLE",
+        newsTopic = BroadcastConstants.NEWS_TOPIC_OPTIONS.keys.firstOrNull() ?: "",
+        channelName = createChannelName(
+            ttsEngine = "TYPECAST_SENA",
+            personality = "GENTLE",
+            newsTopic = BroadcastConstants.NEWS_TOPIC_OPTIONS.keys.firstOrNull() ?: ""
+        )
     ))
     val state = _state.asStateFlow()
 
@@ -28,17 +34,36 @@ class BroadcastCreateViewModel @Inject constructor(
         when (event) {
             is BroadcastCreateEvent.OnTtsEngineChange -> {
                 _state.update {
-                    it.copy(
+                    val updatedState = it.copy(
                         ttsEngine = event.ttsEngine,
                         thumbnail = BroadcastConstants.TTS_THUMBNAIL_MAPPING[event.ttsEngine] ?: ""
                     )
+                    updatedState.copy(channelName = createChannelName(
+                        ttsEngine = updatedState.ttsEngine,
+                        personality = updatedState.personality,
+                        newsTopic = updatedState.newsTopic
+                    ))
                 }
             }
             is BroadcastCreateEvent.OnPersonalityChange -> {
-                _state.update { it.copy(personality = event.personality) }
+                _state.update {
+                    val updatedState = it.copy(personality = event.personality)
+                    updatedState.copy(channelName = createChannelName(
+                        ttsEngine = updatedState.ttsEngine,
+                        personality = updatedState.personality,
+                        newsTopic = updatedState.newsTopic
+                    ))
+                }
             }
             is BroadcastCreateEvent.OnNewsTopicChange -> {
-                _state.update { it.copy(newsTopic = event.newsTopic) }
+                _state.update {
+                    val updatedState = it.copy(newsTopic = event.newsTopic)
+                    updatedState.copy(channelName = createChannelName(
+                        ttsEngine = updatedState.ttsEngine,
+                        personality = updatedState.personality,
+                        newsTopic = updatedState.newsTopic
+                    ))
+                }
             }
             is BroadcastCreateEvent.OnTrackListChange -> {
                 _state.update { it.copy(trackList = event.trackList) }
@@ -53,6 +78,13 @@ class BroadcastCreateViewModel @Inject constructor(
                 createBroadcast()
             }
         }
+    }
+
+    private fun createChannelName(ttsEngine: String, personality: String, newsTopic: String): String {
+        val ttsEngineName = BroadcastConstants.TTS_ENGINE_OPTIONS[ttsEngine] ?: ttsEngine
+        val personalityName = BroadcastConstants.PERSONALITY_OPTIONS[personality] ?: personality
+        val newsTopicName = BroadcastConstants.NEWS_TOPIC_OPTIONS[newsTopic] ?: newsTopic
+        return "${ttsEngineName}의 $personalityName $newsTopicName"
     }
 
     private fun createBroadcast() {

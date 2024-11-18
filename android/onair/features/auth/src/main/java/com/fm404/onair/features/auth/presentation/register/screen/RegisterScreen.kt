@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -143,6 +145,16 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth(0.8f),
             filteringType = FilteringType.DEFAULT
         )
+
+        if (state.isPhoneVerified) {
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = "인증되었습니다.",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                color = OnairHighlight
+            )
+        }
 
         // SIM에서 전화번호 retrieve 성공시 표시
         if (!state.isPhoneVerified) {
