@@ -20,12 +20,14 @@ import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.fm404.onair.core.contract.auth.AuthNavigationContract
+import com.fm404.onair.core.designsystem.theme.*
 import com.fm404.onair.features.auth.presentation.register.RegisterViewModel
 import com.fm404.onair.features.auth.presentation.register.state.RegisterEvent
 
 private const val TAG = "RegisterScreen"
 private const val REQUEST_PHONE_STATE_PERMISSION = 100
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
@@ -53,18 +55,16 @@ fun RegisterScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        IconButton(
-            onClick =  {
-                navController.popBackStack()
-                Unit
-            }
-        ) {
-            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
-        }
-
-        Text(
-            text = "회원가입",
-            style = MaterialTheme.typography.headlineMedium
+        TopAppBar(
+            title = { Text("회원가입") },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = OnairBackground
+            )
         )
 
         Spacer(modifier = Modifier.height(32.dp))
