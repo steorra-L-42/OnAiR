@@ -110,15 +110,11 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateProfileImage(imageFile: File): Result<UpdateProfileResponse> = runCatching {
-        // Create RequestBody from file
         val requestBody = create(
             "image/*".toMediaTypeOrNull(),
             imageFile
         )
-
-        // Create MultipartBody.Part
-        val part = MultipartBody.Part.createFormData("file", imageFile.name, requestBody)
-
+        val part = MultipartBody.Part.createFormData("upload", imageFile.name, requestBody)
         userApi.updateProfileImage(part).toDomain()
     }
 
