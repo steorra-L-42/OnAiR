@@ -27,8 +27,8 @@ fun ChannelItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             NetworkImage(
-                imageUrl = channelList.profilePath,
-                contentDescription = "Profile image",
+                imageUrl = channelList.ttsEngine,
+                contentDescription = "썸네일",
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
@@ -38,7 +38,7 @@ fun ChannelItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = channelList.userNickname,
+                    text = channelList.channelName,
                     style = MaterialTheme.typography.titleMedium
                 )
 

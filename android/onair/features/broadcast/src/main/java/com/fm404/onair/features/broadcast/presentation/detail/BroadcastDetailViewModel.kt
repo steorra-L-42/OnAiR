@@ -127,7 +127,6 @@ class BroadcastDetailViewModel @Inject constructor(
                         val artist = headers["music-artist"]
                         val coverUrl = headers["music-cover"]
 
-                        // Update state with dynamic content info
                         _state.update { currentState ->
                             currentState.copy(
                                 contentType = when (contentType) {
@@ -208,7 +207,8 @@ class BroadcastDetailViewModel @Inject constructor(
     private fun initializePlayer() {
         player = ExoPlayer.Builder(getApplication()).build().apply {
 //            val mediaItem = MediaItem.fromUri("http://wonyoung.on-air.me:8000/channel/channel_1/index.m3u8")
-            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+//            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/${state.value.broadcastId}/index.m3u8")
             val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
                 .createMediaSource(mediaItem)
             setMediaSource(mediaSource)

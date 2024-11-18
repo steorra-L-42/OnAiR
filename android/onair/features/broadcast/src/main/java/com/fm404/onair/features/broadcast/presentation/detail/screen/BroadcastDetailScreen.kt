@@ -111,7 +111,7 @@ fun BroadcastDetailScreen(
             ) {
                 Image(
                     painter = rememberImagePainter(
-                        data = state.coverImageUrl ?: com.fm404.onair.core.common.R.drawable.sena
+                        data = com.fm404.onair.core.common.R.drawable.sena // DJ프사 해야됨
                     ),
                     contentDescription = "DJ 프사",
                     modifier = Modifier
@@ -143,7 +143,8 @@ fun BroadcastDetailScreen(
 
             IconButton(
                 onClick = { onStoryClick(broadcastId) },
-                modifier = Modifier.weight(1.3f, fill = false)
+                modifier = Modifier
+                    .weight(1.3f, fill = false)
                     .padding(end = 2.dp)
             ) {
                 Icon(
@@ -189,17 +190,24 @@ fun BroadcastDetailScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
+//        Log.d(TAG, "BroadcastDetailScreen: ${state.contentType} 타입")
         Text(
-            text = if (state.contentType == "음악") {"APT."}else{"세나의 K-POP 라디오"}
-
-            ,
+            text = if (state.contentType == "음악" && !state.musicTitle.isNullOrEmpty()) {
+                state.musicTitle ?: "세나의 K-POP 라디오"
+            } else {
+                "세나의 K-POP 라디오"
+            },
             fontFamily = pMedium,
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = if (state.contentType == "음악") {"로제 (ROSÉ), Bruno Mars"}else{"#날씨 #뉴스 #연예"},
+            text = if (state.contentType == "음악" && !state.musicArtist.isNullOrEmpty()) {
+                state.musicArtist ?: "#날씨 #뉴스 #연예"
+            } else {
+                "#날씨 #뉴스 #연예"
+            },
             fontFamily = pMedium,
             fontSize = 16.sp,
             color = Color.LightGray
