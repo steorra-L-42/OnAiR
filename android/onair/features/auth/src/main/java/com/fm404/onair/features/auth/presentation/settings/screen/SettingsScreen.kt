@@ -49,12 +49,12 @@ fun SettingsScreen(
     val context = LocalContext.current
 
     // 프로필 이미지 변경은 아직 지원하지 않음ㅅ
-//    // Image picker launcher
-//    val launcher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.GetContent()
-//    ) { uri: Uri? ->
-//        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
-//    }
+    // Image picker launcher
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
+    }
 
     // Profile image view dialog
     if (state.showImageDialog && state.userInfo?.profilePath != null) {

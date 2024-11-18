@@ -53,7 +53,7 @@ interface UserApi {
     suspend fun updateNickname(@Body request: UpdateNicknameRequestDto)
 
     @Multipart
-    @PATCH("api/v1/user/profile-image")
+    @PATCH("api/v1/user/profile")
     suspend fun updateProfileImage(@Part file: MultipartBody.Part): Response<Unit>
 
     @POST("api/v1/user/reissue")
