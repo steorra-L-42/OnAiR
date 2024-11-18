@@ -35,7 +35,7 @@ class NewsService:
 
             chat_result = chat(news['title'], news['summary'], value['channel_info']['personality'], value['channel_info']['tts_engine'])
 
-            volume = 100
+            volume = 200
             speed_x = 1.0
             tempo = 1.0
             pitch = 0

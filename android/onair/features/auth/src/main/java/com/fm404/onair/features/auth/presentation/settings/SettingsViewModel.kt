@@ -92,19 +92,24 @@ class SettingsViewModel @Inject constructor(
             setState { copy(isLoading = true, error = null) }
 
             try {
+                // 토큰 제거 시도
                 userRepository.logout()
                     .onSuccess {
-                        Log.d("Settings", "로그아웃 성공, 로그인 화면으로 이동 시도")
-                        authNavigationContract.navigateToLogin()
-                        Log.d("Settings", "로그인 화면 이동 완료")
+                        Log.d("Settings", "로그아웃 성공")
                     }
                     .onFailure { exception ->
-                        Log.e("Settings", "로그아웃 실패", exception)
-                        handleError(exception)
+                        // 실패해도 무시
+                        Log.d("Settings", "로그아웃 실패: ${exception.message}")
                     }
+
+                // 결과와 상관없이 로그인 화면으로 이동
+                Log.d("Settings", "로그인 화면으로 이동")
+                authNavigationContract.navigateToLogin()
+
             } catch (e: Exception) {
+                // 예상치 못한 에러도 무시하고 로그인 화면으로
                 Log.e("Settings", "예상치 못한 오류", e)
-                handleError(e)
+                authNavigationContract.navigateToLogin()
             }
         }
     }

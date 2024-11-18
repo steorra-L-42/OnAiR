@@ -41,7 +41,7 @@ def test_story():
             "story_music_cover_url" : "http://example.com/cover1.jpg"
         },
         "channel_info" : {
-            "tts_engine": "세나",
+            "tts_engine": "TYPECAST_SENA",
             "personality": "tough"
         }
     }
@@ -56,7 +56,7 @@ def test_news():
     contents_request = {
         "channel_info": {
             "is_default": "true",
-            "tts_engine": "세나",
+            "tts_engine": "TYPECAST_SENA",
             "personality": "TOUGH",
             "news_topic" : "ECONOMY",
         },
@@ -72,7 +72,7 @@ def test_weather():
     contents_request = {
         "channel_info": {
             "is_default": "true",
-            "tts_engine": "은빈",
+            "tts_engine": "TYPECAST_EUNBIN",
             "personality": "BAD",
             "news_topic" : "ECONOMY",
         },

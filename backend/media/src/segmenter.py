@@ -7,7 +7,7 @@ from pathlib import Path
 from logger import log
 from file_util import validate_file
 from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, \
-  SEGMENT_UPDATE_SIZE, MEDIA_FILE_PATH, MEDIA_MUSIC_TITLE
+  SEGMENT_UPDATE_SIZE, MEDIA_FILE_PATH, MEDIA_MUSIC_TITLE, STREAMING_CHANNELS
 import Stream
 
 
@@ -42,7 +42,13 @@ def generate_segment(hls_path, file_info):
   ffmpeg_command = [
     'ffmpeg',
     '-loglevel', 'verbose',
+
+    '-i', f"{STREAMING_CHANNELS}/empty.mp3",
     '-i', file_info.get(MEDIA_FILE_PATH),
+    '-i', f"{STREAMING_CHANNELS}/empty.mp3",
+    '-filter_complex', '[0:a][1:a][2:a]concat=n=3:v=0:a=1[aout]',
+    '-map', '[aout]',
+
     '-c:a', 'aac',
     '-b:a', '128k',
 

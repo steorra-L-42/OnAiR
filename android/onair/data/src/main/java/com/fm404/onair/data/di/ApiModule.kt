@@ -1,6 +1,5 @@
 package com.fm404.onair.data.di
 
-import com.fm404.onair.core.network.annotation.PublicApi
 import com.fm404.onair.data.remote.api.auth.UserApi
 import com.fm404.onair.data.remote.api.broadcast.BroadcastApi
 import com.fm404.onair.data.remote.api.story.StoryApi
@@ -32,5 +31,4 @@ object ApiModule {
     fun provideStoryApi(retrofit: Retrofit): StoryApi {
         return retrofit.create(StoryApi::class.java)
     }
-
 }
