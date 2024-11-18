@@ -113,32 +113,50 @@ class BroadcastDetailViewModel @Inject constructor(
 //                )
 //            }
 //        }
-        customHttpDataSourceFactory.getHeaderStateFlow()
-            .onEach { headers ->
-                val contentType = headers["onair-content-type"] ?: "story"
-                val title = headers["music-title"]
-                val artist = headers["music-artist"]
-                val coverUrl = headers["music-cover"]
+        viewModelScope.launch {
+            try {
+                customHttpDataSourceFactory.getHeaderStateFlow()
+                    .onEach { headers ->
+                        val contentType = headers["onair-content-type"] ?: "story"
+                        val title = headers["music-title"]
+                        val artist = headers["music-artist"]
+                        val coverUrl = headers["music-cover"]
 
-                // Update state with dynamic content info
-                _state.update { currentState ->
-                    currentState.copy(
-                        contentType = when (contentType) {
-                            "news" -> "뉴스"
-                            "story" -> "사연"
-                            "weather" -> "날씨"
-                            "music" -> {
-                                if (!title.isNullOrEmpty() && !artist.isNullOrEmpty()) {
-                                    "$artist - $title"
-                                } else "음악"
-                            }
-                            else -> "사연"
-                        },
-                        coverImageUrl = coverUrl
-                    )
-                }
+                        // Update state with dynamic content info
+                        _state.update { currentState ->
+                            currentState.copy(
+                                contentType = when (contentType) {
+                                    "news" -> "뉴스"
+                                    "story" -> "사연"
+                                    "weather" -> "날씨"
+                                    "music" -> {
+                                        if (!title.isNullOrEmpty() && !artist.isNullOrEmpty()) {
+                                            "$artist - $title"
+                                        } else "음악"
+                                    }
+                                    else -> "사연"
+                                },
+                                coverImageUrl = coverUrl
+                            )
+                        }
+                    }
+                    .catch { e ->
+                        // 스트림 에러 발생 시
+                        _state.update { it.copy(
+                            playerError = true,
+                            error = "방송이 종료되었습니다"
+                        )}
+                        stopStreaming()
+                    }
+                    .collect()
+            } catch (e: Exception) {
+                _state.update { it.copy(
+                    playerError = true,
+                    error = "방송 연결에 실패했습니다"
+                )}
+                stopStreaming()
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     fun onEvent(event: BroadcastDetailEvent) {
