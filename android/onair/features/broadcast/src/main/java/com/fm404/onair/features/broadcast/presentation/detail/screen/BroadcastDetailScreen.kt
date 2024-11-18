@@ -43,12 +43,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
 import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
 import com.fm404.onair.core.designsystem.theme.OnairBackground
 import com.fm404.onair.core.designsystem.theme.OnairHighlight
 import com.fm404.onair.core.designsystem.theme.pExtraBold
 import com.fm404.onair.core.designsystem.theme.pMedium
+import com.fm404.onair.core.designsystem.theme.pSemiBold
 import com.fm404.onair.features.broadcast.R
 import com.fm404.onair.features.broadcast.presentation.detail.BroadcastDetailViewModel
 import com.fm404.onair.features.broadcast.presentation.detail.state.BroadcastDetailEvent
@@ -125,13 +128,27 @@ fun BroadcastDetailScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "세나의 K-POP 라디오",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 0.dp)
-                    )
+                    Log.d(TAG, "BroadcastDetailScreen: 야 이거는 뭐냐면 ${state.title}")
+                    when {
+                        !state.title.isNullOrEmpty() -> state.title
+                        else -> "세나의 K-POP 라디오"
+                    }?.let {
+                        Text(
+                            text = it,
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 0.dp)
+                        )
+                    }
+
+//                    Text(
+//                        text = "세나의 K-POP 라디오",
+//                        color = Color.White,
+//                        fontSize = 16.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        modifier = Modifier.padding(bottom = 0.dp)
+//                    )
                     Text(
                         text = "#날씨 #뉴스 #연예",
                         color = Color.Gray,
@@ -178,10 +195,23 @@ fun BroadcastDetailScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Image(
-            painter = rememberImagePainter(
-                data = state.coverImageUrl ?: R.drawable.wy1
-            ),
+//        Image(
+//            painter = rememberImagePainter(
+//                data = state.coverImageUrl ?: R.drawable.wy1
+//            ),
+//            contentDescription = "Channel Cover",
+//            modifier = Modifier
+//                .size(300.dp)
+//                .clip(RoundedCornerShape(16.dp))
+//        )
+
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(state.coverImageUrl)
+                .crossfade(true)
+                .placeholder(R.drawable.wy1)
+                .error(R.drawable.wy1)
+                .build(),
             contentDescription = "Channel Cover",
             modifier = Modifier
                 .size(300.dp)
@@ -191,16 +221,18 @@ fun BroadcastDetailScreen(
         Spacer(modifier = Modifier.height(30.dp))
 
 //        Log.d(TAG, "BroadcastDetailScreen: ${state.contentType} 타입")
-        Text(
-            text = if (state.contentType == "음악" && !state.musicTitle.isNullOrEmpty()) {
-                state.musicTitle ?: "세나의 K-POP 라디오"
-            } else {
-                "세나의 K-POP 라디오"
-            },
-            fontFamily = pMedium,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
-        )
+        when {
+            !state.title.isNullOrEmpty() -> state.title
+            state.contentType == "음악" && !state.musicTitle.isNullOrEmpty() -> state.musicTitle
+            else -> "세나의 K-POP 라디오"
+        }?.let {
+            Text(
+                text = it,
+                fontFamily = pSemiBold,
+                fontSize = 30.sp
+            )
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = if (state.contentType == "음악" && !state.musicArtist.isNullOrEmpty()) {
