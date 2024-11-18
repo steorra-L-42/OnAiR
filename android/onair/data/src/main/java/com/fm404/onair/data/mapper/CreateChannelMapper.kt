@@ -7,11 +7,11 @@ import com.fm404.onair.domain.model.broadcast.CreateChannelResult
 
 fun CreateChannelResponse.toCreateChannelResult() = CreateChannelResult(
     channelUuid = channelUuid,
-    channelName = channelName,
+    channelName = channelName ?: "기본 채널명",
     start = start,
     end = end,
-    isDefault = isDefault,
-    ttsEngine = ttsEngine
+    isDefault = isDefault ?: false,
+    ttsEngine = ttsEngine ?: "sena"
 )
 
 fun PlayListDto.toCreateChannelPlayList() = CreateChannelPlayList(

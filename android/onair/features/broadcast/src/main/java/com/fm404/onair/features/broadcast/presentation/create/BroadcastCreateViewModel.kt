@@ -1,5 +1,6 @@
 package com.fm404.onair.features.broadcast.presentation.create
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fm404.onair.core.common.util.BroadcastConstants
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "BroadcastCreateViewModel"
 @HiltViewModel
 class BroadcastCreateViewModel @Inject constructor(
     private val createChannelUseCase: CreateChannelUseCase,
@@ -90,8 +92,8 @@ class BroadcastCreateViewModel @Inject constructor(
     private fun createBroadcast() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-
             val currentState = state.value
+            Log.d(TAG, "createBroadcast: 채널 생성한다! channelName: ${currentState.channelName}")
             createChannelUseCase(
                 ttsEngine = currentState.ttsEngine,
                 personality = currentState.personality,
@@ -100,8 +102,13 @@ class BroadcastCreateViewModel @Inject constructor(
                 channelName = currentState.channelName,
                 trackList = currentState.trackList
             ).onSuccess { createChannelResult ->
-                _state.update { it.copy(isLoading = false) }
-                broadcastNavigationContract.navigateToBroadcastDetail(createChannelResult.channelUuid)
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                broadcastNavigationContract.navigateToBroadcastList()
             }.onFailure { exception ->
                 _state.update {
                     it.copy(
@@ -112,6 +119,7 @@ class BroadcastCreateViewModel @Inject constructor(
             }
         }
     }
+
 
     fun onErrorDismiss() {
         _state.update { it.copy(error = null) }
