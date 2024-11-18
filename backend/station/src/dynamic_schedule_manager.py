@@ -1,11 +1,12 @@
 import asyncio
+import json
 import logging
 from datetime import datetime, timedelta
 from threading import Thread, Event, current_thread
 
 import schedule
 
-from instance import channel_manager
+from instance import channel_manager, producer
 
 
 class DynamicScheduleManager:
@@ -144,15 +145,42 @@ class DynamicScheduleManager:
         await asyncio.sleep(duration)
 
     def process_first_music(self, playlist):
+        # 현재 재생할 음악 가져오기
         first_music = playlist[self.playlist_index][0]
         self.playlist_index = (self.playlist_index + 1) % len(playlist)
         self.buffering_time = first_music.get("length")
-        self.dj.produce_contents([{
+
+        # 시작 파일 정보 먼저 생성
+        medias_path = "../medias"
+        start_filepath = medias_path + "/" + "start.mp3"
+        file_info_list = [{
+            "file_path": start_filepath.lstrip(".."),
+            "type": "start"
+        }]
+
+        # 음악 파일 정보 추가
+        file_info_list.append({
             "file_path": first_music.get("file_path"),
             "type": "music",
             "music_title": first_music.get("music_title"),
             "music_artist": first_music.get("music_artist"),
-            "music_cover_url": first_music.get("music_cover_url")}])
+            "music_cover_url": first_music.get("music_cover_url")
+        })
+
+        # JSON 데이터 생성
+        value = json.dumps({
+            "file_info": file_info_list,
+            "is_start": True,
+            "channel_name": self.channel.channel_name,
+            "fcm_token": self.channel.fcm_token
+        }, ensure_ascii=False)
+
+        # 메시지 전송
+        producer.send_message(
+            "media_topic",
+            self.channel.channel_id.encode("utf-8"),
+            value.encode("utf-8")
+        )
 
     def stop(self):
         """스케줄러 종료 및 리소스 정리"""
