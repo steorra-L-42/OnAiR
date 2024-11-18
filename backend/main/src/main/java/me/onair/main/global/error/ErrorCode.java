@@ -39,6 +39,12 @@ public enum ErrorCode {
     STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "Story Not Found", "F001"),
     STORY_REPLY_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "Story Reply Already Exist", "F002"),
 
+    // S3
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image", "G001"),
+    INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "Inavlid File Format", "G002"),
+    IMAGE_ARRAY_NULL(HttpStatus.BAD_REQUEST, "Image arary is null", "G003"),
+    MAX_UPLOAD_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "Max Upload Size Exceeded", "G004"),
+
     //기본 에러
     CUSTOM_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Custom Exception", "Z001");
 
