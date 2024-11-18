@@ -44,6 +44,7 @@ public enum ErrorCode {
     INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "Inavlid File Format", "G002"),
     IMAGE_ARRAY_NULL(HttpStatus.BAD_REQUEST, "Image arary is null", "G003"),
     MAX_UPLOAD_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "Max Upload Size Exceeded", "G004"),
+    MULTIPARTFILE_IS_NULL(HttpStatus.BAD_REQUEST, "Multipartfile is null", "G005"),
 
     //기본 에러
     CUSTOM_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Custom Exception", "Z001");
