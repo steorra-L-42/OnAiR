@@ -43,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
 import com.fm404.onair.core.designsystem.component.audiovisualizer.AudioVisualizerScreen
 import com.fm404.onair.core.designsystem.theme.OnairBackground
+import com.fm404.onair.core.designsystem.theme.OnairHighlight
 import com.fm404.onair.core.designsystem.theme.pExtraBold
 import com.fm404.onair.core.designsystem.theme.pMedium
 import com.fm404.onair.features.broadcast.R
@@ -85,7 +86,7 @@ fun BroadcastDetailScreen(
             Row(
                 modifier = Modifier
                     .weight(6f)
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = 10.dp)
                     .background(OnairBackground),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -104,11 +105,13 @@ fun BroadcastDetailScreen(
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.Center
                 ) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "세나의 K-POP 라디오",
                         color = Color.White,
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 0.dp)
                     )
                     Text(
                         text = "#날씨 #뉴스 #연예",
@@ -121,9 +124,15 @@ fun BroadcastDetailScreen(
 
             IconButton(
                 onClick = { onStoryClick(broadcastId) },
-                modifier = Modifier.weight(1f, fill = false)
+                modifier = Modifier.weight(1.3f, fill = false)
+                    .padding(end = 2.dp)
             ) {
-                Icon(imageVector = Icons.Filled.Email, contentDescription = "Message")
+                Icon(
+                    painter = painterResource(id = R.drawable.episode),
+                    contentDescription = "사연신청버튼",
+                    modifier = Modifier
+                        .size(32.dp)
+                )
             }
         }
 
@@ -222,6 +231,7 @@ fun BroadcastDetailScreen(
                 modifier = Modifier
                     .fillMaxSize(),
                 tint = Color.White
+//                tint = OnairHighlight
             )
         }
 
