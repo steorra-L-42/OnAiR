@@ -8,6 +8,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.fm404.onair.core.designsystem.theme.*
 import com.fm404.onair.features.auth.presentation.login.LoginViewModel
 import com.fm404.onair.features.auth.presentation.login.state.LoginState
 import com.fm404.onair.features.auth.presentation.login.state.LoginEvent
@@ -53,6 +54,13 @@ private fun LoginContent(
             onValueChange = { onEvent(LoginEvent.UsernameChanged(it)) },
             label = { Text("ID") },
             modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = OnSurface,
+                unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
+                focusedLabelColor = OnSurface,
+                unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
+                cursorColor = OnSurface
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -62,19 +70,30 @@ private fun LoginContent(
             onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = OnSurface,
+                unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
+                focusedLabelColor = OnSurface,
+                unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
+                cursorColor = OnSurface
+            )
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = { onEvent(LoginEvent.LoginClicked) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = OnBackground,
+                contentColor = OnSecondary
+            )
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = OnSecondary
                 )
             } else {
                 Text("Login")
@@ -88,7 +107,10 @@ private fun LoginContent(
             onClick = { onEvent(LoginEvent.RegisterClicked) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("아직 계정이 없으신가요? 회원가입")
+            Text(
+                "아직 계정이 없으신가요? 회원가입",
+                color = OnPrimary
+            )
         }
 
         if (state.error != null) {
