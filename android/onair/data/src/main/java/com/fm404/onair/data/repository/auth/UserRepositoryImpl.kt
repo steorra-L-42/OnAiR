@@ -64,7 +64,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun requestVerificationCode(phoneNumber: String): Result<Unit> = runCatching {
-//        userApi.requestVerificationCode(PhoneVerificationRequestDto(phoneNumber = phoneNumber))
+        userApi.requestVerificationCode(PhoneVerificationRequestDto(phoneNumber = phoneNumber))
     }
 
     override suspend fun verifyPhoneNumber(
