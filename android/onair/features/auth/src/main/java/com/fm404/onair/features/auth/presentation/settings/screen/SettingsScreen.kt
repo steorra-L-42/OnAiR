@@ -2,6 +2,7 @@ package com.fm404.onair.features.auth.presentation.settings.screen
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -30,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.fm404.onair.core.contract.auth.NavControllerHolder
 import com.fm404.onair.core.designsystem.component.image.NetworkImage
+import com.fm404.onair.core.designsystem.theme.*
 import com.fm404.onair.features.auth.presentation.settings.SettingsViewModel
 import com.fm404.onair.features.auth.presentation.settings.state.SettingsEvent
 
@@ -39,14 +41,27 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Error Toast 표시
+    LaunchedEffect(state.error) {
+        state.error?.let { error ->
+            Toast.makeText(
+                context,
+                error.message,
+                Toast.LENGTH_SHORT
+            ).show()
+            // Toast를 보여준 후 에러 초기화
+            viewModel.onEvent(SettingsEvent.ClearError)
+        }
+    }
+
     // navController 설정 추가
     LaunchedEffect(Unit) {
         Log.d("Settings", "Setting NavController in SettingsScreen")
         (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(navController)
     }
-
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     // Image picker launcher
     val launcher = rememberLauncherForActivityResult(
@@ -99,19 +114,32 @@ fun SettingsScreen(
                     onValueChange = { viewModel.onEvent(SettingsEvent.OnNicknameChange(it)) },
                     label = { Text("닉네임") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = OnSurface,
+                        unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
+                        focusedLabelColor = OnSurface,
+                        unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
+                        cursorColor = OnSurface
+                    )
                 )
             },
             confirmButton = {
                 TextButton(
-                    onClick = { viewModel.onEvent(SettingsEvent.OnUpdateNickname) }
+                    onClick = { viewModel.onEvent(SettingsEvent.OnUpdateNickname) },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Secondary
+                    )
                 ) {
                     Text("변경")
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) }
+                    onClick = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = SecondaryVariant
+                    )
                 ) {
                     Text("취소")
                 }
