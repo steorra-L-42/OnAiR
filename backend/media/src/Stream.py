@@ -28,6 +28,7 @@ class Stream:
         self.name = name
         self.queue: SegmentQueue = SegmentQueue(0)
         self.metadata: IntervalTree = IntervalTree()
+        self.is_start = False
 
         # 스레딩, 동시성 제어 관련 변수
         self.lock = threading.Lock()
@@ -53,6 +54,7 @@ class Stream:
             stream_manager.remove_stream(self.name)
             return
         notify_stream_start(fcm['token'], fcm['data'])
+        self.is_start = True
 
         while not self.stop_event.is_set():
             try:
@@ -88,16 +90,15 @@ class Stream:
     ######################  음성 추가  ######################
     def add_audio(self, file_info_list):
         for attempt in range(5):
-            if hasattr(self, 'future') and self.future is not None:
-                log.info(f"[{self.name}] 기존 작업이 완료될 때까지 대기 중...")
-                self.future.result()  # future가 끝날 때까지 기다림
+            log.info(f"[{self.name}] 채널 시작 작업이 완료될 때까지 대기 중...")
+            if self.is_start:
                 log.info(f"[{self.name}] 기존 작업 완료.")
                 break
-            else:
-                log.warning(f"[{self.name}] future가 없습니다. 재시도 {attempt + 1}/{5}...")
+            else :
+                log.warning(f"[{self.name}] 채널이 시작되지 않음. 재시도 {attempt + 1}/{5}...")
                 time.sleep(1)
-        else:
-            log.error(f"[{self.name}] future를 찾지 못했습니다. 작업을 종료합니다.")
+        if not self.is_start:
+            log.error(f"[{self.name}] 채널이 시작되지 않음. 에러")
             return
 
         with self.lock:
