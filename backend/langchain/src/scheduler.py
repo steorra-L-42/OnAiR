@@ -3,17 +3,18 @@ import time
 import sqlite3
 import os
 import logging
-
+import pytz
+import custom_timezone
+from datetime import datetime, timedelta
 
 class Scheduler:
-
-    MORNING = "06:00"
-    EVENING = "18:00"
-    MIDNIGHT = "00:00"
 
     def __init__(self, weather_crawler, news_crawler):
         self.weather_crawler = weather_crawler
         self.news_crawler = news_crawler
+        self.MORNING = custom_timezone.get_times()["MORNING"]
+        self.EVENING = custom_timezone.get_times()["EVENING"]
+        self.MIDNIGHT = custom_timezone.get_times()["MIDNIGHT"]
 
         # 부팅 시 크롤링
         if self.need_to_crawl_when_start():
@@ -46,17 +47,21 @@ class Scheduler:
             weather_db_path = os.path.join(base_dir, 'db/weather.db')
             news_db_path = os.path.join(base_dir, 'db/news.db')
 
+            seoul_tz = pytz.timezone('Asia/Seoul')
+            TWELVE_HOURS_AGO = (datetime.now(seoul_tz) - timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')
+
+
             conn = sqlite3.connect(news_db_path)
             c = conn.cursor()
-            news_count = c.execute("SELECT COUNT(*) FROM news where created_at >= datetime('now', '-12 hours')").fetchone()[0]
+            news_count = c.execute("SELECT COUNT(*) FROM news where created_at >= datetime(?)", (TWELVE_HOURS_AGO,)).fetchone()[0]
             conn.close()
 
             conn = sqlite3.connect(weather_db_path)
             c = conn.cursor()
-            weather_count = c.execute("SELECT COUNT(*) FROM weather where created_at >= datetime('now', '-12 hours')").fetchone()[0]
+            weather_count = c.execute("SELECT COUNT(*) FROM weather where created_at >= datetime(?)", (TWELVE_HOURS_AGO,)).fetchone()[0]
             conn.close()
     
-            news_ok = news_count >= 30
+            news_ok = news_count >= 30 # 6개 topic * 5개 news
             weather_ok = weather_count >= 1
 
             return not (news_ok and weather_ok)

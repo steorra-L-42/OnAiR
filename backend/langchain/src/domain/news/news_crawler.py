@@ -2,6 +2,7 @@ import logging
 import requests
 import bs4
 import os
+import sys
 import sqlite3
 from enum import Enum, auto
 from langchain_community.document_loaders import WebBaseLoader
@@ -10,6 +11,8 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
+import pytz
+from datetime import datetime, timedelta
 
 class NewsTopic(Enum):
     POLITICS = (1, "https://news.naver.com/section/100")
@@ -48,7 +51,9 @@ class NewsCrawler:
             conn = sqlite3.connect(self.db_path)
             c = conn.cursor()
 
-            c.execute("DELETE FROM news WHERE created_at < datetime('now', '-1 day')")
+            seoul_tz = pytz.timezone('Asia/Seoul')
+            SEOUL_YESTERDAY = (datetime.now(seoul_tz) - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+            c.execute("DELETE FROM news WHERE created_at < ?", (SEOUL_YESTERDAY,))
 
             conn.commit()
             conn.close()
@@ -157,14 +162,16 @@ class NewsCrawler:
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             title TEXT,
                             summary TEXT,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            created_at TIMESTAMP,
                             topic_id INTEGER
                         )''')
 
             # 데이터 삽입
             title = json_data['title']
             summary = json_data['summary']
-            c.execute("INSERT INTO news (title, summary, topic_id) VALUES (?, ?, ?)", (title, summary, topic_id))
+            seoul_tz = pytz.timezone('Asia/Seoul')
+            SEOUL_NOW = (datetime.now(seoul_tz)).strftime('%Y-%m-%d %H:%M:%S')
+            c.execute("INSERT INTO news (title, summary, created_at, topic_id) VALUES (?, ?, ?, ?)", (title, summary, SEOUL_NOW, topic_id))
 
             # 변경사항 저장
             conn.commit()
