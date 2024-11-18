@@ -41,6 +41,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val FCM_TYPE_STORY_CHOSEN = "story_chosen"
+private const val FCM_TYPE_CHANNEL_CREATED = "channel_created"
 
 private const val TAG = "FCMService"
 
@@ -48,7 +49,7 @@ private const val TAG = "FCMService"
 @AndroidEntryPoint
 class FCMService : FirebaseMessagingService(), FCMServiceContract {
     @Inject
-    lateinit var userRepository: UserRepository
+//    lateinit var userRepository: UserRepository
 
 
     private lateinit var mNotificationManager: NotificationManagerCompat
@@ -93,7 +94,7 @@ class FCMService : FirebaseMessagingService(), FCMServiceContract {
             if (task.isSuccessful) {
                 val token = task.result
                 Log.d(TAG, "FCM Token: $token")
-                sendTokenToServer(token) // 서버에 전송
+//                sendTokenToServer(token) // 서버에 전송
             } else {
                 Log.w(TAG, "Fetching FCM token failed", task.exception)
             }
@@ -103,87 +104,96 @@ class FCMService : FirebaseMessagingService(), FCMServiceContract {
 
     }
 
-    fun processMessage(remoteMessage: RemoteMessage){
-        if (remoteMessage.data.isNotEmpty()) {
-            Log.d(TAG, "페이로드: ${remoteMessage.data}")
-
-//            Log.d(TAG, "processMessage: 안드로이드 오토 화면 켜져있는지 = ${AAFocusManager.isAppInFocus}")
-
-            val responseJsonString = Gson().toJson(remoteMessage.data)
-
-            val fcmData = Gson().fromJson(responseJsonString, FCMData::class.java)
-
-            when (fcmData.type) {
-
-                FCM_TYPE_STORY_CHOSEN -> {
-//                    val intent = Intent("com.fm404.onair.CLOSE_MENU")
-//                    LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
-
-                }
-
-                else -> {
-
-                }
-            }
-
-        }
-    }
-
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        Log.d(TAG, "onMessageReceived: 일단 메세지 왔다")
-        
+        Log.d(TAG, "onMessageReceived: Received message")
+
         if (remoteMessage.data.isNotEmpty()) {
-            processMessage(remoteMessage)
+            processMessage(remoteMessage.data)
         }
+    }
 
-        // Data 메세지일 때
-        remoteMessage.data.let { data ->
-            Log.d("FCM Serv", "Data payload: $data")
+    private fun processMessage(data: Map<String, String>) {
+        Log.d(TAG, "processMessage: Data payload: $data")
 
-            if (data.containsKey("type") && data["type"] == FCM_TYPE_STORY_CHOSEN) {
+        when (data["type"]) {
+            FCM_TYPE_STORY_CHOSEN -> {
+                val storyTitle = data["story_title"] ?: "Unknown Story"
+                val channelName = data["channel_name"] ?: "Unknown Channel"
 
-                val intent = Intent("com.fm404.onair.STORY_CHOSEN")
-
-                val stationId = data["stationId"] ?: -1
-
-                intent.putExtra("station_id", stationId)
-                LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+                sendNotification(
+                    title = "사연이 채택됐어요!",
+                    content = "$channelName 채널에서 $storyTitle 사연이 채택됐어요!"
+                )
             }
+
+            FCM_TYPE_CHANNEL_CREATED -> {
+                val channelName = data["channel_name"] ?: "Unknown Channel"
+
+                sendNotification(
+                    title = "새 채널 생성!",
+                    content = "$channelName 채널이 생성되었어요. 앱에서 확인해보세요!"
+                )
+            }
+
+            else -> Log.d(TAG, "processMessage: Unknown type")
         }
 
-        // Notification 메세지일 때
-        remoteMessage.notification?.let { notification ->
-            // 알림 내용 로그
-            Log.d("FCM Serv", "Notification Title: ${notification.title}")
-            Log.d("FCM Serv", "Notification Body: ${notification.body}")
+    }
 
+    private fun sendNotification(title: String, content: String) {
+        val notificationId = 1001
+        val channelId = "onair_default"
 
-            val intent = Intent("com.fm404.onair.STORY_CHOSEN")
-//            intent.putExtra("station_id", notification.body)
-            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(com.fm404.onair.core.common.R.drawable.ic_onair)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+
+        // 알림 클릭 시 열릴 액티비티 지정
+//        val intent = Intent(this, MainActivity::class.java) // MainActivity 수정 가능
+//        val pendingIntent = PendingIntent.getActivity(
+//            this,
+//            0,
+//            intent,
+//            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//        )
+//        notificationBuilder.setContentIntent(pendingIntent)
+
+        // 알림 표시
+        val notificationManager = NotificationManagerCompat.from(this)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e(TAG, "Permission for notifications not granted.")
+            return
         }
+        notificationManager.notify(notificationId, notificationBuilder.build())
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("Token", "새 토큰: $token")
         // 백엔드 서버에 FCM 토큰 전송
-        sendTokenToServer(token)
+//        sendTokenToServer(token)
     }
 
-    private fun sendTokenToServer(token: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            userRepository.registerFCMToken(FCMTokenRequest(fcmToken = token))
-                .onSuccess {
-                    Log.d(TAG, "FCM 토큰 정상 등록됨")
-                }
-                .onFailure { exception ->
-                    Log.d(TAG, "FCM 토큰 등록 실패: ${exception.message}")
-                }
-        }
-    }
+//    private fun sendTokenToServer(token: String) {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            userRepository.registerFCMToken(FCMTokenRequest(fcmToken = token))
+//                .onSuccess {
+//                    Log.d(TAG, "FCM 토큰 정상 등록됨")
+//                }
+//                .onFailure { exception ->
+//                    Log.d(TAG, "FCM 토큰 등록 실패: ${exception.message}")
+//                }
+//        }
+//    }
 
     fun sendCarNotification(title: String, content: String) {
         // Create a builder for the notification
@@ -198,7 +208,6 @@ class FCMService : FirebaseMessagingService(), FCMServiceContract {
             com.fm404.onair.core.common.R.drawable.ic_onair
         )
 
-        // Add Android Auto car extensions
         val notification = builder
             .extend(
                 CarExtender()
