@@ -7,7 +7,8 @@ from pathlib import Path
 from logger import log
 from file_util import validate_file
 from config import SEGMENT_DURATION, SEGMENT_UPDATE_INTERVAL, \
-  SEGMENT_UPDATE_SIZE, MEDIA_FILE_PATH, MEDIA_MUSIC_TITLE, STREAMING_CHANNELS
+  SEGMENT_UPDATE_SIZE, MEDIA_FILE_PATH, MEDIA_MUSIC_TITLE, STREAMING_CHANNELS, MEDIA_TYPE, MEDIA_MUSIC_ARTIST, \
+  MEDIA_MUSIC_COVER
 import Stream
 
 
@@ -150,6 +151,11 @@ def update_m3u8(stream: Stream, stop_event):
     # 저장할 세그먼트 리스트 조회
     segments = stream.get_queue().get_buffer_list()
     segments.extend(stream.get_queue().dequeue(SEGMENT_UPDATE_SIZE))
+    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_TYPE))
+    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_TITLE))
+    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_ARTIST))
+    log.info(stream.get_metadata_by_index_and_column(segments[0], MEDIA_MUSIC_COVER))
+
     # m3u8 파일 갱신
     first_seg_length = write_m3u8(stream, segments, temp_m3u8_path)
     os.replace(temp_m3u8_path, m3u8_path)
