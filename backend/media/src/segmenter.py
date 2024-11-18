@@ -217,4 +217,4 @@ def get_audio_duration(stream: Stream, segment_name):
     return float(result.stdout.strip())
   except Exception as e:
     log.error(f"파일 길이 가져오기 실패: {e}")
-    return None
+    return float(SEGMENT_DURATION)
