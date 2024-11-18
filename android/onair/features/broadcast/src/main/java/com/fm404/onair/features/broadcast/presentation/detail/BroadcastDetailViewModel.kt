@@ -60,6 +60,7 @@ class BroadcastDetailViewModel @Inject constructor(
                 .onSuccess { channel ->
                     _state.update { currentState ->
                         currentState.copy(
+                            title = channel.channelName,
                             isLoading = false,
                             error = null,
                             userNickname = channel.userNickname,

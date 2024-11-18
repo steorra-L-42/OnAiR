@@ -68,7 +68,7 @@ fun BroadcastCreateScreen(
         onCreateClick = {
             viewModel.onEvent(BroadcastCreateEvent.OnCreateClick) // 기존 로직 호출
             Toast.makeText(context, "채널 생성을 요청했어요.", Toast.LENGTH_SHORT).show() // Toast 메시지 띄우기
-            onBackClick() // onBack 호출
+//            onBackClick() // onBack 호출
         },
         onBackClick = onBackClick,
         onErrorDismiss = { viewModel.onErrorDismiss() }
@@ -122,6 +122,7 @@ private fun BroadcastCreateContent(
 //                }
 //            }
 //        )
+
         Spacer(modifier = Modifier.height(4.dp))
         Row(
             modifier = Modifier

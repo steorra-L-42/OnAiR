@@ -17,9 +17,9 @@ data class PlayListDto(
 
 data class CreateChannelResponse(
     val channelUuid: String,
-    val channelName: String,
+    val channelName: String?,
     val start: String,
     val end: String,
-    val isDefault: Boolean,
-    val ttsEngine: String
+    val isDefault: Boolean?,
+    val ttsEngine: String?
 )
