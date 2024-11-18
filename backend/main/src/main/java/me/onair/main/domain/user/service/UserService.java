@@ -134,6 +134,7 @@ public class UserService {
         request.encodePassword(encodedPassword);
     }
 
+    @Transactional
     public UpdateProfileResponse updateProfile(CustomUserDetails customUserDetails, String url) {
 
         User user = userRepository.findById(customUserDetails.getId())
