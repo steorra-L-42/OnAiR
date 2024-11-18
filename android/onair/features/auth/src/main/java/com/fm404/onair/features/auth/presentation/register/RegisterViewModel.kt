@@ -257,34 +257,34 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-//            userRepository.requestVerificationCode(_state.value.phoneNumber)
-//                .onSuccess {
-//                    _state.value = _state.value.copy(
-//                        isLoading = false,
-//                        isVerificationCodeSent = true,
-//                        remainingTimeSeconds = 180,
-//                        verificationAttempts = 0,
-//                        verificationCode = "",
-//                        error = null
-//                    )
-//                    startVerificationTimer()
-//                }
-//                .onFailure { exception ->
-//                    _state.value = _state.value.copy(
-//                        isLoading = false,
-//                        error = exception.message ?: "인증번호 요청 중 오류가 발생했습니다."
-//                    )
-//                }
+            userRepository.requestVerificationCode(_state.value.phoneNumber)
+                .onSuccess {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        isVerificationCodeSent = true,
+                        remainingTimeSeconds = 180,
+                        verificationAttempts = 0,
+                        verificationCode = "",
+                        error = null
+                    )
+                    startVerificationTimer()
+                }
+                .onFailure { exception ->
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "인증번호 요청 중 오류가 발생했습니다."
+                    )
+                }
 
-            // 테스트를 위해 항상 성공 응답 처리
-            _state.value = _state.value.copy(
-                isLoading = false,
-                isVerificationCodeSent = true,
-                remainingTimeSeconds = 180,
-                verificationAttempts = 0,
-                verificationCode = "",
-                error = null
-            )
+//            // 테스트를 위해 항상 성공 응답 처리
+//            _state.value = _state.value.copy(
+//                isLoading = false,
+//                isVerificationCodeSent = true,
+//                remainingTimeSeconds = 180,
+//                verificationAttempts = 0,
+//                verificationCode = "",
+//                error = null
+//            )
         }
     }
 
@@ -305,33 +305,33 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-//            userRepository.verifyPhoneNumber(
-//                _state.value.phoneNumber,
-//                _state.value.verificationCode
-//            ).onSuccess { isVerified ->
-//                if (isVerified) {
-//                    _state.value = _state.value.copy(
-//                        isLoading = false,
-//                        isPhoneVerified = true,
-//                        error = null
-//                    )
-//                    verificationTimer?.cancel()
-//                } else {
-//                    handleVerificationFailure()
-//                }
-//            }.onFailure { exception ->
-//                _state.value = _state.value.copy(
-//                    isLoading = false,
-//                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
-//                )
-//            }
+            userRepository.verifyPhoneNumber(
+                _state.value.phoneNumber,
+                _state.value.verificationCode
+            ).onSuccess { isVerified ->
+                if (isVerified) {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        isPhoneVerified = true,
+                        error = null
+                    )
+                    verificationTimer?.cancel()
+                } else {
+                    handleVerificationFailure()
+                }
+            }.onFailure { exception ->
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    error = exception.message ?: "인증 확인 중 오류가 발생했습니다."
+                )
+            }
 
-            // 테스트를 위해 항상 성공 처리
-            _state.value = _state.value.copy(
-                isLoading = false,
-                isPhoneVerified = true,
-                error = null
-            )
+//            // 테스트를 위해 항상 성공 처리
+//            _state.value = _state.value.copy(
+//                isLoading = false,
+//                isPhoneVerified = true,
+//                error = null
+//            )
         }
     }
 
