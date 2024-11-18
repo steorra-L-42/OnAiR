@@ -21,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import me.onair.main.domain.channel.dto.CreateNewChannelRequest;
 import me.onair.main.domain.story.entity.Story;
 import me.onair.main.domain.user.entity.User;
@@ -30,6 +31,7 @@ import me.onair.main.domain.user.enums.Role;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "channel")
+@ToString
 public class Channel {
 
     @Id

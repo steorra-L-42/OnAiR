@@ -35,7 +35,7 @@ class NewsService:
 
             chat_result = chat(news['title'], news['summary'], value['channel_info']['personality'], value['channel_info']['tts_engine'])
 
-            volume = 100
+            volume = 200
             speed_x = 1.0
             tempo = 1.0
             pitch = 0
@@ -66,8 +66,8 @@ class NewsService:
 
             c = conn.cursor()
 
-            # rows = c.execute(f"SELECT * FROM news WHERE topic_id = {self.news_topic[topic]}").fetchall()
-            rows = c.execute("SELECT * FROM news WHERE topic_id = (?) LIMIT 5", (self.news_topic[topic],)).fetchall()
+            # rows = c.execute("SELECT * FROM news WHERE topic_id = (?) LIMIT 5", (self.news_topic[topic],)).fetchall()
+            rows = c.execute("SELECT * FROM news WHERE topic_id = (?) LIMIT 5 ORDER BY created_at DESC", (self.news_topic[topic],)).fetchall()
             return rows
 
         except Exception as e:

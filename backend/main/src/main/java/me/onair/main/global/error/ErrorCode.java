@@ -33,10 +33,18 @@ public enum ErrorCode {
     CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "Channel Not Found", "E001"),
     ENDED_CHANNEL(HttpStatus.BAD_REQUEST, "Ended channel", "E002"),
     CHANNEL_MISMATCH(HttpStatus.BAD_REQUEST, "Channel Mismatch", "E003"),
+    CHANNEL_NOT_CREATED(HttpStatus.BAD_REQUEST, "Channel Not Created", "E004"),
 
     // 사연
     STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "Story Not Found", "F001"),
     STORY_REPLY_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "Story Reply Already Exist", "F002"),
+
+    // S3
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image", "G001"),
+    INVALID_FILE_FORMAT(HttpStatus.BAD_REQUEST, "Inavlid File Format", "G002"),
+    IMAGE_ARRAY_NULL(HttpStatus.BAD_REQUEST, "Image arary is null", "G003"),
+    MAX_UPLOAD_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "Max Upload Size Exceeded", "G004"),
+    MULTIPARTFILE_IS_NULL(HttpStatus.BAD_REQUEST, "Multipartfile is null", "G005"),
 
     //기본 에러
     CUSTOM_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Custom Exception", "Z001");
