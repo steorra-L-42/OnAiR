@@ -38,7 +38,11 @@ class BroadcastScreenImpl @Inject constructor() : BroadcastScreen {
                 )
             },
             onBack = {
-                navController.popBackStack()
+                navController.navigate("broadcast_list") {
+                    popUpTo("broadcast") {
+                        inclusive = true
+                    }
+                }
             }
         )
     }

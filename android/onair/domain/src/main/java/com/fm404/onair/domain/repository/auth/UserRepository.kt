@@ -4,6 +4,7 @@ import com.fm404.onair.domain.model.auth.FCMTokenRequest
 import com.fm404.onair.domain.model.auth.LoginRequest
 import com.fm404.onair.domain.model.auth.LoginResult
 import com.fm404.onair.domain.model.auth.RegisterRequest
+import com.fm404.onair.domain.model.auth.UpdateProfileResponse
 import com.fm404.onair.domain.model.auth.UserInfo
 import com.fm404.onair.domain.model.auth.UserRole
 import java.io.File
@@ -18,6 +19,6 @@ interface UserRepository {
     suspend fun logout(): Result<Unit>
     suspend fun getUserInfo(): Result<UserInfo>
     suspend fun updateNickname(nickname: String): Result<Unit>
-    suspend fun updateProfileImage(imageFile: File): Result<Unit>
+    suspend fun updateProfileImage(imageFile: File): Result<UpdateProfileResponse>
     suspend fun registerFCMToken(request: FCMTokenRequest): Result<Unit>
 }
