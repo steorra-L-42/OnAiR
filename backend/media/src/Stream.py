@@ -87,6 +87,11 @@ class Stream:
 
     ######################  음성 추가  ######################
     def add_audio(self, file_info_list):
+        if hasattr(self, 'future') and self.future is not None:
+            log.info(f"[{self.name}] 기존 작업이 완료될 때까지 대기 중...")
+            self.future.result()  # future가 끝날 때까지 기다림
+            log.info(f"[{self.name}] 기존 작업 완료.")
+
         with self.lock:
             log.info(f"[{self.name}] 오디오를 추가합니다")
             start = self.queue.get_next_index()
