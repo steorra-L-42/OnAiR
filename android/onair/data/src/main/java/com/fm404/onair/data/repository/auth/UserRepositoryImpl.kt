@@ -64,7 +64,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun requestVerificationCode(phoneNumber: String): Result<Unit> = runCatching {
-//        userApi.requestVerificationCode(PhoneVerificationRequestDto(phoneNumber = phoneNumber))
+        userApi.requestVerificationCode(PhoneVerificationRequestDto(phoneNumber = phoneNumber))
     }
 
     override suspend fun verifyPhoneNumber(
@@ -80,24 +80,28 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout(): Result<Unit> = runCatching {
-        val response = userApi.logout()
-
-        if (response.isSuccessful) {
+        try {
+            // 1. 먼저 로컬 토큰 삭제
             tokenManager.clearTokens()
-        } else {
-            val errorBody = response.errorBody()?.string()
-            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
 
-            // 토큰 관련 에러(C001~C005)의 경우 토큰 제거
-            if (errorResponse.code.startsWith("C")) {
-                tokenManager.clearTokens()
+            // 2. 서버 로그아웃 시도
+            val response = userApi.logout()
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string()
+                val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+
+                // 토큰 관련 에러가 아닌 경우에만 예외를 던짐
+                if (!errorResponse.code.startsWith("C")) {
+                    throw CustomException(
+                        code = errorResponse.code,
+                        message = errorResponse.message,
+                        httpCode = response.code()
+                    ).toDomainException()
+                }
             }
-
-            throw CustomException(
-                code = errorResponse.code,
-                message = errorResponse.message,
-                httpCode = response.code()
-            ).toDomainException()
+        } catch (e: Exception) {
+            // 네트워크 오류 등이 발생해도 로컬 토큰은 이미 삭제된 상태
+            throw e
         }
     }
 
@@ -109,27 +113,13 @@ class UserRepositoryImpl @Inject constructor(
         userApi.updateNickname(UpdateNicknameRequestDto(nickname = nickname))
     }
 
-    override suspend fun updateProfileImage(imageFile: File): Result<Unit> = runCatching {
-        // Create RequestBody from file
+    override suspend fun updateProfileImage(imageFile: File): Result<UpdateProfileResponse> = runCatching {
         val requestBody = create(
             "image/*".toMediaTypeOrNull(),
             imageFile
         )
-
-        // Create MultipartBody.Part
-        val part = MultipartBody.Part.createFormData("file", imageFile.name, requestBody)
-
-        val response = userApi.updateProfileImage(part)
-
-        if (!response.isSuccessful) {
-            val errorBody = response.errorBody()?.string()
-            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
-            throw CustomException(
-                code = errorResponse.code,
-                message = errorResponse.message,
-                httpCode = response.code()
-            ).toDomainException()
-        }
+        val part = MultipartBody.Part.createFormData("upload", imageFile.name, requestBody)
+        userApi.updateProfileImage(part).toDomain()
     }
 
     override suspend fun registerFCMToken(request: FCMTokenRequest): Result<Unit> = runCatching {

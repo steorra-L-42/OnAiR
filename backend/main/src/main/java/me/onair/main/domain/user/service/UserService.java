@@ -7,6 +7,7 @@ import me.onair.main.domain.user.dto.CustomUserDetails;
 import me.onair.main.domain.user.dto.NicknameChangeRequest;
 import me.onair.main.domain.user.dto.PhoneVerifyRequest;
 import me.onair.main.domain.user.dto.SignupRequest;
+import me.onair.main.domain.user.dto.UpdateProfileResponse;
 import me.onair.main.domain.user.dto.UserInfoResponse;
 import me.onair.main.domain.user.dto.VerificationCodeRequest;
 import me.onair.main.domain.user.entity.User;
@@ -131,5 +132,16 @@ public class UserService {
     private void encodePassword(SignupRequest request) {
         String encodedPassword = bCryptPasswordEncoder.encode(request.getPassword());
         request.encodePassword(encodedPassword);
+    }
+
+    @Transactional
+    public UpdateProfileResponse updateProfile(CustomUserDetails customUserDetails, String url) {
+
+        User user = userRepository.findById(customUserDetails.getId())
+                .orElseThrow(NotExistUserException::new);
+
+        user.updatePicture(url);
+
+        return UpdateProfileResponse.from(user.getNickname(), url);
     }
 }

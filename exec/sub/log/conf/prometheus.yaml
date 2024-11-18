@@ -8,6 +8,7 @@ alerting:
 
 rule_files:
   - /etc/prometheus/alert/memory_alert.yaml
+  - /etc/prometheus/alert/disk_alert.yaml
 
 scrape_configs:
   - job_name: 'spring-actuator'
@@ -27,3 +28,7 @@ scrape_configs:
   - job_name: 'mysql'
     static_configs:
       - targets: ['huchuman.on-air.me:9104']
+
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['huchuman.on-air.me:9113']

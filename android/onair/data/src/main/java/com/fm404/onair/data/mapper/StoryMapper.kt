@@ -14,9 +14,9 @@ fun CreateStoryRequest.toDto(): CreateStoryRequestDto = CreateStoryRequestDto(
 )
 
 fun Music.toDto(): MusicDto = MusicDto(
-    musicTitle = musicTitle,
-    musicArtist = musicArtist,
-    musicCoverUrl = musicCoverUrl
+    musicTitle = title,
+    musicArtist = artist,
+    musicCoverUrl = cover
 )
 
 fun StoryResponseDto.toDomain(): Story = Story(
@@ -28,7 +28,7 @@ fun StoryResponseDto.toDomain(): Story = Story(
 )
 
 fun MusicDto.toDomain(): Music = Music(
-    musicTitle = musicTitle,
-    musicArtist = musicArtist,
-    musicCoverUrl = musicCoverUrl
+    title = musicTitle,
+    artist = musicArtist,
+    cover = musicCoverUrl
 )

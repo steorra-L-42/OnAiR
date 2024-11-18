@@ -7,6 +7,7 @@ import com.fm404.onair.data.remote.dto.auth.PhoneVerifyRequestDto
 import com.fm404.onair.data.remote.dto.auth.PhoneVerifyResponseDto
 import com.fm404.onair.data.remote.dto.auth.SignupRequestDto
 import com.fm404.onair.data.remote.dto.auth.UpdateNicknameRequestDto
+import com.fm404.onair.data.remote.dto.auth.UpdateProfileResponseDto
 import com.fm404.onair.data.remote.dto.auth.UserInfoDto
 import com.fm404.onair.data.remote.dto.auth.UserRoleDto
 import com.fm404.onair.data.remote.dto.auth.ValidUsernameResponse
@@ -53,8 +54,8 @@ interface UserApi {
     suspend fun updateNickname(@Body request: UpdateNicknameRequestDto)
 
     @Multipart
-    @PATCH("api/v1/user/profile-image")
-    suspend fun updateProfileImage(@Part file: MultipartBody.Part): Response<Unit>
+    @PATCH("api/v1/user/profile")
+    suspend fun updateProfileImage(@Part file: MultipartBody.Part): UpdateProfileResponseDto
 
     @POST("api/v1/user/reissue")
     suspend fun reissue(): Response<Unit>

@@ -19,5 +19,9 @@ data class BroadcastDetailState(
     val start: String? = null,
     val end: String? = null,
     val isEnded: Boolean = false,
-    val thumbnail: String? = null
+    val thumbnail: String? = null,
+    val playerError: Boolean = false,
+    val musicArtist: String? = null,
+    val musicTitle: String? = null,
+    val hasContent: Boolean = false
 )

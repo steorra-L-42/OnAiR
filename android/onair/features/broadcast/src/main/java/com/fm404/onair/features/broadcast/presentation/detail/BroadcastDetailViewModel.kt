@@ -113,32 +113,71 @@ class BroadcastDetailViewModel @Inject constructor(
 //                )
 //            }
 //        }
-        customHttpDataSourceFactory.getHeaderStateFlow()
-            .onEach { headers ->
-                val contentType = headers["onair-content-type"] ?: "story"
-                val title = headers["music-title"]
-                val artist = headers["music-artist"]
-                val coverUrl = headers["music-cover"]
+        viewModelScope.launch {
+            try {
+                var lastHeaderTime = System.currentTimeMillis()
 
-                // Update state with dynamic content info
-                _state.update { currentState ->
-                    currentState.copy(
-                        contentType = when (contentType) {
-                            "news" -> "뉴스"
-                            "story" -> "사연"
-                            "weather" -> "날씨"
-                            "music" -> {
-                                if (!title.isNullOrEmpty() && !artist.isNullOrEmpty()) {
-                                    "$artist - $title"
-                                } else "음악"
+                customHttpDataSourceFactory.getHeaderStateFlow()
+                    .onEach { headers ->
+                        // 새로운 헤더를 받을 때마다 시간 업데이트
+                        lastHeaderTime = System.currentTimeMillis()
+
+                        val contentType = headers["onair-content-type"] ?: "story"
+                        val title = headers["music-title"]
+                        val artist = headers["music-artist"]
+                        val coverUrl = headers["music-cover"]
+
+                        _state.update { currentState ->
+                            currentState.copy(
+                                contentType = when (contentType) {
+                                    "news" -> "뉴스"
+                                    "story" -> "사연"
+                                    "weather" -> "날씨"
+                                    "music" -> {
+                                        if (!title.isNullOrEmpty() && !artist.isNullOrEmpty()) {
+                                            "$artist - $title"
+                                        } else "음악"
+                                    }
+                                    else -> "사연"
+                                },
+                                coverImageUrl = coverUrl
+                            )
+                        }
+                    }
+                    .transformLatest { headers ->
+                        // 세그먼트 체크 로직
+                        while(true) {
+                            emit(headers)
+                            kotlinx.coroutines.delay(5000) // 5초마다 체크
+
+                            val currentTime = System.currentTimeMillis()
+                            if (currentTime - lastHeaderTime > 11000) { // 11초 동안 새로운 세그먼트가 없으면
+                                _state.update { it.copy(
+                                    playerError = true,
+                                    error = "방송이 종료되었습니다"
+                                )}
+                                stopStreaming()
+                                break
                             }
-                            else -> "사연"
-                        },
-                        coverImageUrl = coverUrl
-                    )
-                }
+                        }
+                    }
+                    .catch { e ->
+                        // 스트림 에러 발생 시
+                        _state.update { it.copy(
+                            playerError = true,
+                            error = "방송이 종료되었습니다"
+                        )}
+                        stopStreaming()
+                    }
+                    .collect()
+            } catch (e: Exception) {
+                _state.update { it.copy(
+                    playerError = true,
+                    error = "방송 연결에 실패했습니다"
+                )}
+                stopStreaming()
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     fun onEvent(event: BroadcastDetailEvent) {
@@ -168,7 +207,8 @@ class BroadcastDetailViewModel @Inject constructor(
     private fun initializePlayer() {
         player = ExoPlayer.Builder(getApplication()).build().apply {
 //            val mediaItem = MediaItem.fromUri("http://wonyoung.on-air.me:8000/channel/channel_1/index.m3u8")
-            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+//            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/channel_1/index.m3u8")
+            val mediaItem = MediaItem.fromUri("https://nuguri.on-air.me/channel/${state.value.broadcastId}/index.m3u8")
             val mediaSource = HlsMediaSource.Factory(customHttpDataSourceFactory)
                 .createMediaSource(mediaItem)
             setMediaSource(mediaSource)

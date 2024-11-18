@@ -66,8 +66,8 @@ class NewsService:
 
             c = conn.cursor()
 
-            # rows = c.execute(f"SELECT * FROM news WHERE topic_id = {self.news_topic[topic]}").fetchall()
-            rows = c.execute("SELECT * FROM news WHERE topic_id = (?) LIMIT 5", (self.news_topic[topic],)).fetchall()
+            # rows = c.execute("SELECT * FROM news WHERE topic_id = (?) LIMIT 5", (self.news_topic[topic],)).fetchall()
+            rows = c.execute("SELECT * FROM news WHERE topic_id = (?) LIMIT 5 ORDER BY created_at DESC", (self.news_topic[topic],)).fetchall()
             return rows
 
         except Exception as e:
