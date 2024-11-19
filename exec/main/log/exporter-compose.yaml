@@ -1,0 +1,49 @@
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.systemd'          
+      - '--collector.processes'
+    ports:
+      - "9100:9100"
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysqld-exporter
+    restart: unless-stopped
+    volumes:
+      - ./conf/.my.cnf:/etc/mysql/my.cnf:ro
+    ports:
+      - "9104:9104"
+    networks:
+      - monitoring
+    command:
+      - '--config.my-cnf=/etc/mysql/my.cnf'
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx-exporter
+    restart: unless-stopped
+    ports:
+      - "9113:9113"
+    command:
+      - '-nginx.scrape-uri=http://nginx:8080/stub_status'
+    networks:
+      - monitoring
+      - nginx
+
+networks:
+  monitoring:
+    external: true
+  nginx:
+    external: true

@@ -20,12 +20,17 @@ fun HomeScreen(
 
     HomeContent(
         state = state,
-        onEvent = viewModel::onEvent,
         onNavigateToAudioVisualizer = {
             navController.navigate(NavRoute.HomeSection.AudioVisualizer.route)
         },
+        onNavigateToBroadcastList = {
+            navController.navigate(NavRoute.BroadcastSection.List.route)
+        },
         onNavigateToLogin = {
             navController.navigate(NavRoute.AuthSection.Login.route)
+        },
+        onNavigateToAdmin = {
+            navController.navigate(NavRoute.AuthSection.Admin.route)
         }
     )
 }
@@ -33,9 +38,10 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(
     state: HomeState,
-    onEvent: (HomeEvent) -> Unit,
     onNavigateToAudioVisualizer: () -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToBroadcastList: () -> Unit,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToAdmin: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -58,9 +64,25 @@ private fun HomeContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
+            onClick = onNavigateToBroadcastList
+        ) {
+            Text("Go to Broadcast List")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
             onClick = onNavigateToLogin
         ) {
             Text("Login")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onNavigateToAdmin
+        ) {
+            Text("Admin")
         }
     }
 }

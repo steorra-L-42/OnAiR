@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.features.statistics"
     compileSdk = 34
 
     defaultConfig {
@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.runtime)
     implementation(libs.hilt.android)
+    implementation(project(":core:contract"))
+    implementation(project(":core:common"))
     kapt(libs.hilt.compiler)
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.ui.tooling)

@@ -1,0 +1,359 @@
+package com.fm404.onair.features.auth.presentation.settings.screen
+
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import com.fm404.onair.core.contract.auth.NavControllerHolder
+import com.fm404.onair.core.designsystem.component.image.NetworkImage
+import com.fm404.onair.core.designsystem.theme.*
+import com.fm404.onair.features.auth.presentation.settings.SettingsViewModel
+import com.fm404.onair.features.auth.presentation.settings.state.SettingsEvent
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel(),
+    navController: NavHostController
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Error Toast 표시
+    LaunchedEffect(state.error) {
+        state.error?.let { error ->
+            Toast.makeText(
+                context,
+                error.message,
+                Toast.LENGTH_SHORT
+            ).show()
+            // Toast를 보여준 후 에러 초기화
+            viewModel.onEvent(SettingsEvent.ClearError)
+        }
+    }
+
+    // navController 설정 추가
+    LaunchedEffect(Unit) {
+        Log.d("Settings", "Setting NavController in SettingsScreen")
+        (viewModel.authNavigationContract as? NavControllerHolder)?.setNavController(navController)
+    }
+
+    // Image picker launcher
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.onEvent(SettingsEvent.OnImageSelected(it)) }
+    }
+
+    // Profile image view dialog
+    if (state.showImageDialog && state.userInfo?.profilePath != null) {
+        Dialog(
+            onDismissRequest = { viewModel.onEvent(SettingsEvent.OnHideImageDialog) },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .clickable { viewModel.onEvent(SettingsEvent.OnHideImageDialog) }
+            ) {
+                NetworkImage(
+                    imageUrl = state.userInfo?.profilePath,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .align(Alignment.Center),
+                    placeholderContent = {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                )
+            }
+        }
+    }
+
+    // Nickname update dialog
+    if (state.showNicknameDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) },
+            title = { Text("닉네임 변경") },
+            text = {
+                OutlinedTextField(
+                    value = state.newNickname,
+                    onValueChange = { viewModel.onEvent(SettingsEvent.OnNicknameChange(it)) },
+                    label = { Text("닉네임") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = OnSurface,
+                        unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
+                        focusedLabelColor = OnSurface,
+                        unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
+                        cursorColor = OnSurface
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.onEvent(SettingsEvent.OnUpdateNickname) },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Secondary
+                    )
+                ) {
+                    Text("변경")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.onEvent(SettingsEvent.OnHideNicknameDialog) },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = SecondaryVariant
+                    )
+                ) {
+                    Text("취소")
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("마이페이지") },
+                navigationIcon = {
+                    IconButton(onClick = { viewModel.onEvent(SettingsEvent.OnBackClick) }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // 프로필 섹션
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    // 프로필 이미지
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        var isPressed by remember { mutableStateOf(false) }
+
+                        NetworkImage(
+                            imageUrl = state.userInfo?.profilePath,
+                            contentDescription = "Profile",
+                            modifier = Modifier
+                                .matchParentSize()
+                                .scale(if (isPressed) 1.2f else 1f)
+                                .clip(CircleShape)
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        while (true) {
+                                            val event = awaitPointerEvent()
+                                            when (event.type) {
+                                                PointerEventType.Press -> isPressed = true
+                                                PointerEventType.Release -> isPressed = false
+                                            }
+                                        }
+                                    }
+                                },
+                            contentScale = ContentScale.Crop,
+                            placeholderContent = {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .align(Alignment.Center),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+
+                        // 카메라 아이콘 오버레이
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .align(Alignment.TopEnd)
+                                .offset(x = 4.dp, y = (-4).dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .clickable { launcher.launch("image/*") }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Camera,
+                                contentDescription = "Change profile image",
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .align(Alignment.Center),
+                                tint = Color.White
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 사용자 정보
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = state.userInfo?.nickname ?: "사용자",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        IconButton(
+                            onClick = { viewModel.onEvent(SettingsEvent.OnShowNicknameDialog) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit nickname",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = state.userInfo?.username ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text(
+                        text = state.userInfo?.phoneNumber ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            // 메뉴 아이템들
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    SettingsMenuItem(
+                        icon = Icons.Default.Logout,
+                        title = "로그아웃",
+                        onClick = { viewModel.onEvent(SettingsEvent.OnLogoutClick) }
+                    )
+                }
+            }
+
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+
+//            state.error?.let { error -> // 더 이상 에러를 보여주지 않음
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = CardDefaults.cardColors(
+//                        containerColor = MaterialTheme.colorScheme.errorContainer
+//                    )
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp),
+//                        verticalArrangement = Arrangement.spacedBy(4.dp)
+//                    ) {
+//                        Text(
+//                            text = "Error Code: ${error.code}",
+//                            color = MaterialTheme.colorScheme.error,
+//                            style = MaterialTheme.typography.bodyMedium
+//                        )
+//                        Text(
+//                            text = error.message,
+//                            color = MaterialTheme.colorScheme.error,
+//                            style = MaterialTheme.typography.bodyLarge
+//                        )
+//                    }
+//                }
+//            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsMenuItem(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
+}

@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 @Composable
 fun AudioVisualizerScreen(amplitudes: FloatArray, modifier: Modifier = Modifier) {
     val minAmplitude = 5f
-    val maxAmplitude = 1000f
+    val maxAmplitude = 100f
 
     val animatedAmplitudes = amplitudes.map { amplitude ->
         animateFloatAsState(

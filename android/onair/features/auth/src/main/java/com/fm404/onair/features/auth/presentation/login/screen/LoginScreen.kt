@@ -1,13 +1,21 @@
 package com.fm404.onair.features.auth.presentation.login.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.fm404.onair.core.designsystem.theme.*
+import com.fm404.onair.core.common.R
 import com.fm404.onair.features.auth.presentation.login.LoginViewModel
 import com.fm404.onair.features.auth.presentation.login.state.LoginState
 import com.fm404.onair.features.auth.presentation.login.state.LoginEvent
@@ -19,14 +27,8 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(navController) {
+    LaunchedEffect(Unit) {
         viewModel.setNavController(navController)
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.clearNavController()
-        }
     }
 
     LoginContent(
@@ -40,6 +42,8 @@ private fun LoginContent(
     state: LoginState,
     onEvent: (LoginEvent) -> Unit
 ) {
+    val passwordFocusRequester = remember { FocusRequester() }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,18 +51,33 @@ private fun LoginContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "Login",
-            style = MaterialTheme.typography.headlineMedium
+        Image(
+            painter = painterResource(id = R.drawable.ic_onair),
+            contentDescription = "OnAir Logo",
+            modifier = Modifier.size(160.dp)
         )
-
-        Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
             value = state.username,
             onValueChange = { onEvent(LoginEvent.UsernameChanged(it)) },
-            label = { Text("ID") },
-            modifier = Modifier.fillMaxWidth(),
+            label = { Text("아이디") },
+            modifier = Modifier
+                .width(300.dp)
+                .focusRequester(FocusRequester()),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = OnSurface,
+                unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
+                focusedLabelColor = OnSurface,
+                unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
+                cursorColor = OnSurface
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = androidx.compose.ui.text.input.ImeAction.Next // 다음 버튼
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { passwordFocusRequester.requestFocus() } // 비밀번호 필드로 포커스 이동
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -66,24 +85,44 @@ private fun LoginContent(
         OutlinedTextField(
             value = state.password,
             onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
-            label = { Text("Password") },
+            label = { Text("비밀번호") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .width(300.dp)
+                .focusRequester(passwordFocusRequester),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = OnSurface,
+                unfocusedBorderColor = OnSurface.copy(alpha = 0.5f),
+                focusedLabelColor = OnSurface,
+                unfocusedLabelColor = OnSurface.copy(alpha = 0.5f),
+                cursorColor = OnSurface
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = androidx.compose.ui.text.input.ImeAction.Done // 완료 버튼
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { onEvent(LoginEvent.LoginClicked) } // 완료 시 로그인
+            )
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = { onEvent(LoginEvent.LoginClicked) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.width(240.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = OnBackground,
+                contentColor = OnSecondary
+            )
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = OnSecondary
                 )
             } else {
-                Text("Login")
+                Text("로그인")
             }
         }
 
@@ -92,9 +131,12 @@ private fun LoginContent(
         // 회원가입 버튼 추가
         TextButton(
             onClick = { onEvent(LoginEvent.RegisterClicked) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.width(300.dp)
         ) {
-            Text("아직 계정이 없으신가요? 회원가입")
+            Text(
+                "아직 계정이 없으신가요? 회원가입",
+                color = OnPrimary
+            )
         }
 
         if (state.error != null) {

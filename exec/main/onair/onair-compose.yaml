@@ -1,0 +1,73 @@
+services:
+  nginx:
+    image: nginx:1.27
+    container_name: nginx
+    volumes:
+      - certbot_data:/etc/nginx/certbot
+      - /exec/nginx/conf:/etc/nginx/conf.d
+      - /exec/cert/certbot/conf:/etc/letsencrypt
+      - /exec/cert/certbot/www:/var/www/certbot
+    networks:
+      - nginx
+    ports:
+      - "443:443"
+    depends_on:
+      - main_server
+      - media_server
+  # 메인 서버
+  main_server:
+    image: parkdonghyeon/main_image:latest
+    env_file:
+      - .env
+    networks:
+      - onair-network
+      - kafka-network
+      - nginx
+    container_name: main_server
+  # 미디어 서버
+  media_server:
+    image: parkdonghyeon/media_image:latest
+    env_file:
+      - .env
+    networks:
+      - onair-network
+      - kafka-network
+      - nginx
+    volumes:
+      - /app/media/data:/media/streaming_channels
+    container_name: media_server
+  # 스테이션 서버
+  station_server:
+    image: parkdonghyeon/station_image:latest
+    env_file:
+      - .env
+    networks:
+      - onair-network
+      - kafka-network
+    container_name: station_server
+    volumes:
+      - /app/media/data:/station/medias
+  # 랭체인 서버
+  langchain_server:
+    image: parkdonghyeon/langchain_image:latest
+    env_file:
+      - .env
+    networks:
+      - onair-network
+      - kafka-network
+    container_name: langchain_server
+    volumes:
+      - langchain_db:/app/src/db
+
+networks:
+  onair-network:
+    external: true
+  nginx:
+    driver: bridge
+    name: nginx
+  kafka-network:
+    external: true
+
+volumes:
+  certbot_data:
+  langchain_db:
