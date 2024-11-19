@@ -8,7 +8,7 @@ from config import STREAMING_CHANNELS, PLAYLIST_DIR, HLS_DIR
 from logger import log
 
 
-
+                       
 ######################  채널 추가시 폴더 구성  ######################
 def init_directory(stream_name):
   log.info(f"[{stream_name}] 디렉토리 초기화")
