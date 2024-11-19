@@ -327,7 +327,7 @@ fun StoryScreen(
 
                     Toast.makeText(context, "성공! 사연이 선정되면 알림을 보내드려요.", Toast.LENGTH_SHORT).show()
 
-                    onBackClick()
+//                    onBackClick()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
