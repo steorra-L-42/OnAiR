@@ -1,5 +1,7 @@
 package com.fm404.onair.data.remote.dto.broadcast
 
+import com.google.gson.annotations.SerializedName
+
 data class PlaylistItemDto(
     val title: String,
     val artist: String,
@@ -7,7 +9,7 @@ data class PlaylistItemDto(
 )
 
 data class ChannelDto(
-    val uuid: String,
+    @SerializedName("channelUuid") val uuid: String,
     val userNickname: String,
     val profilePath: String,
     val channelName: String,
