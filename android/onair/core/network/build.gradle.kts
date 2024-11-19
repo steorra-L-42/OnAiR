@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -6,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.core.network"
     compileSdk = 34
 
     defaultConfig {
@@ -14,6 +16,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        // local.properties에서 BASE_URL 읽어오기
+        val properties = Properties().apply {
+            load(rootProject.file("local.properties").inputStream())
+        }
+        buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
+        buildConfigField("String", "MEDIA_BASE_URL", "\"${properties.getProperty("MEDIA_BASE_URL")}\"")
     }
 
     buildTypes {
@@ -34,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
@@ -48,6 +58,17 @@ dependencies {
     implementation(libs.compose.bom)
     implementation(libs.androidx.runtime)
     implementation(libs.hilt.android)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+    implementation(libs.gson)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore.preferences.core)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(project(":domain"))
+    implementation(libs.okhttp.urlconnection)
     kapt(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

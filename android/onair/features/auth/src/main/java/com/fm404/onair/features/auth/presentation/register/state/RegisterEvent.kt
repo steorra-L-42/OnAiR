@@ -4,9 +4,12 @@ sealed class RegisterEvent {
     data class UsernameChanged(val username: String) : RegisterEvent()
     data class PasswordChanged(val password: String) : RegisterEvent()
     data class ConfirmPasswordChanged(val confirmPassword: String) : RegisterEvent()
+    data class NicknameChanged(val nickname: String) : RegisterEvent()
     data class PhoneNumberChanged(val phoneNumber: String) : RegisterEvent()
     data class VerificationCodeChanged(val code: String) : RegisterEvent()
+    object CheckUserIdAvailability : RegisterEvent()
     object RequestVerificationCode : RegisterEvent()
     object VerifyPhoneNumber : RegisterEvent()
+    object NextClicked : RegisterEvent()
     object RegisterClicked : RegisterEvent()
 }

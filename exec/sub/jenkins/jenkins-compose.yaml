@@ -1,0 +1,48 @@
+services:
+  jenkins:  # Jenkins 서비스 설정
+    build:
+      context: .  # 현재 디렉토리에서 Dockerfile을 사용
+      dockerfile: Dockerfile
+    container_name: jenkins-blueocean
+    restart: on-failure
+    networks:
+      - jenkins
+      - nginx
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+    expose:
+      - 8080
+      - 50000
+
+  docker:  # Docker-in-Docker 서비스 설정
+    image: docker:dind
+    privileged: true
+    container_name: jenkins-docker
+    restart: unless-stopped
+    networks:
+      - jenkins
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home
+    expose:
+      - 2376
+    command: --storage-driver overlay2
+
+networks:
+  jenkins:
+    driver: bridge
+    name: jenkins
+  nginx:
+    driver: bridge
+    name: nginx
+
+volumes:
+  jenkins-data:
+  jenkins-docker-certs:

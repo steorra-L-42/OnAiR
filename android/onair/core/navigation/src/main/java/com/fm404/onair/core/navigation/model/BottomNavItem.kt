@@ -1,9 +1,12 @@
 package com.fm404.onair.core.navigation.model
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
 
-open class BottomNavItem(
+data class BottomNavItem(
     val route: String,
-    val label: String,
-    val icon: ImageVector
+    @StringRes val titleResId: Int,
+    @DrawableRes val iconResId: Int,
+    @DrawableRes val filledIconResId: Int
 )

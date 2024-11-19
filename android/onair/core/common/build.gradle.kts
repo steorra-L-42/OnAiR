@@ -1,10 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.fm404.onair"
+    namespace = "com.fm404.onair.core.common"
     compileSdk = 34
 
     defaultConfig {
@@ -45,6 +46,15 @@ dependencies {
     implementation(libs.material)
     implementation(libs.compose.bom)
     implementation(libs.androidx.runtime)
+    api(libs.androidx.navigation.compose)
+    api(libs.androidx.hilt.navigation.compose)
+    api(libs.firebase.messaging.ktx)
+    api(libs.gson)
+    api(libs.retrofit)
+    api(libs.okhttp)
+    api(libs.coil.compose)
+    api(libs.accompanist.swiperefresh)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

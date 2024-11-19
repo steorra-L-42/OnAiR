@@ -6,11 +6,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.fm404.onair.features.auth.di.AuthScreenImpl
+import dagger.Binds
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AuthScreenModule {
-    @Provides
+abstract class AuthScreenModule {
+    @Binds
     @Singleton
-    fun provideAuthScreen(): AuthScreen = AuthScreenImpl()
+    abstract fun bindAuthScreen(
+        authScreenImpl: AuthScreenImpl
+    ): AuthScreen
 }
