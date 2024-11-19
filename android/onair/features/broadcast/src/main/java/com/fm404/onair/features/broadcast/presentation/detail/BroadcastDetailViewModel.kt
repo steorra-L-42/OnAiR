@@ -47,7 +47,10 @@ class BroadcastDetailViewModel @Inject constructor(
     init {
         fetchContentTypeHeaders()
         // channelId로 채널 정보 로드
+//        Log.d(TAG, "channelID: 채널 아이디: ${_state.value.broadcastId}")
+//        Log.d(TAG, "channelID: 채널 제목 : ${_state.value.title}")
         _state.value.broadcastId.takeIf { it.isNotEmpty() }?.let { channelId ->
+            Log.d(TAG, "채널 로딩: channelId: $channelId")
             loadChannelDetail(channelId)
         }
     }
@@ -58,6 +61,7 @@ class BroadcastDetailViewModel @Inject constructor(
 
             getChannelUseCase(channelId)
                 .onSuccess { channel ->
+                    Log.d(TAG, "loadChannelDetail: 여기여기여기여기 ${channel.channelName}")
                     _state.update { currentState ->
                         currentState.copy(
                             title = channel.channelName,
@@ -78,6 +82,8 @@ class BroadcastDetailViewModel @Inject constructor(
                     }
                 }
                 .onFailure { throwable ->
+                    Log.e(TAG, "loadChannelDetail: 실패 - ${throwable.message}", throwable) // Add throwable stack trace
+
                     _state.update {
                         it.copy(
                             isLoading = false,
@@ -123,28 +129,57 @@ class BroadcastDetailViewModel @Inject constructor(
                         // 새로운 헤더를 받을 때마다 시간 업데이트
                         lastHeaderTime = System.currentTimeMillis()
 
-                        val contentType = headers["onair-content-type"] ?: "story"
+                        val contentType = headers["onair-content-type"]
                         val title = headers["music-title"]
                         val artist = headers["music-artist"]
                         val coverUrl = headers["music-cover"]
 
-                        _state.update { currentState ->
-                            currentState.copy(
-                                contentType = when (contentType) {
-                                    "news" -> "뉴스"
-                                    "story" -> "사연"
-                                    "weather" -> "날씨"
-                                    "music" -> {
-                                        if (!title.isNullOrEmpty() && !artist.isNullOrEmpty()) {
-                                            "$artist - $title"
-                                        } else "음악"
+                        // 유효성 검사
+                        val isValidContentType = contentType != null && contentType.isNotEmpty()
+                        val isValidCoverUrl = coverUrl != null && coverUrl.isNotEmpty()
+                        val isValidTitle = title != null && title.isNotEmpty()
+                        val isValidArtist = artist != null && artist.isNotEmpty()
+
+                        // 유효한 경우에만 state 업데이트
+                        if (isValidContentType) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    contentType = when (contentType) {
+                                        "news" -> "뉴스"
+                                        "story" -> "사연"
+                                        "weather" -> "날씨"
+                                        "music" -> "음악"
+                                        else -> currentState.contentType  // 이전 값 유지
                                     }
-                                    else -> "사연"
-                                },
-                                coverImageUrl = coverUrl
-                            )
+                                )
+                            }
+                        }
+
+                        if (isValidCoverUrl) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    coverImageUrl = coverUrl
+                                )
+                            }
+                        }
+
+                        if (isValidTitle) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    musicTitle = title
+                                )
+                            }
+                        }
+
+                        if (isValidArtist) {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    musicArtist = artist
+                                )
+                            }
                         }
                     }
+
                     .transformLatest { headers ->
                         // 세그먼트 체크 로직
                         while(true) {

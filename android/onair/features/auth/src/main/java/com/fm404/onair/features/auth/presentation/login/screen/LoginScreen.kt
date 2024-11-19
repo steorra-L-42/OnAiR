@@ -60,7 +60,7 @@ private fun LoginContent(
         OutlinedTextField(
             value = state.username,
             onValueChange = { onEvent(LoginEvent.UsernameChanged(it)) },
-            label = { Text("ID") },
+            label = { Text("아이디") },
             modifier = Modifier
                 .width(300.dp)
                 .focusRequester(FocusRequester()),
@@ -85,7 +85,7 @@ private fun LoginContent(
         OutlinedTextField(
             value = state.password,
             onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
-            label = { Text("Password") },
+            label = { Text("비밀번호") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .width(300.dp)
@@ -122,7 +122,7 @@ private fun LoginContent(
                     color = OnSecondary
                 )
             } else {
-                Text("Login")
+                Text("로그인")
             }
         }
 

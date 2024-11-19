@@ -56,7 +56,8 @@ class StoryViewModel @Inject constructor(
                     _navigationEvent.emit(Unit)
                 }
                 .onFailure { throwable ->
-                    setState { copy(error = throwable.message) }
+                    _navigationEvent.emit(Unit)
+//                    setState { copy(error = throwable.message) }
                 }
 
             setState { copy(isLoading = false) }
