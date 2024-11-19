@@ -1,0 +1,16 @@
+langchain-community==0.2.15 ; python_version >= "3.11" and python_version < "3.12"
+langchain-core==0.2.37 ; python_version >= "3.11" and python_version < "3.12"
+langchain-huggingface==0.0.3 ; python_version >= "3.11" and python_version < "3.12"
+langchain-openai==0.1.23 ; python_version >= "3.11" and python_version < "3.12"
+langchain-text-splitters==0.2.2 ; python_version >= "3.11" and python_version < "3.12"
+langchain==0.2.15 ; python_version >= "3.11" and python_version < "3.12"
+langchainhub==0.1.21 ; python_version >= "3.11" and python_version < "3.12"
+langsmith==0.1.108 ; python_version >= "3.11" and python_version < "3.12"
+openai==1.43.0 ; python_version >= "3.11" and python_version < "3.12"
+pydantic==2.9.0b2 ; python_version >= "3.11" and python_version < "3.12"
+beautifulsoup4==4.12.3 ; python_version >= "3.11" and python_version < "3.12"
+selenium==4.26.1 ; python_version >= "3.11" and python_version < "3.12"
+python-dotenv==1.0.1 ; python_version >= "3.11" and python_version < "3.12"
+confluent_kafka==2.6.0
+schedule==1.2.2
+pytz==2024.2

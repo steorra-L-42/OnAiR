@@ -7,6 +7,7 @@ sealed class NavDestination {
     data object AudioVisualizer : NavDestination()
     data object Login : NavDestination()
     data object Register : NavDestination()
+    data object Admin : NavDestination()
 
     companion object {
         fun fromRoute(route: Any): NavDestination {
@@ -22,6 +23,7 @@ sealed class NavDestination {
                 is NavRoute.AuthSection -> when (route) {
                     NavRoute.AuthSection.Login -> Login
                     NavRoute.AuthSection.Register -> Register
+                    NavRoute.AuthSection.Admin -> Admin
                 }
                 else -> Home // 기본값
             }

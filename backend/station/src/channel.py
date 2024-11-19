@@ -1,0 +1,105 @@
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from threading import Thread, current_thread, Event
+
+from content_provider import ContentProvider
+from dj import DJ
+from dynamic_schedule_manager import DynamicScheduleManager
+from music_finder import download_from_keyword
+from play_back_queue import PlaybackQueue
+
+
+class Channel:
+    def __init__(self, channel_id, config):
+        # 음악 다운로드 자원
+        self.music_download_executor = ThreadPoolExecutor(max_workers=4)
+
+        # 필드 정의
+        self.broadcast_thread = None
+        self.stop_event = Event()
+        self.channel_id = channel_id
+        self.channel_name = config.get("channel_name")
+        self.start_time = datetime.now()
+        self.is_default = config.get("is_default")
+        self.tts_engine = config.get("tts_engine")
+        self.personality = config.get("personality")
+        self.news_topic = config.get("news_topic")
+        self.fcm_token = config.get("fcm_token")
+
+        self.playlist_config = config.get("playlist", [])
+        self.playback_queue = PlaybackQueue()
+        self.content_provider = ContentProvider(self, self.playback_queue)
+        self.dj = DJ(self, self.playback_queue)
+        self.schedule_manager = DynamicScheduleManager(self, self.content_provider, self.playback_queue, self.dj)
+
+        logging.info(f"Channel {channel_id} initialized.")
+
+    def start(self):
+        """채널 시작 - 스케줄 매니저 실행 및 플레이리스트 다운로드"""
+        logging.info(f"Channel {self.channel_id} is starting. Now channel will download playlist.")
+
+        # 플레이리스트 다운로드
+        self.download_playlist(self.playlist_config)
+
+    def download_playlist(self, playlist_config):
+        """플레이리스트 다운로드 및 추가"""
+        logging.info(playlist_config)
+        futures = []
+        for index, item in enumerate(playlist_config):
+            title = item.get("playlist_music_title")
+            artist = item.get("playlist_music_artist")
+            cover_url = item.get("playlist_music_cover_url")
+
+            if title and artist:
+                futures.append(self.music_download_executor.submit(
+                    download_from_keyword, title, artist, cover_url))
+
+        # 비동기적으로 반환된 경로들을 playlist에 추가
+        for future in futures:
+            file_info = future.result()  # 작업 결과가 반환되면
+            if file_info:  # 결과가 None이 아닌 경우에만 추가
+                self.add_to_playlist(file_info)
+
+    def add_to_playlist(self, file_info):
+        """플레이리스트에 파일 추가"""
+        self.playback_queue.playlist.append([file_info])
+        logging.info(f"Added '{file_info}' to playlist")
+
+    def process_broadcast(self):
+        """dynamic_schedule_manager의 process_broadcast를 호출"""
+        self.broadcast_thread = Thread(target=self.schedule_manager.process_broadcast,
+                                       daemon=True)
+        self.broadcast_thread.start()
+
+    def stop(self):
+        """채널 종료 및 모든 관련 리소스 정리"""
+        logging.info(f"Channel {self.channel_id} is stopping...")
+
+        # 1. PlaybackQueue 종료 (먼저 큐를 비우고 중지)
+        if hasattr(self.playback_queue, 'stop'):
+            self.playback_queue.stop()
+            logging.info("PlaybackQueue stopped.")
+
+        # 2. ContentProvider 종료 (큐가 중지된 후에 중지)
+        if hasattr(self.content_provider, 'stop'):
+            self.content_provider.stop()
+            logging.info("ContentProvider stopped.")
+
+        # 3. DJ 종료
+        if hasattr(self.dj, 'stop'):
+            self.dj.stop()
+            logging.info("DJ stopped.")
+
+        # 4. 스케줄러 종료
+        if hasattr(self.schedule_manager, 'stop'):
+            self.schedule_manager.stop()
+            logging.info("Scheduler stopped.")
+
+        # 5. 방송 스레드 종료
+        self.stop_event.set()
+        if self.broadcast_thread and self.broadcast_thread is not current_thread():
+            self.broadcast_thread.join()
+            logging.info("Broadcast_thread stopped.")
+
+        logging.info(f"Channel {self.channel_id} has been successfully stopped.")
