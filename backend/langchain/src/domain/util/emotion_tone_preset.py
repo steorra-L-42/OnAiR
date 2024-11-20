@@ -63,7 +63,7 @@ def get_emotion_tone_preset(tts_engine, key):
     if tts_engine == "TYPECAST_JEROME":
         return jerome_emontion_tone_preset[key]
     if tts_engine == "TYPECAST_HYEONJI":
-        return hyunji_emontion_tone_preset[key]
+        return hyeonji_emontion_tone_preset[key]
     if tts_engine == "TYPECAST_EUNBIN":
         return eunbin_emontion_tone_preset[key]
     return None
