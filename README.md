@@ -4,8 +4,8 @@
 | 이상철 | 이철민 | 박동현 |
 | --- | --- | --- |
 | Team Leader | Android<br>Tech Leader | DevOps |
-| <img src="https://avatars.githubusercontent.com/u/9999293?v=4" width="150"/> | <img src="https://avatars.githubusercontent.com/u/174983748?v=4" width="150"/> | <img src="https://secure.gravatar.com/avatar/2c48dff28659fd13746f4924cf3b20dacd78ac6e3a5dfcb51b76a95b41949702?s=1600&d=identicon" width="150"/> |
-| [@Harvey-sc-Lee](https://github.com/Harvey-sc-Lee) | [@rlatpwls30](https://github.com/tpwls30) | [@jinee9523](https://github.com/pdh9523) |
+| <img src="https://avatars.githubusercontent.com/u/9999293?v=4" width="150"/> | <img src="https://avatars.githubusercontent.com/u/148309370?s=400&v=4" width="150"/> | <img src="https://secure.gravatar.com/avatar/2c48dff28659fd13746f4924cf3b20dacd78ac6e3a5dfcb51b76a95b41949702?s=1600&d=identicon" width="150"/> |
+| [@Harvey-sc-Lee](https://github.com/Harvey-sc-Lee) | [@steorra-L-42](https://github.com/steorra-L-42) | [@jinee9523](https://github.com/pdh9523) |
 
 | 김범중 | 김의근 | 허동원 |
 | --- | --- | --- |
